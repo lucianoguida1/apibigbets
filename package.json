@@ -1,0 +1,19 @@
+{
+  "name": "apidash",
+  "version": "1.0.0",
+  "description": "Api de conexão com os bancos para execução de SQL e fornecer via json",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Luciano Guida",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2",
+    "nodemon": "^3.1.4",
+    "sequelize": "^6.37.3",
+    "sequelize-cli": "^6.6.2",
+    "sqlite3": "^5.1.7"
+  }
+}
