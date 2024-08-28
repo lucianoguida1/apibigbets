@@ -2,30 +2,20 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('consultas', {
+    await queryInterface.createTable('timestemporadas', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      chave: {
-        type: Sequelize.STRING
+      id_time: {
+        type: Sequelize.NUMBER,
+        references: { model: 'times', key: 'id' }
       },
-      consulta: {
-        type: Sequelize.TEXT
-      },
-      tratamento: {
-        type: Sequelize.TEXT
-      },
-      basededados: {
-        type: Sequelize.STRING
-      },
-      parametros: {
-        type: Sequelize.TEXT
-      },
-      public: {
-        type: Sequelize.BOOLEAN
+      temporada_id: {
+        type: Sequelize.NUMBER,
+        references: { model: 'temporadas', key: 'id' }
       },
       createdAt: {
         allowNull: false,
@@ -34,10 +24,14 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deletedAt: {
+        allowNull: true,
+        type: Sequelize.DATE
       }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('consultas');
+    await queryInterface.dropTable('timestemporadas');
   }
 };

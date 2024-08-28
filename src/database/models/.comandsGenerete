@@ -1,0 +1,19 @@
+npx sequelize-cli model:generate --name ligas  --attributes nome:string,logo:text,id_sports:number
+npx sequelize-cli model:generate --name pais  --attributes nome:string,code:string,logo:text
+npx sequelize-cli model:generate --name temporadas  --attributes inicio:date,fim:date,liga_id:number
+npx sequelize-cli model:generate --name times_temporadas  --attributes id_time:number,temporada_id:number
+npx sequelize-cli model:generate --name times  --attributes noem:string,logo:text,pai_id:number,id_sports:number
+npx sequelize-cli model:generate --name jogos  --attributes casa_id:number,fora_id:number,gols_casa:number,gols_fora:number,datahora:date,status:string,temporada_id:number
+npx sequelize-cli model:generate --name gols  --attributes tempo:string,casa:number,fora:number,jogo_id:number
+npx sequelize-cli model:generate --name odds  --attributes nome:string,odd:float,tipoaposta_id:number,jogo_id:number,bet_id:number
+npx sequelize-cli model:generate --name bets  --attributes inicio:date,id_sports:number
+npx sequelize-cli model:generate --name tipoapostas  --attributes nome:string,name:string,id_sports:number
+npx sequelize-cli model:generate --name requests  --attributes consumido:number,limite:number,ultima:date
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
+npx sequelize-cli 
