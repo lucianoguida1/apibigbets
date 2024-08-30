@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   times.init({
-    noem: DataTypes.STRING,
+    nome: DataTypes.STRING,
     logo: DataTypes.TEXT,
     pai_id: DataTypes.NUMBER,
     id_sports: DataTypes.NUMBER

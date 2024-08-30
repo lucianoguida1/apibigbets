@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   Ligas.init({
     nome: DataTypes.STRING,
     logo: DataTypes.TEXT,
-    id_sports: DataTypes.NUMBER
+    id_sports: DataTypes.NUMBER,
+    pai_id: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Liga',

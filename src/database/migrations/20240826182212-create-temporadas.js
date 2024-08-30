@@ -9,10 +9,15 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      ano: {
+        type: Sequelize.STRING
+      },
       inicio: {
+        allowNull: true,
         type: Sequelize.DATE
       },
       fim: {
+        allowNull: true,
         type: Sequelize.DATE
       },
       liga_id: {

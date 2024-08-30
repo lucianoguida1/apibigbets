@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   temporadas.init({
+    ano: DataTypes.STRING,
     inicio: DataTypes.DATE,
     fim: DataTypes.DATE,
     liga_id: DataTypes.NUMBER

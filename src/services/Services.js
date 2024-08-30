@@ -1,39 +1,51 @@
 const dataSource = require('../database/models');
 
 class Services {
-    constructor(nomeDoModel){
-        this.model = nomeDoModel;
-    }
+  constructor(nomeDoModel) {
+    this.model = nomeDoModel;
+  }
 
-    async pegaTodos(){
-        console.log('ssss');
-        return dataSource[this.model].findAll();
-    }
+  async pegaTodosOsRegistros (where = {}) {
+    return dataSource[this.model].findAll({ where: { ...where }});
+  }
 
-    async pegaUmRegistroPorId(id) {
-      return dataSource[this.model].findByPk(id);
-    }
+  async pegaRegistrosPorEscopo (escopo) {
+    return dataSource[this.model].scope(escopo).findAll();
+  }
 
-    async criaRegistro(dadosDoRegistro) {
-      return dataSource[this.model].create(dadosDoRegistro);
-    }
+  async pegaUmRegistroPorId(id) {
+    return dataSource[this.model].findByPk(id);
+  }
+  /*
+  async pegaUmRegistro(where) {
+    return dataSource[this.model].findOne({ where: { ...where } });
+  }
+  */
+  async pegaUmRegistro(options) {
+    return dataSource[this.model].findOne({ ...options });
+  }
 
-    async atualizaRegistro(dadosAtualizados, id) {
-        
-        console.log('aaaa');
-        const listadeRegistrosAtualizados = dataSource[this.model].update(dadosAtualizados, {
-            where: { id: id }
-        });
-        if (listadeRegistrosAtualizados[0] === 0) {
-            return false;
-        }
-        return true;
-    }
+  async pegaEContaRegistros(options) {
+    return dataSource[this.model].findAndCountAll({ ...options });
+  }
 
-    async excluiRegistro(id) {
-      return dataSource[this.model].destroy({ where: { id: id } });
+  async criaRegistro(dadosDoRegistro) {
+    return dataSource[this.model].create(dadosDoRegistro);
+  }
+
+  async atualizaRegistro(dadosAtualizados, where) {
+    const listadeRegistrosAtualizados = await dataSource[this.model].update(dadosAtualizados, {
+      where: { ...where }
+    });
+    if (listadeRegistrosAtualizados[0] === 0) {
+      return false;
     }
+    return true;
+  }
+
+  async excluiRegistro(id) {
+    return dataSource[this.model].destroy({ where: { id: id } });
+  }
 }
-
 
 module.exports = Services;

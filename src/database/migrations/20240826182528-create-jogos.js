@@ -37,6 +37,10 @@ module.exports = {
         type: Sequelize.NUMBER,
         references: { model: 'temporadas', key: 'id' }
       },
+      id_sports: {
+        allowNull: true,
+        type: Sequelize.NUMBER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

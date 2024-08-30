@@ -9,13 +9,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      noem: {
+      nome: {
         type: Sequelize.STRING
       },
       logo: {
         type: Sequelize.TEXT
       },
       pai_id: {
+        allowNull: true,
         type: Sequelize.NUMBER,
         references: { model: 'pais', key: 'id' }
       },

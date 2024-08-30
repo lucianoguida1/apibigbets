@@ -20,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
     gols_fora: DataTypes.NUMBER,
     datahora: DataTypes.DATE,
     status: DataTypes.STRING,
-    temporada_id: DataTypes.NUMBER
+    temporada_id: DataTypes.NUMBER,
+    id_sports: DataTypes.NUMBER
   }, {
     sequelize,
     modelName: 'Jogo',

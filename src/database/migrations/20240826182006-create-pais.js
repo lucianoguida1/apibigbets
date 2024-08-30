@@ -13,9 +13,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       code: {
+        allowNull: true,
         type: Sequelize.STRING
       },
       logo: {
+        allowNull: true,
         type: Sequelize.TEXT
       },
       createdAt: {
