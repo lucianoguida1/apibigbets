@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   bets.init({
-    inicio: DataTypes.DATE,
+    nome: DataTypes.STRING,
     id_sports: DataTypes.NUMBER
   }, {
     sequelize,
