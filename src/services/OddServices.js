@@ -23,7 +23,7 @@ class OddServices extends Services {
                     'jogo_id': jogo.id,
                     'bet_id': casaDeAposta.id
                 });
-            } else {
+            } else if(odd.odd != valor.odd) {
                 odd = await super.atualizaRegistro({
                     'odd': valor.odd
                 },
@@ -36,6 +36,7 @@ class OddServices extends Services {
                 );
             }
         }
+        return true;
     }
 }
 

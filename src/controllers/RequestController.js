@@ -69,6 +69,7 @@ class RequestController extends Controller {
                 console.error(`Erro durante a requisição: ${error.message}`);
             }
         }
+        console.log('finalizado!')
     }
 
     async adicionaJogos(date, fixtureId) {
@@ -76,18 +77,20 @@ class RequestController extends Controller {
         const paramsJogos = { date, page: pageJogos };
 
         try {
-            let responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
-            if (responseJogos.status === 200) {
-                const totalPaginasJogos = responseJogos.data.paging.total;
+            if (await requestServices.podeRequisitar()) {
+                let responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
+                if (responseJogos.status === 200) {
+                    const totalPaginasJogos = responseJogos.data.paging.total;
 
-                for (; pageJogos <= totalPaginasJogos && await requestServices.podeRequisitar(); pageJogos++) {
-                    await jogoServices.adicionaJogos(responseJogos);
-                    if (pageJogos < totalPaginasJogos) {
-                        paramsJogos.page = pageJogos + 1;
-                        responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
-                        if (responseJogos.status !== 200) {
-                            console.error(`Erro ao requisitar página de jogos: ${pageJogos}`);
-                            break;
+                    for (; pageJogos <= totalPaginasJogos && await requestServices.podeRequisitar(); pageJogos++) {
+                        await jogoServices.adicionaJogos(responseJogos);
+                        if (pageJogos < totalPaginasJogos) {
+                            paramsJogos.page = pageJogos + 1;
+                            responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
+                            if (responseJogos.status !== 200) {
+                                console.error(`Erro ao requisitar página de jogos: ${pageJogos}`);
+                                break;
+                            }
                         }
                     }
                 }

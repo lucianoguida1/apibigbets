@@ -12,9 +12,9 @@ class LigaServices extends Services {
 
     async pegaLiga(league) {
         let liga = await super.pegaUmRegistro({ where: { id_sports: league.id } });
-        if (liga === null) {
+        if (!liga) {
             let pais = await paiServices.pegaUmRegistro({ where: { nome: league.country } })
-            if (pais === null) {
+            if (!pais) {
                 pais = await paiServices.criaRegistro({ nome: league.country })
             }
 
@@ -26,7 +26,7 @@ class LigaServices extends Services {
             });
         }
         const temporada = await temporadaServices.pegaTemporada(league, liga);
-        
+
         return liga;
     }/// fim do metedo adiconaLiga
 }
