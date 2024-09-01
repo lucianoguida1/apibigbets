@@ -1,9 +1,8 @@
 {
     "ignore": [
-        "src/database/storage/database.sqlite",
-        ".gitignore",
+        "src/database/storage/",
         ".env",
-        "package-lock.json",
-        "package.json"
+        "logs/",
+        "dist/"
     ]
 }

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Controller = require('./Controller.js');
 const RequestServices = require('../services/RequestServices.js');
 const LigaServices = require('../services/LigaServices.js');
@@ -6,6 +7,8 @@ const BetServices = require('../services/BetServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const OddServices = require('../services/OddServices.js');
 const axios = require('axios');
+const logToFile = require('../utils/logToFile.js');
+const formatMilliseconds = require('../utils/formatMilliseconds.js');
 
 const requestServices = new RequestServices();
 const ligaServices = new LigaServices();
@@ -15,9 +18,10 @@ const tipoApostaServices = new TipoapostaServices();
 const oddServices = new OddServices();
 
 const headers = {
-    'x-rapidapi-host': 'v3.football.api-sports.io',
-    'x-rapidapi-key': '6aab030a4ede6e3a399b5ad7e1bdadbd'
+    'x-rapidapi-host': process.env.X_RAPIDAPI_HOST,
+    'x-rapidapi-key': process.env.X_RAPIDAPI_KEY
 };
+const URL = process.env.URL_API
 
 class RequestController extends Controller {
     constructor() {
@@ -26,30 +30,31 @@ class RequestController extends Controller {
 
     async dadosSport() {
         if (await requestServices.podeRequisitar()) {
-            console.time('Tempo de execução');
+            const startTime = Date.now(); // Armazena o tempo de início
+            logToFile('Iniciando dadosSport...');
             let page = 1;
             const params = {
                 bookmaker: '8',
                 date: '2024-08-28',
                 page: page
             };
-    
+
             try {
-                let response = await axios.get('http://localhost:3333/odds', { headers, params });
+                let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
                     const totalPaginas = response.data.paging.total;
-    
+
                     while (page <= totalPaginas && await requestServices.podeRequisitar()) {
-                        console.log(`Processando página ${page} de ${totalPaginas}...`);
+                        logToFile(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
                             const liga = await ligaServices.pegaLiga(e.league);
                             let jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
-                            
+
                             if (!jogo) {
                                 await this.adicionaJogos('2024-08-28');
                                 jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
                             }
-    
+
                             for (const bookmaker of e.bookmakers) {
                                 const casaAposta = await betServices.pegaBet(bookmaker);
                                 for (const odds of bookmaker.bets) {
@@ -58,25 +63,27 @@ class RequestController extends Controller {
                                 }
                             }
                         }
-    
-                        // Incrementa a página e faz a nova requisição, se necessário
+
+
                         if (++page <= totalPaginas) {
                             params.page = page;
-                            response = await axios.get('http://localhost:3333/odds', { headers, params });
+                            response = await axios.get(URL + 'odds', { headers, params });
                             if (response.status !== 200) {
-                                console.error(`Erro ao requisitar página: ${page}`);
+                                logToFile(`Erro ao requisitar página: ${page}`);
                                 break;
                             }
                         }
                     }
                 }
             } catch (error) {
-                console.error(`Erro durante a requisição: ${error.message}`);
+                logToFile(`Erro durante a requisição: ${error.message}`);
             } finally {
-                console.timeEnd('Tempo de execução');
+                const endTime = Date.now(); // Armazena o tempo de término
+                const duration = endTime - startTime; // Calcula a duração
+                logToFile(`Tempo de execução: ${formatMilliseconds(duration)}ms`);
             }
         } else {
-            console.log('Requisição não permitida.');
+            logToFile('Limite de requisições atingido...');
         }
     }
 
@@ -86,7 +93,7 @@ class RequestController extends Controller {
 
         try {
             if (await requestServices.podeRequisitar()) {
-                let responseJogos = await axios.get('http://localhost:3333/fixture', { headers, params: paramsJogos });
+                let responseJogos = await axios.get(URL + 'fixture', { headers, params: paramsJogos });
                 if (responseJogos.status === 200) {
                     const totalPaginasJogos = responseJogos.data.paging.total;
 
@@ -94,9 +101,9 @@ class RequestController extends Controller {
                         await jogoServices.adicionaJogos(responseJogos);
                         if (pageJogos < totalPaginasJogos) {
                             paramsJogos.page = pageJogos + 1;
-                            responseJogos = await axios.get('http://localhost:3333/fixture', { headers, params: paramsJogos });
+                            responseJogos = await axios.get(URL + 'fixture', { headers, params: paramsJogos });
                             if (responseJogos.status !== 200) {
-                                console.error(`Erro ao requisitar página de jogos: ${pageJogos}`);
+                                logToFile(`Erro ao requisitar página de jogos: ${pageJogos}`);
                                 break;
                             }
                         }
@@ -104,6 +111,7 @@ class RequestController extends Controller {
                 }
             }
         } catch (error) {
+            logToFile(`Erro durante a adição de jogos: ${error.message}`);
             console.error(`Erro durante a adição de jogos: ${error.message}`);
         }
     }
