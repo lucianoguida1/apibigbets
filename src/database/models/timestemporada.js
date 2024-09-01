@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   times_temporadas.init({
-    id_time: DataTypes.NUMBER,
+    time_id: DataTypes.NUMBER,
     temporada_id: DataTypes.NUMBER
   }, {
     sequelize,

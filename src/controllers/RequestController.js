@@ -26,37 +26,42 @@ class RequestController extends Controller {
 
     async dadosSport() {
         if (await requestServices.podeRequisitar()) {
+            console.time('Tempo de execução');
             let page = 1;
-            let params = {
+            const params = {
                 bookmaker: '8',
                 date: '2024-08-28',
                 page: page
             };
-
+    
             try {
                 let response = await axios.get('http://localhost:3333/odds', { headers, params });
                 if (response.status === 200) {
                     const totalPaginas = response.data.paging.total;
-
-                    for (; page <= totalPaginas && await requestServices.podeRequisitar(); page++) {
+    
+                    while (page <= totalPaginas && await requestServices.podeRequisitar()) {
+                        console.log(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
                             const liga = await ligaServices.pegaLiga(e.league);
                             let jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
-
+                            
                             if (!jogo) {
-                                await this.adicionaJogos('2024-08-28', e.fixture.id);
+                                await this.adicionaJogos('2024-08-28');
                                 jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
                             }
-
-                            const casaAposta = await betServices.pegaBet(e.bookmakers[0]);
-                            for (const odds of e.bookmakers[0].bets) {
-                                const tipoAposta = await tipoApostaServices.pegaTipoAposta(odds);
-                                await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, odds);
+    
+                            for (const bookmaker of e.bookmakers) {
+                                const casaAposta = await betServices.pegaBet(bookmaker);
+                                for (const odds of bookmaker.bets) {
+                                    const tipoAposta = await tipoApostaServices.pegaTipoAposta(odds);
+                                    await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, odds);
+                                }
                             }
                         }
-
-                        if (page < totalPaginas) {
-                            params.page = page + 1;
+    
+                        // Incrementa a página e faz a nova requisição, se necessário
+                        if (++page <= totalPaginas) {
+                            params.page = page;
                             response = await axios.get('http://localhost:3333/odds', { headers, params });
                             if (response.status !== 200) {
                                 console.error(`Erro ao requisitar página: ${page}`);
@@ -67,18 +72,21 @@ class RequestController extends Controller {
                 }
             } catch (error) {
                 console.error(`Erro durante a requisição: ${error.message}`);
+            } finally {
+                console.timeEnd('Tempo de execução');
             }
+        } else {
+            console.log('Requisição não permitida.');
         }
-        console.log('finalizado!')
     }
 
-    async adicionaJogos(date, fixtureId) {
+    async adicionaJogos(date) {
         let pageJogos = 1;
-        const paramsJogos = { date, page: pageJogos };
+        let paramsJogos = { date: date, page: pageJogos }
 
         try {
             if (await requestServices.podeRequisitar()) {
-                let responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
+                let responseJogos = await axios.get('http://localhost:3333/fixture', { headers, params: paramsJogos });
                 if (responseJogos.status === 200) {
                     const totalPaginasJogos = responseJogos.data.paging.total;
 
@@ -86,7 +94,7 @@ class RequestController extends Controller {
                         await jogoServices.adicionaJogos(responseJogos);
                         if (pageJogos < totalPaginasJogos) {
                             paramsJogos.page = pageJogos + 1;
-                            responseJogos = await axios.get('http://localhost:3333/fixture', { headers, paramsJogos });
+                            responseJogos = await axios.get('http://localhost:3333/fixture', { headers, params: paramsJogos });
                             if (responseJogos.status !== 200) {
                                 console.error(`Erro ao requisitar página de jogos: ${pageJogos}`);
                                 break;
