@@ -17,11 +17,11 @@ module.exports = {
       },
       pai_id: {
         allowNull: true,
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'pais', key: 'id' }
       },
       id_sports: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

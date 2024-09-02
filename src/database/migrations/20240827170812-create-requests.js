@@ -10,11 +10,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       consumido: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         defaultValue: 0
       },
       limite: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         defaultValue: 100
       },
       createdAt: {

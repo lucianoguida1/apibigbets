@@ -10,20 +10,20 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       casa_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'times', key: 'id' }
       },
       fora_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'times', key: 'id' }
       },
       gols_casa: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null
       },
       gols_fora: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         allowNull: true,
         defaultValue: null
       },
@@ -34,12 +34,12 @@ module.exports = {
         type: Sequelize.STRING
       },
       temporada_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'temporadas', key: 'id' }
       },
       id_sports: {
         allowNull: true,
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.DATE
       },
       liga_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'ligas', key: 'id' }
       },
       createdAt: {

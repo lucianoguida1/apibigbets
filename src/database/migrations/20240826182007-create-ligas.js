@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('odds', {
+    await queryInterface.createTable('ligas', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,19 +12,15 @@ module.exports = {
       nome: {
         type: Sequelize.STRING
       },
-      odd: {
-        type: Sequelize.FLOAT
+      logo: {
+        type: Sequelize.TEXT
       },
-      tipoaposta_id: {
-        type: Sequelize.NUMBER
+      pai_id: {
+        type: Sequelize.INTEGER,
+        references: { model: 'pais', key: 'id' }
       },
-      jogo_id: {
-        type: Sequelize.NUMBER,
-        references: { model: 'jogos', key: 'id' }
-      },
-      bet_id: {
-        type: Sequelize.NUMBER,
-        references: { model: 'bets', key: 'id' }
+      id_sports: {
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,
@@ -41,6 +37,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('odds');
+    await queryInterface.dropTable('ligas');
   }
 };

@@ -10,11 +10,11 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       time_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'times', key: 'id' }
       },
       temporada_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'temporadas', key: 'id' }
       },
       createdAt: {

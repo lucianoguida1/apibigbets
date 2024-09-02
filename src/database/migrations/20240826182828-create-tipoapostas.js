@@ -17,7 +17,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       id_sports: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,

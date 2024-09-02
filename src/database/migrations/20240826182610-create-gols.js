@@ -13,13 +13,13 @@ module.exports = {
         type: Sequelize.STRING
       },
       casa: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       fora: {
-        type: Sequelize.NUMBER
+        type: Sequelize.INTEGER
       },
       jogo_id: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         references: { model: 'jogos', key: 'id' }
       },
       createdAt: {
