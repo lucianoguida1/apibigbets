@@ -9,6 +9,7 @@ const OddServices = require('../services/OddServices.js');
 const axios = require('axios');
 const logToFile = require('../utils/logToFile.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
+const toDay = require('../utils/toDay.js');
 
 const requestServices = new RequestServices();
 const ligaServices = new LigaServices();
@@ -28,14 +29,14 @@ class RequestController extends Controller {
         super(requestServices);
     }
 
-    async dadosSport() {
+    async dadosSport(date = toDay()) {
         if (await requestServices.podeRequisitar()) {
             const startTime = Date.now(); // Armazena o tempo de início
             logToFile('Iniciando dadosSport...');
             let page = 1;
             const params = {
                 bookmaker: '8',
-                date: '2024-08-28',
+                date: date,
                 page: page
             };
 
@@ -51,7 +52,7 @@ class RequestController extends Controller {
                             let jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
 
                             if (!jogo) {
-                                await this.adicionaJogos('2024-08-28');
+                                await this.adicionaJogos(date);
                                 jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
                             }
 
@@ -87,7 +88,7 @@ class RequestController extends Controller {
         }
     }
 
-    async adicionaJogos(date) {
+    async adicionaJogos(date = toDay()) {
         let pageJogos = 1;
         let paramsJogos = { date: date, page: pageJogos }
 

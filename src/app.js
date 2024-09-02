@@ -8,14 +8,13 @@ routes(app);
 
 const request = new RequestController();
 
-// Configurando a tarefa cron para executar a cada 10 segundos
-request.dadosSport();
-
-
-//cron.schedule('*/20 * * * * *', () => {
-//    request.dadosSport();
-//});
-
+// Configurando a tarefa cron para executar a cada 5 horas
+cron.schedule('0 */5 * * *', async () => {
+    await request.dadosSport();
+});
+cron.schedule('0 */3 * * *', async () => {
+    await request.adicionaJogos();
+});
 
 app.get('/teste', (req, res) => {
     res.status(200).send({mensagem: 'Ok!'})
