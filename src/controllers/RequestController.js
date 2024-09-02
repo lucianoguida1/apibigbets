@@ -7,6 +7,7 @@ const BetServices = require('../services/BetServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const OddServices = require('../services/OddServices.js');
 const axios = require('axios');
+const https = require('https');
 const logToFile = require('../utils/logToFile.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const toDay = require('../utils/toDay.js');
@@ -23,6 +24,12 @@ const headers = {
     'x-rapidapi-key': process.env.X_RAPIDAPI_KEY
 };
 const URL = process.env.URL_API
+
+// Configurar axios globalmente
+axios.defaults.httpsAgent = new https.Agent({
+    rejectUnauthorized: false
+});
+
 
 class RequestController extends Controller {
     constructor() {
@@ -55,13 +62,16 @@ class RequestController extends Controller {
                                 await this.adicionaJogos(date);
                                 jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
                             }
-
-                            for (const bookmaker of e.bookmakers) {
-                                const casaAposta = await betServices.pegaBet(bookmaker);
-                                for (const odds of bookmaker.bets) {
-                                    const tipoAposta = await tipoApostaServices.pegaTipoAposta(odds);
-                                    await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, odds);
+                            if (jogo !== null) {
+                                for (const bookmaker of e.bookmakers) {
+                                    const casaAposta = await betServices.pegaBet(bookmaker);
+                                    for (const odds of bookmaker.bets) {
+                                        const tipoAposta = await tipoApostaServices.pegaTipoAposta(odds);
+                                        await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, odds);
+                                    }
                                 }
+                            }else{
+                                logToFile('Jogo não encontrado! fixture/jogo:' + e.fixture.id );
                             }
                         }
 
@@ -90,14 +100,22 @@ class RequestController extends Controller {
 
     async adicionaJogos(date = toDay()) {
         let pageJogos = 1;
-        let paramsJogos = { date: date, page: pageJogos }
+        let paramsJogos = { 
+            date: date
+            //,page: pageJogos 
+        }
 
         try {
             if (await requestServices.podeRequisitar()) {
-                let responseJogos = await axios.get(URL + 'fixture', { headers, params: paramsJogos });
+                logToFile("Iniciando a busca por jogos na API");
+                let responseJogos = await axios.get(URL + 'fixtures', { headers, params: paramsJogos });
+                
                 if (responseJogos.status === 200) {
-                    const totalPaginasJogos = responseJogos.data.paging.total;
+                    await jogoServices.adicionaJogos(responseJogos);
 
+                    /* FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO
+                    const totalPaginasJogos = responseJogos.data.paging.total;
+                    logToFile(`Processando página ${pageJogos} de ${totalPaginasJogos}...`);
                     for (; pageJogos <= totalPaginasJogos && await requestServices.podeRequisitar(); pageJogos++) {
                         await jogoServices.adicionaJogos(responseJogos);
                         if (pageJogos < totalPaginasJogos) {
@@ -109,6 +127,9 @@ class RequestController extends Controller {
                             }
                         }
                     }
+                    FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO*/
+                }else{
+                    logToFile('Erro ao buscar dados de jogos! status <> 200. Status: '+ responseJogos.status);
                 }
             }
         } catch (error) {
