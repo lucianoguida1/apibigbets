@@ -41,7 +41,6 @@ module.exports = async (message, telegram = true, cons = true) => {
                     chat_id: telegramChatId,
                     text: message
                 });
-                console.log('Mensagem enviada para o Telegram com sucesso.');
             } catch (error) {
                 console.error('Erro ao enviar mensagem para o Telegram:', error.message);
             }

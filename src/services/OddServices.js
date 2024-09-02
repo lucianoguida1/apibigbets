@@ -9,35 +9,39 @@ class OddServices extends Services {
         for (const valor of odds.values) {
             let odd = await super.pegaUmRegistro({
                 where: {
-                    'nome': valor.value,
+                    'nome': String(valor.value),
                     'tipoaposta_id': tipoAposta.id,
                     'jogo_id': jogo.id,
                     'bet_id': casaDeAposta.id
                 }
             });
+    
+            const valorOdd = parseFloat(valor.odd);
+            
             if (!odd) {
                 odd = await super.criaRegistro({
-                    'nome': valor.value,
-                    'odd': valor.odd,
+                    'nome': String(valor.value),
+                    'odd': valorOdd,
                     'tipoaposta_id': tipoAposta.id,
                     'jogo_id': jogo.id,
                     'bet_id': casaDeAposta.id
                 });
-            } else if(odd.odd != valor.odd) {
+            } else if (odd.odd !== valorOdd) {
+                console.log((odd.odd !== valorOdd));
                 odd = await super.atualizaRegistro({
-                    'odd': valor.odd
+                    'odd': valorOdd
                 },
-                    {
-                        'nome': valor.value,
-                        'tipoaposta_id': tipoAposta.id,
-                        'jogo_id': jogo.id,
-                        'bet_id': casaDeAposta.id
-                    }
-                );
+                {
+                    'nome': String(valor.value),
+                    'tipoaposta_id': tipoAposta.id,
+                    'jogo_id': jogo.id,
+                    'bet_id': casaDeAposta.id
+                });
             }
         }
         return true;
     }
+    
 }
 
 module.exports = OddServices;

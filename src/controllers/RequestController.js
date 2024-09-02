@@ -88,6 +88,7 @@ class RequestController extends Controller {
                 }
             } catch (error) {
                 logTo(`Erro durante a requisição: ${error.message}`);
+                console.log(error)
             } finally {
                 const endTime = Date.now(); // Armazena o tempo de término
                 const duration = endTime - startTime; // Calcula a duração
