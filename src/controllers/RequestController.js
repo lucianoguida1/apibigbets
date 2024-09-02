@@ -8,7 +8,7 @@ const TipoapostaServices = require('../services/TipoapostaServices.js');
 const OddServices = require('../services/OddServices.js');
 const axios = require('axios');
 const https = require('https');
-const logToFile = require('../utils/logToFile.js');
+const logTo = require('../utils/logTo.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const toDay = require('../utils/toDay.js');
 
@@ -39,7 +39,7 @@ class RequestController extends Controller {
     async dadosSport(date = toDay()) {
         if (await requestServices.podeRequisitar()) {
             const startTime = Date.now(); // Armazena o tempo de início
-            logToFile('Iniciando dadosSport...');
+            logTo('Iniciando dadosSport...');
             let page = 1;
             const params = {
                 bookmaker: '8',
@@ -53,7 +53,7 @@ class RequestController extends Controller {
                     const totalPaginas = response.data.paging.total;
 
                     while (page <= totalPaginas && await requestServices.podeRequisitar()) {
-                        logToFile(`Processando página ${page} de ${totalPaginas}...`);
+                        logTo(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
                             const liga = await ligaServices.pegaLiga(e.league);
                             let jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
@@ -71,7 +71,7 @@ class RequestController extends Controller {
                                     }
                                 }
                             }else{
-                                logToFile('Jogo não encontrado! fixture/jogo:' + e.fixture.id );
+                                logTo('Jogo não encontrado! fixture/jogo:' + e.fixture.id );
                             }
                         }
 
@@ -80,21 +80,21 @@ class RequestController extends Controller {
                             params.page = page;
                             response = await axios.get(URL + 'odds', { headers, params });
                             if (response.status !== 200) {
-                                logToFile(`Erro ao requisitar página: ${page}`);
+                                logTo(`Erro ao requisitar página: ${page}`);
                                 break;
                             }
                         }
                     }
                 }
             } catch (error) {
-                logToFile(`Erro durante a requisição: ${error.message}`);
+                logTo(`Erro durante a requisição: ${error.message}`);
             } finally {
                 const endTime = Date.now(); // Armazena o tempo de término
                 const duration = endTime - startTime; // Calcula a duração
-                logToFile(`Tempo de execução: ${formatMilliseconds(duration)}ms`);
+                logTo(`Tempo de execução: ${formatMilliseconds(duration)}ms`);
             }
         } else {
-            logToFile('Limite de requisições atingido...');
+            logTo('Limite de requisições atingido...');
         }
     }
 
@@ -107,7 +107,7 @@ class RequestController extends Controller {
 
         try {
             if (await requestServices.podeRequisitar()) {
-                logToFile("Iniciando a busca por jogos na API");
+                logTo("Iniciando a busca por jogos na API");
                 let responseJogos = await axios.get(URL + 'fixtures', { headers, params: paramsJogos });
                 
                 if (responseJogos.status === 200) {
@@ -115,25 +115,25 @@ class RequestController extends Controller {
 
                     /* FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO
                     const totalPaginasJogos = responseJogos.data.paging.total;
-                    logToFile(`Processando página ${pageJogos} de ${totalPaginasJogos}...`);
+                    logTo(`Processando página ${pageJogos} de ${totalPaginasJogos}...`);
                     for (; pageJogos <= totalPaginasJogos && await requestServices.podeRequisitar(); pageJogos++) {
                         await jogoServices.adicionaJogos(responseJogos);
                         if (pageJogos < totalPaginasJogos) {
                             paramsJogos.page = pageJogos + 1;
                             responseJogos = await axios.get(URL + 'fixture', { headers, params: paramsJogos });
                             if (responseJogos.status !== 200) {
-                                logToFile(`Erro ao requisitar página de jogos: ${pageJogos}`);
+                                logTo(`Erro ao requisitar página de jogos: ${pageJogos}`);
                                 break;
                             }
                         }
                     }
                     FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO*/
                 }else{
-                    logToFile('Erro ao buscar dados de jogos! status <> 200. Status: '+ responseJogos.status);
+                    logTo('Erro ao buscar dados de jogos! status <> 200. Status: '+ responseJogos.status);
                 }
             }
         } catch (error) {
-            logToFile(`Erro durante a adição de jogos: ${error.message}`);
+            logTo(`Erro durante a adição de jogos: ${error.message}`);
             console.error(`Erro durante a adição de jogos: ${error.message}`);
         }
     }

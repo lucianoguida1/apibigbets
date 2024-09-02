@@ -2,6 +2,7 @@ const express = require('express');
 const routes = require('./routes');
 const cron = require('node-cron');
 const RequestController = require('./controllers/RequestController.js');
+const logTo = require('./utils/logTo.js');
 
 const app = express();
 routes(app);

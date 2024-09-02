@@ -1,3 +1,6 @@
+require('dotenv').config();
+
+const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
@@ -15,7 +18,7 @@ function formatDateTime() {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 }
 
-module.exports = (message) => {
+module.exports = async (message, telegram = true, cons = true) => {
     const date = new Date().toISOString().split('T')[0]; // Formato: YYYY-MM-DD
     const logFileName = `${date}.log`;
     const logFilePath = path.join(logsDir, logFileName);
@@ -24,8 +27,30 @@ module.exports = (message) => {
     if (!fs.existsSync(logsDir)) {
         fs.mkdirSync(logsDir, { recursive: true });
     }
-
+    
     // Adiciona a mensagem ao arquivo de log
     fs.appendFileSync(logFilePath, `${formatDateTime()} - ${message}\n`);
-    console.log(message);
+
+    if (telegram) {
+        const telegramToken = process.env.TELEGRAM_BOT_TOKEN; // Token do bot do Telegram
+        const telegramChatId = process.env.TELEGRAM_CHAT_ID; // ID do chat do Telegram
+
+        if (telegramToken && telegramChatId) {
+            try {
+                await axios.post(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+                    chat_id: telegramChatId,
+                    text: message
+                });
+                console.log('Mensagem enviada para o Telegram com sucesso.');
+            } catch (error) {
+                console.error('Erro ao enviar mensagem para o Telegram:', error.message);
+            }
+        } else {
+            console.error('TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID não configurados no .env.');
+        }
+    }
+    
+    if (cons) {
+        console.log(message);
+    }
 }
