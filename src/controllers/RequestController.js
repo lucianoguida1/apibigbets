@@ -51,27 +51,36 @@ class RequestController extends Controller {
                 let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
                     const totalPaginas = response.data.paging.total;
+                    await this.adicionaJogos(date);
+                    const todasLigas = await ligaServices.pegaTodosOsRegistros();
+                    const todosJogos = await jogoServices.pegaTodosOsRegistros({ 'data': date });
+                    const todasCasasAposta = await betServices.pegaTodosOsRegistros();
+                    const todosTipoAposta = await tipoApostaServices.pegaTodosOsRegistros();
 
                     while (page <= totalPaginas && await requestServices.podeRequisitar()) {
                         logTo(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
-                            const liga = await ligaServices.pegaLiga(e.league);
-                            let jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
+                            // Busca a liga no cache ou cria se não existir
+                            let liga = todasLigas.find(l => l.id_sports === e.league.id)
+                                || await ligaServices.pegaLiga(e.league);
 
-                            if (!jogo) {
-                                await this.adicionaJogos(date);
-                                jogo = await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
-                            }
+                            // Busca o jogo no cache ou cria se não existir
+                            let jogo = todosJogos.find(l => l.id_sports === e.fixture.id)
+                                || await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
                             if (jogo !== null) {
+                                //LOOP RODANDO AS CASAS DE APOSTA
                                 for (const bookmaker of e.bookmakers) {
-                                    const casaAposta = await betServices.pegaBet(bookmaker);
-                                    for (const odds of bookmaker.bets) {
-                                        const tipoAposta = await tipoApostaServices.pegaTipoAposta(odds);
-                                        await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, odds);
+                                    let casaAposta = todasCasasAposta.find(l => l.id_sports === bookmaker.id)
+                                        || await betServices.pegaBet(bookmaker);
+                                    //LOOP RODANDOS AS ODDS
+                                    for (const modeloAposta of bookmaker.bets) {
+                                        const tipoAposta = todosTipoAposta.find(l => l.id_sports === modeloAposta.id)
+                                            || await tipoApostaServices.pegaTipoAposta(modeloAposta);
+                                        await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, modeloAposta);
                                     }
                                 }
-                            }else{
-                                logTo('Jogo não encontrado! fixture/jogo:' + e.fixture.id );
+                            } else {
+                                logTo('Jogo não encontrado! fixture/jogo:' + e.fixture.id);
                             }
                         }
 
@@ -101,7 +110,7 @@ class RequestController extends Controller {
 
     async adicionaJogos(date = toDay()) {
         let pageJogos = 1;
-        let paramsJogos = { 
+        let paramsJogos = {
             date: date
             //,page: pageJogos 
         }
@@ -110,7 +119,7 @@ class RequestController extends Controller {
             if (await requestServices.podeRequisitar()) {
                 logTo("Iniciando a busca por jogos na API");
                 let responseJogos = await axios.get(URL + 'fixtures', { headers, params: paramsJogos });
-                
+
                 if (responseJogos.status === 200) {
                     await jogoServices.adicionaJogos(responseJogos);
 
@@ -129,8 +138,8 @@ class RequestController extends Controller {
                         }
                     }
                     FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO*/
-                }else{
-                    logTo('Erro ao buscar dados de jogos! status <> 200. Status: '+ responseJogos.status);
+                } else {
+                    logTo('Erro ao buscar dados de jogos! status <> 200. Status: ' + responseJogos.status);
                 }
             }
         } catch (error) {

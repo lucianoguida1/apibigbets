@@ -51,12 +51,13 @@ class JogoServices extends Services {
                         'id_sports': e.fixture.id,
                     }
                 });
-
+                
                 if (!jogo) {
                     jogosParaCriar.push({
                         'casa_id': casa.id,
                         'fora_id': fora.id,
                         'datahora': e.fixture.date,
+                        'data': e.fixture.date.split('T')[0],
                         'gols_casa': e.goals.home,
                         'gols_fora': e.goals.away,
                         'status': e.fixture.status.long,

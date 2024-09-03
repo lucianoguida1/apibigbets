@@ -3,7 +3,7 @@ require('dotenv').config(); // Certifique-se de que o pacote dotenv está instal
 module.exports = {
   "development": {
     "dialect": "sqlite",
-    "storage": "./src/database/storage/database.sqlite",
+    "storage": "./src/database/storage/database.db",
     "logging": false
   },
   "test": {

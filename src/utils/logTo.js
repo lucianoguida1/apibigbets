@@ -31,7 +31,7 @@ module.exports = async (message, telegram = true, cons = true) => {
     // Adiciona a mensagem ao arquivo de log
     fs.appendFileSync(logFilePath, `${formatDateTime()} - ${message}\n`);
 
-    if (telegram) {
+    if (telegram && process.env.NODE_ENV != 'development') {
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN; // Token do bot do Telegram
         const telegramChatId = process.env.TELEGRAM_CHAT_ID; // ID do chat do Telegram
 

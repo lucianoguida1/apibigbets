@@ -30,6 +30,9 @@ module.exports = {
       datahora: {
         type: Sequelize.DATE
       },
+      data: {
+        type: Sequelize.STRING
+      },
       status: {
         type: Sequelize.STRING
       },

@@ -8,7 +8,7 @@ const app = express();
 routes(app);
 
 const request = new RequestController();
-request.dadosSport();
+request.dadosSport('2024-09-02');
 
 // Configurando a tarefa cron para executar a cada 5 horas
 cron.schedule('0 */5 * * *', async () => {

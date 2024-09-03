@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     gols_casa: DataTypes.NUMBER,
     gols_fora: DataTypes.NUMBER,
     datahora: DataTypes.DATE,
+    data: DataTypes.STRING,
     status: DataTypes.STRING,
     temporada_id: DataTypes.NUMBER,
     id_sports: DataTypes.NUMBER
