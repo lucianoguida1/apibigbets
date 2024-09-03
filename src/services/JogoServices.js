@@ -26,6 +26,7 @@ class JogoServices extends Services {
 
             const jogosParaCriar = [];
             const jogosParaAtualizar = [];
+            let jogosInseridos = [];
 
             for (const e of response.data.response) {
                 // Busca o time da casa e de fora no cache ou cria se não existir
@@ -68,25 +69,17 @@ class JogoServices extends Services {
                     jogo.gols_casa = e.goals.home;
                     jogo.gols_fora = e.goals.away;
                     jogo.status = e.fixture.status.long;
-                    jogosParaAtualizar.push(jogo);
+                    await golServices.adicionaGols(e.score, jogo);
+                    jogo.save();
                 }
             }
 
             // Efetua criação de todos os jogos em batch
             if (jogosParaCriar.length > 0) {
-                await super.criaVariosRegistros(jogosParaCriar);
+                jogosInseridos = await super.criaVariosRegistros(jogosParaCriar);
             }
-
-            // Efetua atualização de todos os jogos em batch
-            for (const { jogo, e } of jogosParaAtualizar) {
-                await jogo.save();
-                // Processa gols e times na temporada para cada jogo atualizado
-                await golServices.adicionaGols(e.score, jogo);
-                await timetemporadaServices.pegaTimeNaTemporada(jogo);
-            }
-
-            // Processa gols e times na temporada para cada jogo criado
-            for (const jogo of jogosParaCriar) {
+            
+            for (const jogo of jogosInseridos) {
                 const e = response.data.response.find(r => r.fixture.id === jogo.id_sports);
                 await golServices.adicionaGols(e.score, jogo);
                 await timetemporadaServices.pegaTimeNaTemporada(jogo);
