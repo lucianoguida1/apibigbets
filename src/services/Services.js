@@ -5,11 +5,11 @@ class Services {
     this.model = nomeDoModel;
   }
 
-  async pegaTodosOsRegistros (where = {}) {
-    return dataSource[this.model].findAll({ where: { ...where }});
+  async pegaTodosOsRegistros(where = {}) {
+    return dataSource[this.model].findAll({ where: { ...where } });
   }
 
-  async pegaRegistrosPorEscopo (escopo) {
+  async pegaRegistrosPorEscopo(escopo) {
     return dataSource[this.model].scope(escopo).findAll();
   }
 
@@ -31,6 +31,10 @@ class Services {
 
   async criaRegistro(dadosDoRegistro) {
     return dataSource[this.model].create(dadosDoRegistro);
+  }
+
+  async criaVariosRegistros(dadosDosRegistros) {
+    return dataSource[this.model].bulkCreate(dadosDosRegistros);
   }
 
   async atualizaRegistro(dadosAtualizados, where) {

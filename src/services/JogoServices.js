@@ -18,40 +18,83 @@ class JogoServices extends Services {
     }
 
     async adicionaJogos(response) {
-        for (const e of response.data.response) {
-            let casa = await timeServices.pegaTime(e.teams.home);
-            let fora = await timeServices.pegaTime(e.teams.away);
-            let liga = await ligaServices.pegaLiga(e.league);
-            let temporada = await temporadaServices.pegaTemporada(e.league, liga);
+        try {
+            // Pega todos os registros de times, ligas e temporadas de uma vez
+            const todosTimes = await timeServices.pegaTodosOsRegistros();
+            const todasLigas = await ligaServices.pegaTodosOsRegistros();
+            const todasTemporadas = await temporadaServices.pegaTodosOsRegistros();
 
-            let jogo = await super.pegaUmRegistro({
-                where: {
-                    'casa_id': casa.id,
-                    'fora_id': fora.id,
-                    'id_sports': e.fixture.id,
-                }
-            })
-            if (!jogo) {
-                jogo = await super.criaRegistro({
-                    'casa_id': casa.id,
-                    'fora_id': fora.id,
-                    'datahora': e.fixture.date,
-                    'gols_casa': e.goals.home,
-                    'gols_fora': e.goals.away,
-                    'status': 'Não iniciado',
-                    'id_sports': e.fixture.id,
-                    'temporada_id': temporada.id
+            const jogosParaCriar = [];
+            const jogosParaAtualizar = [];
+
+            for (const e of response.data.response) {
+                // Busca o time da casa e de fora no cache ou cria se não existir
+                let casa = todosTimes.find(time => time.id_sports === e.teams.home.id)
+                    || await timeServices.pegaTime(e.teams.home);
+                let fora = todosTimes.find(time => time.id_sports === e.teams.away.id)
+                    || await timeServices.pegaTime(e.teams.away);
+
+                // Busca a liga no cache ou cria se não existir
+                let liga = todasLigas.find(l => l.id_sports === e.league.id)
+                    || await ligaServices.pegaLiga(e.league);
+
+                // Busca a temporada no cache ou cria se não existir
+                let temporadaKey = `${e.league.id}_${liga.id}`;
+                let temporada = todasTemporadas.find(t => t.id_league === liga.id && t.ano === e.league.season)
+                    || await temporadaServices.pegaTemporada(e.league, liga);
+
+                // Busca o jogo no banco de dados
+                let jogo = await super.pegaUmRegistro({
+                    where: {
+                        'casa_id': casa.id,
+                        'fora_id': fora.id,
+                        'id_sports': e.fixture.id,
+                    }
                 });
-            }else{
-                jogo.gols_casa = e.goals.home;
-                jogo.gols_fora = e.goals.away;
-                jogo.gols_status = 'Não iniciado';
-                await jogo.save();
+
+                if (!jogo) {
+                    jogosParaCriar.push({
+                        'casa_id': casa.id,
+                        'fora_id': fora.id,
+                        'datahora': e.fixture.date,
+                        'gols_casa': e.goals.home,
+                        'gols_fora': e.goals.away,
+                        'status': e.fixture.status.long,
+                        'id_sports': e.fixture.id,
+                        'temporada_id': temporada.id
+                    });
+                } else {
+                    jogo.gols_casa = e.goals.home;
+                    jogo.gols_fora = e.goals.away;
+                    jogo.status = e.fixture.status.long;
+                    jogosParaAtualizar.push(jogo);
+                }
             }
-            let gols = await golServices.adicionaGols(e.score, jogo);
-            let timestemporada = await timetemporadaServices.pegaTimeNaTemporada(jogo);
+
+            // Efetua criação de todos os jogos em batch
+            if (jogosParaCriar.length > 0) {
+                await super.criaVariosRegistros(jogosParaCriar);
+            }
+
+            // Efetua atualização de todos os jogos em batch
+            for (const { jogo, e } of jogosParaAtualizar) {
+                await jogo.save();
+                // Processa gols e times na temporada para cada jogo atualizado
+                await golServices.adicionaGols(e.score, jogo);
+                await timetemporadaServices.pegaTimeNaTemporada(jogo);
+            }
+
+            // Processa gols e times na temporada para cada jogo criado
+            for (const jogo of jogosParaCriar) {
+                const e = response.data.response.find(r => r.fixture.id === jogo.id_sports);
+                await golServices.adicionaGols(e.score, jogo);
+                await timetemporadaServices.pegaTimeNaTemporada(jogo);
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 }
+
 
 module.exports = JogoServices;
