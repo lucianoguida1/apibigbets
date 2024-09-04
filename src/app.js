@@ -14,7 +14,7 @@ if (process.env.NODE_ENV != 'production') {
 }
 // Configurando a tarefa cron para executar a cada 5 horas
 cron.schedule('0 */5 * * *', async () => {
-    await request.dadosSport('2024-09-02');
+    await request.dadosSport();
 });
 cron.schedule('0 */3 * * *', async () => {
     await request.adicionaJogos();
