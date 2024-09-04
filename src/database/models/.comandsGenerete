@@ -9,7 +9,7 @@ npx sequelize-cli model:generate --name odds  --attributes nome:string,odd:float
 npx sequelize-cli model:generate --name bets  --attributes inicio:date,id_sports:number
 npx sequelize-cli model:generate --name tipoapostas  --attributes nome:string,name:string,id_sports:number
 npx sequelize-cli model:generate --name requests  --attributes consumido:number,limite:number,ultima:date
-npx sequelize-cli 
+npx sequelize-cli model:generate --name requisicaopendentes  --attributes modulo:string,pagina:number
 npx sequelize-cli 
 npx sequelize-cli 
 npx sequelize-cli 

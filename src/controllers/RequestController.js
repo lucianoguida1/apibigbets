@@ -6,6 +6,7 @@ const JogoServices = require('../services/JogoServices.js');
 const BetServices = require('../services/BetServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const OddServices = require('../services/OddServices.js');
+const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const axios = require('axios');
 const https = require('https');
 const logTo = require('../utils/logTo.js');
@@ -18,6 +19,7 @@ const jogoServices = new JogoServices();
 const betServices = new BetServices();
 const tipoApostaServices = new TipoapostaServices();
 const oddServices = new OddServices();
+const reqPendenteServices = new RequisicaopendenteServices();
 
 const headers = {
     'x-rapidapi-host': process.env.X_RAPIDAPI_HOST,
@@ -38,9 +40,10 @@ class RequestController extends Controller {
 
     async dadosSport(date = toDay()) {
         if (await requestServices.podeRequisitar()) {
-            const startTime = Date.now(); // Armazena o tempo de início
+            const startTime = Date.now();
             logTo('Iniciando dadosSport...');
-            let page = 1;
+            const reqPendente = await reqPendenteServices.pegaPendente('odds');
+            let page = reqPendente.pagina;
             const params = {
                 bookmaker: '8',
                 date: date,
@@ -57,7 +60,10 @@ class RequestController extends Controller {
                     const todasCasasAposta = await betServices.pegaTodosOsRegistros();
                     const todosTipoAposta = await tipoApostaServices.pegaTodosOsRegistros();
 
-                    while (page <= totalPaginas && await requestServices.podeRequisitar()) {
+
+                    let endTime = Date.now();
+                    let duration = endTime - startTime;
+                    while (page <= totalPaginas && await requestServices.podeRequisitar() && duration < ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
                         logTo(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
                             // Busca a liga no cache ou cria se não existir
@@ -84,23 +90,32 @@ class RequestController extends Controller {
                             }
                         }
 
-
+                        reqPendente.pagina = page;
                         if (++page <= totalPaginas) {
+                            reqPendente.save();
                             params.page = page;
                             response = await axios.get(URL + 'odds', { headers, params });
                             if (response.status !== 200) {
                                 logTo(`Erro ao requisitar página: ${page}`);
                                 break;
                             }
+                        }else{
+                            reqPendente.destroy();
                         }
+                        endTime = Date.now();
+                        duration = endTime - startTime;
+                    }
+                    if (duration > ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
+                        logTo(`Exedido tempo de execução. Tempo Maximo: ${formatMilliseconds((process.env.TEMPO_EXECUCAO || 1800000))}.. tempo em execução ${formatMilliseconds(duration)}..`);
                     }
                 }
             } catch (error) {
                 logTo(`Erro durante a requisição: ${error.message}`);
+                console.error(`Erro durante a requisição: ${error.message}`);
             } finally {
-                const endTime = Date.now(); // Armazena o tempo de término
-                const duration = endTime - startTime; // Calcula a duração
-                logTo(`Tempo de execução: ${formatMilliseconds(duration)}ms`);
+                let endTime = Date.now();
+                let duration = endTime - startTime;
+                logTo(`Tempo de execução: ${formatMilliseconds(duration)}`);
             }
         } else {
             logTo('Limite de requisições atingido...');
@@ -108,10 +123,8 @@ class RequestController extends Controller {
     }
 
     async adicionaJogos(date = toDay()) {
-        let pageJogos = 1;
         let paramsJogos = {
             date: date
-            //,page: pageJogos 
         }
 
         try {
@@ -121,22 +134,6 @@ class RequestController extends Controller {
 
                 if (responseJogos.status === 200) {
                     await jogoServices.adicionaJogos(responseJogos);
-
-                    /* FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO
-                    const totalPaginasJogos = responseJogos.data.paging.total;
-                    logTo(`Processando página ${pageJogos} de ${totalPaginasJogos}...`);
-                    for (; pageJogos <= totalPaginasJogos && await requestServices.podeRequisitar(); pageJogos++) {
-                        await jogoServices.adicionaJogos(responseJogos);
-                        if (pageJogos < totalPaginasJogos) {
-                            paramsJogos.page = pageJogos + 1;
-                            responseJogos = await axios.get(URL + 'fixture', { headers, params: paramsJogos });
-                            if (responseJogos.status !== 200) {
-                                logTo(`Erro ao requisitar página de jogos: ${pageJogos}`);
-                                break;
-                            }
-                        }
-                    }
-                    FIZ ATOOOOOAAA VAI FICAR AQUI CASO UM DIA EXISTA PAGINAÇÃO*/
                 } else {
                     logTo('Erro ao buscar dados de jogos! status <> 200. Status: ' + responseJogos.status);
                 }
