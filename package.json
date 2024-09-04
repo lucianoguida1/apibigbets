@@ -8,7 +8,7 @@
     "migrate:prod": "cross-env NODE_ENV=production sequelize-cli db:migrate",
     "dev": "npm run migrate:dev && nodemon server.js",
     "start": "npm run migrate:prod && nodemon server.js",
-    "build": "cross-env NODE_ENV=production sequelize-cli db:migrate"
+    "build": "npm install && cross-env NODE_ENV=production sequelize-cli db:migrate"
   },
   "author": "Luciano Guida",
   "license": "ISC",
@@ -22,7 +22,8 @@
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
     "sequelize-cli": "^6.6.2",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
     "cross-env": "^7.0.3"
