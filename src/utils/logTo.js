@@ -4,7 +4,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-const logsDir = path.join(__dirname, '../../logs');
+const logsDir = path.join(__dirname, '../../tmp/logs');
 
 function formatDateTime() {
     const now = new Date();
