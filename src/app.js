@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const routes = require('./routes');
 const cron = require('node-cron');
-const JogoServices = require('./services/JogoServices.js');
-const jogoServices = new JogoServices();
+const RequestServices = require('./services/RequestServices.js');
+const jogoServices = new RequestServices();
 
 const RequestController = require('./controllers/RequestController.js');
 
@@ -29,6 +29,7 @@ app.get('/teste', async (req, res) => {
 
 app.get('/executa', async (req, res) => {
     await request.dadosSport();
+    res.status(200).send({ mensagem: 'Ok!' })
 });
 
 app.get('/', async (req, res) => {
