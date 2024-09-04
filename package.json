@@ -12,7 +12,7 @@
     "dev": "npm run migrate:dev && nodemon server.js",
     "start": "npm run migrate:prod && node server.js",
     "vercel-build": "npm install && sequelize-cli db:migrate && npm install pg",
-    "render-build": "npm run migrate:prod && node server.js"
+    "render-build": "node server.js"
   },
   "author": "Luciano Guida",
   "license": "ISC",
