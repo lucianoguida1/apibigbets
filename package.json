@@ -11,7 +11,8 @@
     "migrate:prod": "cross-env NODE_ENV=production sequelize-cli db:migrate",
     "dev": "npm run migrate:dev && nodemon server.js",
     "start": "npm run migrate:prod && node server.js",
-    "vercel-build": "npm install && sequelize-cli db:migrate && npm install pg"
+    "vercel-build": "npm install && sequelize-cli db:migrate && npm install pg",
+    "render-build": "npm run migrate:prod && node server.js"
   },
   "author": "Luciano Guida",
   "license": "ISC",
