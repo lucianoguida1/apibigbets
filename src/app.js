@@ -24,4 +24,8 @@ app.get('/teste', async (req, res) => {
     res.status(200).send({ mensagem: 'Ok!' })
 })
 
+app.get('/executa', async (req, res) => {
+    await request.dadosSport();
+})
+
 module.exports = app;
