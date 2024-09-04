@@ -1,4 +1,4 @@
-require('dotenv').config(); // Certifique-se de que o pacote dotenv está instalado
+require('dotenv').config();
 
 module.exports = {
   "development": {
