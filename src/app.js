@@ -17,8 +17,8 @@ cron.schedule('0 */3 * * *', async () => {
     await request.adicionaJogos();
 });
 
-app.get('/teste', (req, res) => {
-    console.log(request.dadosSport());
+app.get('/teste',async (req, res) => {
+    console.log(await request.dadosSport());
     res.status(200).send({mensagem: 'Ok!'})
 })
 
