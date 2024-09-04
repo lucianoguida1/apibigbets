@@ -6,6 +6,11 @@ const path = require('path');
 
 const logsDir = path.join(__dirname, '../../tmp/logs');
 
+// Cria o diretório recursivamente
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
+
 function formatDateTime() {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
