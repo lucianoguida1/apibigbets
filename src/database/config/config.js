@@ -20,7 +20,7 @@ module.exports = {
     "database": process.env.DB_NAME,
     "host": process.env.DB_HOST,
     "port": process.env.DB_PORT,
-    //"dialect": "postgres",
+    "dialect": "postgres",
     "dialectModule": require('pg'),
     "logging": false,
     "dialectOptions": {
