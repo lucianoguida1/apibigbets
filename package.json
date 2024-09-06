@@ -1,7 +1,7 @@
 {
-  "name": "apidash",
+  "name": "API BigBets",
   "version": "1.0.0",
-  "description": "Api de conexão com os bancos para execução de SQL e fornecer via json",
+  "description": "API de Gerenciamento BigBets",
   "main": "index.js",
   "engines": {
     "node": "18"
