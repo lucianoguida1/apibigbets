@@ -1,5 +1,5 @@
 {
-  "name": "API BigBets",
+  "name": "API_BigBets",
   "version": "1.0.0",
   "description": "API de Gerenciamento BigBets",
   "main": "index.js",
