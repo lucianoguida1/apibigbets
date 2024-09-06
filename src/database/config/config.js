@@ -6,6 +6,11 @@ module.exports = {
     "storage": "./src/database/storage/database.db",
     "logging": false
   },
+  "production": {
+    "dialect": "sqlite",
+    "storage": "./src/database/storage/database.db",
+    "logging": false
+  },
   "test": {
     "username": "root",
     "password": null,
@@ -14,6 +19,7 @@ module.exports = {
     "dialect": "mysql",
     "logging": false
   },
+  /*
   "production": {
     "username": process.env.DB_USER,
     "password": process.env.DB_PASSWORD,
@@ -30,4 +36,5 @@ module.exports = {
       }
     }
   }
+  */
 }
