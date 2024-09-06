@@ -3,7 +3,9 @@ const express = require('express');
 const routes = require('./routes');
 const cron = require('node-cron');
 const JogoServices = require('./services/RequestServices.js');
+const ReqPServices = require('./services/RequisicaopendenteServices.js');
 const jogoServices = new JogoServices();
+const reqPServices = new ReqPServices();
 
 const RequestController = require('./controllers/RequestController.js');
 
@@ -54,7 +56,8 @@ app.get('/executa/:data?', async (req, res) => {
 
 app.get('/', async (req, res) => {
     let jogos = await jogoServices.pegaEContaRegistros();
-    res.status(200).send({ totalJogos: jogos });
+    let reqP = await reqPServices.pegaEContaRegistros();
+    res.status(200).send({ Requisicoes: jogos, ReqPendentes: reqP});
 })
 
 module.exports = app;
