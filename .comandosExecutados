@@ -20,6 +20,8 @@ npx sequelize-cli db:migrate
 ## Desfazer a Última Migration Executada
 npx sequelize db:migrate:undo --step 3
 
+## Gera uma nova migração
+npx sequelize-cli migration:generate --name add_cols_jogos
 
 
 

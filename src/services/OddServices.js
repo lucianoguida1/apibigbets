@@ -1,4 +1,7 @@
 const Services = require('./Services.js');
+const Regra = require('./RegravalidacoeServices.js');
+
+const regraServices = new Regra();
 
 class OddServices extends Services {
     constructor() {
@@ -21,24 +24,28 @@ class OddServices extends Services {
                     }
                 }
                 if (criaNovo) {
+                    const regra = await regraServices.pegaRegra(String(valor.value), tipoAposta);
                     const odd = await super.criaRegistro({
                         'nome': String(valor.value),
                         'odd': valorOdd,
                         'tipoaposta_id': tipoAposta.id,
                         'jogo_id': jogo.id,
-                        'bet_id': casaDeAposta.id
+                        'bet_id': casaDeAposta.id,
+                        'regra_id': regra.id
                     });
                 }
             }
         } else {
             for (const valor of odds.values) {
                 const valorOdd = parseFloat(valor.odd);
+                const regra = await regraServices.pegaRegra(String(valor.value), tipoAposta);
                 const odd = await super.criaRegistro({
                     'nome': String(valor.value),
                     'odd': valorOdd,
                     'tipoaposta_id': tipoAposta.id,
                     'jogo_id': jogo.id,
-                    'bet_id': casaDeAposta.id
+                    'bet_id': casaDeAposta.id,
+                    'regra_id': regra.id
                 });
             }
         }

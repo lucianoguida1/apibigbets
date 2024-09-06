@@ -3,17 +3,29 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class temporadas extends Model {
+  class Temporada extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      //Não tem o ID
+      Temporada.hasMany(models.Timestemporada, {
+        foreignKey: 'temporada_id'
+      });
+      
+      Temporada.hasMany(models.Jogo, {
+        foreignKey: 'temporada_id'
+      });
+
+      //Tem o ID
+      Temporada.belongsTo(models.Liga, {
+        foreignKey: 'liga_id'
+      });
     }
   }
-  temporadas.init({
+  Temporada.init({
     ano: DataTypes.STRING,
     inicio: DataTypes.DATE,
     fim: DataTypes.DATE,
@@ -24,5 +36,5 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'temporadas',
     paranoid: true,
   });
-  return temporadas;
+  return Temporada;
 };

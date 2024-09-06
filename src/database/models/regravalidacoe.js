@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Tipoaposta extends Model {
+  class Regravalidacoe extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,20 +11,26 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       //Não tem o ID
-      Tipoaposta.hasMany(models.Odd, {
+      Regravalidacoe.hasMany(models.Odd, {
+        foreignKey: 'regra_id'
+      });
+
+      //Tem o ID
+      Regravalidacoe.belongsTo(models.Tipoaposta, {
         foreignKey: 'tipoaposta_id'
       });
     }
   }
-  Tipoaposta.init({
+  Regravalidacoe.init({
     nome: DataTypes.STRING,
-    name: DataTypes.STRING,
-    id_sports: DataTypes.NUMBER
+    regra: DataTypes.STRING,
+    descricao: DataTypes.STRING,
+    tipoaposta_id: DataTypes.INTEGER
   }, {
     sequelize,
-    modelName: 'Tipoaposta',
-    tableName: 'tipoapostas',
-    paranoid: true,
+    modelName: 'regravalidacoe',
+    tableName: 'regravalidacoes',
+    paranoid: true
   });
-  return Tipoaposta;
+  return Regravalidacoe;
 };

@@ -3,17 +3,24 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class pais extends Model {
+  class Pai extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      //Não tem o ID
+      Pai.hasMany(models.Liga, {
+        foreignKey: 'pai_id'
+      });
+
+      Pai.hasMany(models.Time, {
+        foreignKey: 'pai_id'
+      });
     }
   }
-  pais.init({
+  Pai.init({
     nome: DataTypes.STRING,
     code: DataTypes.STRING,
     logo: DataTypes.TEXT
@@ -23,5 +30,5 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'pais',
     paranoid: true,
   });
-  return pais;
+  return Pai;
 };

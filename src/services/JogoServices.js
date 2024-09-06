@@ -4,6 +4,7 @@ const TemporadaServices = require('../services/TemporadaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
+const logTo = require('../utils/logTo.js');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -25,7 +26,6 @@ class JogoServices extends Services {
             const todasTemporadas = await temporadaServices.pegaTodosOsRegistros();
 
             const jogosParaCriar = [];
-            const jogosParaAtualizar = [];
             let jogosInseridos = [];
 
             for (const e of response.data.response) {
@@ -85,6 +85,7 @@ class JogoServices extends Services {
                 await timetemporadaServices.pegaTimeNaTemporada(jogo);
             }
         } catch (error) {
+            logTo(error.message);
             console.log(error);
         }
     }

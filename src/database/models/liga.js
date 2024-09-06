@@ -3,17 +3,25 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Ligas extends Model {
+  class Liga extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      //Não tem o ID
+      Liga.hasMany(models.Temporada, {
+        foreignKey: 'liga_id'
+      });
+
+      //Tem o ID
+      Liga.belongsTo(models.Pai, {
+        foreignKey: 'pai_id'
+      });
     }
   }
-  Ligas.init({
+  Liga.init({
     nome: DataTypes.STRING,
     logo: DataTypes.TEXT,
     id_sports: DataTypes.NUMBER,
@@ -24,5 +32,5 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'ligas',
     paranoid: true,
   });
-  return Ligas;
+  return Liga;
 };

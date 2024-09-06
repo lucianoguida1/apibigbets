@@ -23,6 +23,11 @@ class GolServices extends Services {
                             jogo_id: jogo.id
                         }
                         await super.criaRegistro(gol);
+                        if (score.home != null || score.away != null) {
+                            jogo[period] = score.home > score.away ? 'Casa' :
+                                score.home < score.away ? 'Fora' : 'Empate';
+                            jogo.save();
+                        }
                     }
                 }
             } else {
@@ -38,6 +43,11 @@ class GolServices extends Services {
                         if (registroExistente) {
                             registroExistente.casa = score.home;
                             registroExistente.fora = score.away;
+                            if (score.home != null || score.away != null) {
+                                jogo[period] = score.home > score.away ? 'Casa' :
+                                    score.home < score.away ? 'Fora' : 'Empate';
+                                jogo.save();
+                            }
                             await registroExistente.save();
                         } else {
                             const novoGol = {
