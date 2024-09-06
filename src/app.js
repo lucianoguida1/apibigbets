@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const routes = require('./routes');
 const cron = require('node-cron');
-const JogoServices = require('./services/JogoServices.js');
+const JogoServices = require('./services/RequestServices.js');
 const jogoServices = new JogoServices();
 
 const RequestController = require('./controllers/RequestController.js');
