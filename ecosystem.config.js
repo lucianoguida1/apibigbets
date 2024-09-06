@@ -5,7 +5,7 @@ module.exports = {
             script: 'server.js',
             instances: 1, // Executar apenas uma instância
             exec_mode: 'fork', // Usar modo fork para uma única instância
-            watch: true, // Ativa o monitoramento de alterações
+            //watch: true, // Ativa o monitoramento de alterações
             ignore_watch: [
                 "src/database/storage/",
                 ".env",
