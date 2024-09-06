@@ -13,9 +13,9 @@ module.exports = {
                 "dist/"
             ],
             max_memory_restart: '500M', // Reiniciar se usar mais de 300MB de memória
-            //autorestart: true, // Reiniciar automaticamente em caso de falha
-            //max_restarts: 5, // Limite de reinicializações consecutivas
-            //restart_delay: 5000, // Aguardar 5 segundos antes de reiniciar
+            autorestart: true, // Reiniciar automaticamente em caso de falha
+            max_restarts: 5, // Limite de reinicializações consecutivas
+            restart_delay: 5000, // Aguardar 5 segundos antes de reiniciar
             env: {
                 NODE_ENV: 'production',
             },

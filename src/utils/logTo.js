@@ -4,7 +4,7 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-const logsDir = path.join('/tmp', 'logs');
+const logsDir = path.join(__dirname, 'logs');
 
 // Cria o diretório recursivamente
 if (!fs.existsSync(logsDir)) {
