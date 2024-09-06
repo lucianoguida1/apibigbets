@@ -10,7 +10,9 @@ module.exports = {
                 "src/database/storage/",
                 ".env",
                 "logs/",
-                "dist/"
+                "dist/",
+                "node_modules/",  // Ignora também a pasta node_modules
+                "*.log"  // Ignora todos os arquivos de log
             ],
             max_memory_restart: '500M', // Reiniciar se usar mais de 300MB de memória
             autorestart: true, // Reiniciar automaticamente em caso de falha
