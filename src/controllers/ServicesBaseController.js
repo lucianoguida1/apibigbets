@@ -9,7 +9,7 @@ class ServicesBaseController extends Controller {
         try {
             const modelosRelacionados = ['casa', 'fora', 'gol', 'odd'];
             const jogos = await JogoServices.pegaTodosOsJogos(modelosRelacionados);
-            logTo('iniciando validação de regras odd')
+            logTo('iniciando validação de regras odd');
             for (const jogo of jogos) {
                 const jogoJSON = jogo.toJSON();
                 if (jogo.Odds && jogo.Odds.length > 0) {
@@ -33,6 +33,7 @@ class ServicesBaseController extends Controller {
                     }
                 }
             }
+            logTo('Finalizado validação de regras odd');
         } catch (error) {
             logTo('Erro ao exibir os jogos:', error.mensage);
             console.error('Erro ao exibir os jogos:', error.mensage);
