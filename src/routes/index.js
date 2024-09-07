@@ -9,6 +9,7 @@ module.exports = app => {
         express.json(),
         //consultas,
     );
+
     const dbFilePath = path.join(__dirname, '../database/storage/database.db');
     app.get('/downloaddb', (req, res) => {
         res.download(dbFilePath, 'database.db', (err) => {
@@ -18,19 +19,19 @@ module.exports = app => {
             }
         });
     });
+
     app.get('/executa/:data?', async (req, res) => {
         const data = req.params.data;
 
         if (data) {
-            // A variável "data" foi preenchida
             await request.dadosSport(data);
         } else {
-            // A variável "data" não foi preenchida
-            await request.dadosSport();  // Executa sem o parâmetro "data"
+            await request.dadosSport();
         }
 
         res.status(200).send({ mensagem: 'Ok!' });
     });
+
     app.get('/', async (req, res) => {
         res.status(200).send({ mensagem: 'Ok!' })
     });
