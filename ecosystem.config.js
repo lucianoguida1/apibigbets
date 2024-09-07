@@ -16,7 +16,7 @@ module.exports = {
                 "*.log",  // Ignora todos os arquivos de log
                 ".git",
             ],
-            max_memory_restart: '2048M', // Reiniciar se usar mais de 300MB de memória
+            max_memory_restart: '3072M', // Reiniciar se usar mais de 300MB de memória
             autorestart: true, // Reiniciar automaticamente em caso de falha
             max_restarts: 5, // Limite de reinicializações consecutivas
             restart_delay: 5000, // Aguardar 5 segundos antes de reiniciar
