@@ -12,7 +12,7 @@ const tarefas = () => {
     // Roda a cada minuto
     cron.schedule('0 * * * * *', async () => {
         try {
-            serviceBase.validaRegras();
+            //serviceBase.validaRegras();
         } catch (error) {
             logTo('Erro na tarefa agendada:', error.mesage);
         }

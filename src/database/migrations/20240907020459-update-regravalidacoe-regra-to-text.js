@@ -2,110 +2,48 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Passo 1: Criar uma nova tabela com a coluna `regra` como TEXT
-    await queryInterface.createTable('regravalidacoes_new', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      nome: {
-        type: Sequelize.STRING
-      },
-      regra: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-        defaultValue: null,
-      },
-      descricao: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        defaultValue: null,
-      },
-      tipoaposta_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'tipoapostas', key: 'id' }
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      deletedAt: {
-        allowNull: true,
-        type: Sequelize.DATE
-      }
+    await queryInterface.dropTable('regravalidacoes_new').catch(() => {});
+    await queryInterface.dropTable('regravalidacoes_backup').catch(() => {});
+    // Passo 1: Renomear a coluna antiga 'regra' para 'regra_old'
+    await queryInterface.renameColumn('regravalidacoes', 'regra', 'regra_old');
+
+    // Passo 2: Adicionar a nova coluna 'regra' como TEXT
+    await queryInterface.addColumn('regravalidacoes', 'regra', {
+      type: Sequelize.TEXT,
+      allowNull: true,
+      defaultValue: null,
     });
 
-    // Passo 2: Copiar dados da tabela antiga para a nova tabela
+    // Passo 3: Copiar os dados de 'regra_old' para 'regra'
     await queryInterface.sequelize.query(`
-      INSERT INTO regravalidacoes_new (id, nome, regra, descricao, createdAt, tipoaposta_id, updatedAt, deletedAt)
-      SELECT id, nome, regra, descricao, tipoaposta_id, createdAt, updatedAt, deletedAt FROM regravalidacoes;
+      UPDATE regravalidacoes
+      SET regra = regra_old;
     `);
 
-    // Passo 3: Excluir a tabela antiga
-    await queryInterface.dropTable('regravalidacoes');
-
-    // Passo 4: Renomear a nova tabela para o nome original
-    await queryInterface.renameTable('regravalidacoes_new', 'regravalidacoes');
+    // Passo 4: Remover a coluna antiga 'regra_old'
+    await queryInterface.removeColumn('regravalidacoes', 'regra_old');
   },
 
   down: async (queryInterface, Sequelize) => {
-    // Para reverter, você pode recriar a tabela original com o tipo de dado antigo
+    // Reverter as alterações
 
-    // Criar a tabela antiga de novo
-    await queryInterface.createTable('regravalidacoes_old', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      nome: {
-        type: Sequelize.STRING
-      },
-      regra: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-        defaultValue: null,
-      },
-      descricao: {
-        type: Sequelize.STRING,
-        allowNull: true,
-        defaultValue: null,
-      },
-      tipoaposta_id: {
-        type: Sequelize.INTEGER,
-        references: { model: 'tipoapostas', key: 'id' }
-      },
-      createdAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false
-      },
-      deletedAt: {
-        allowNull: true,
-        type: Sequelize.DATE
-      }
+    // Passo 1: Renomear a coluna 'regra' para 'regra_old'
+    await queryInterface.renameColumn('regravalidacoes', 'regra', 'regra_old');
+
+    // Passo 2: Adicionar a coluna 'regra' de volta como STRING
+    await queryInterface.addColumn('regravalidacoes', 'regra', {
+      type: Sequelize.STRING,
+      allowNull: true,
+      defaultValue: null,
     });
 
-    // Copiar os dados de volta
+    // Passo 3: Copiar os dados de 'regra_old' para 'regra'
     await queryInterface.sequelize.query(`
-      INSERT INTO regravalidacoes_old (id, nome, regra, descricao, tipoaposta_id, createdAt, updatedAt, deletedAt)
-      SELECT id, nome, regra, descricao, tipoaposta_id, createdAt, updatedAt, deletedAt FROM regravalidacoes;
+      UPDATE regravalidacoes
+      SET regra = regra_old;
     `);
 
-    // Excluir a tabela nova
-    await queryInterface.dropTable('regravalidacoes');
-
-    // Renomear de volta
-    await queryInterface.renameTable('regravalidacoes_old', 'regravalidacoes');
+    // Passo 4: Remover a coluna 'regra_old'
+    await queryInterface.removeColumn('regravalidacoes', 'regra_old');
   }
 };
