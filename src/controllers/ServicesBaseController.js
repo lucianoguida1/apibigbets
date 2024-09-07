@@ -2,7 +2,9 @@ require('dotenv').config();
 const Controller = require('./Controller.js');
 const JogoServices = require('../services/JogoServices.js');
 const logTo = require('../utils/logTo.js');
+const { Op } = require('sequelize');
 const { Odd } = require('../database/models');  // Certifique-se de importar o modelo Odd
+const formatMilliseconds = require('../utils/formatMilliseconds.js');
 
 class ServicesBaseController extends Controller {
 
@@ -11,7 +13,8 @@ class ServicesBaseController extends Controller {
             const startTime = new Date();  // Marca o início da execução
 
             const modelosRelacionados = ['casa', 'fora', 'gol', 'odd'];
-            const jogos = await JogoServices.pegaTodosOsJogos(modelosRelacionados);
+            const where = { data: { [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 1)) } };
+            const jogos = await JogoServices.pegaTodosOsJogos(modelosRelacionados,where);
             logTo('Iniciando validação de regras odd');
 
             const oddsToUpdate = [];  // Acumular as atualizações
@@ -42,7 +45,7 @@ class ServicesBaseController extends Controller {
             }
 
             const endTime = new Date();  // Marca o fim da execução
-            const executionTime = (endTime - startTime) / 1000;  // Calcula o tempo em segundos
+            const executionTime = formatMilliseconds((endTime - startTime) / 1000);  // Calcula o tempo em segundos
 
             logTo(`Finalizado validação de regras odd. Tempo de execução: ${executionTime} segundos.`);
         } catch (error) {

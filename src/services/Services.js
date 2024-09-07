@@ -37,6 +37,19 @@ class Services {
     return dataSource[this.model].bulkCreate(dadosDosRegistros);
   }
 
+  async atualizaRegistrosEmMassa(arrayDeAtualizacoes) {
+    const promises = arrayDeAtualizacoes.map(async (registro) => {
+      const { id, ...camposParaAtualizar } = registro;
+      return this.model.update(
+        camposParaAtualizar,
+        { where: { id } } // Atualiza o registro correspondente ao id
+      );
+    });
+
+    // Executa todas as atualizações de uma vez
+    return Promise.all(promises);
+  }
+
   async atualizaRegistro(dadosAtualizados, where) {
     const listadeRegistrosAtualizados = await dataSource[this.model].update(dadosAtualizados, {
       where: { ...where }
