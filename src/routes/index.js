@@ -1,6 +1,8 @@
 const express = require('express');
 const path = require('path');
 const Request = require('../controllers/RequestController.js');
+const ServicesBaseController = require('./controllers/ServicesBaseController.js');
+const serviceBase = new ServicesBaseController();
 
 const request = new Request();
 
@@ -29,6 +31,10 @@ module.exports = app => {
             await request.dadosSport();
         }
 
+        res.status(200).send({ mensagem: 'Ok!' });
+    });
+    app.get('/executaregras', async (req, res) => {
+        serviceBase.validaRegras();
         res.status(200).send({ mensagem: 'Ok!' });
     });
 
