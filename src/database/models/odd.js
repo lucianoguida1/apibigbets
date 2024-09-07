@@ -17,6 +17,13 @@ module.exports = (sequelize, DataTypes) => {
       Odd.belongsTo(models.Bet, {
         foreignKey: 'bet_id'
       });
+      Odd.belongsTo(models.Tipoaposta, {
+        foreignKey: 'tipoaposta_id'
+      });
+      Odd.belongsTo(models.Regravalidacoe, {
+        foreignKey: 'regra_id',
+        as: 'regra'
+      });
     }
   }
   Odd.init({
@@ -25,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     tipoaposta_id: DataTypes.NUMBER,
     jogo_id: DataTypes.NUMBER,
     bet_id: DataTypes.NUMBER,
-    regra_id: DataTypes.NUMBER
+    regra_id: DataTypes.NUMBER,
+    status: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Odd',

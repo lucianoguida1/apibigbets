@@ -10,6 +10,7 @@ class OddServices extends Services {
 
     async pegaOdd(tipoAposta, jogo, casaDeAposta, odds) {
         const oddsDoJogo = await super.pegaTodosOsRegistros({ 'jogo_id': jogo.id, 'tipoaposta_id': tipoAposta.id });
+        const regras = await regraServices.pegaTodosOsRegistros();
         if (oddsDoJogo.length > 0) {
             for (const valor of odds.values) {
                 let criaNovo = true;
@@ -24,7 +25,8 @@ class OddServices extends Services {
                     }
                 }
                 if (criaNovo) {
-                    const regra = await regraServices.pegaRegra(String(valor.value), tipoAposta);
+                    let regra = regras.find(regra => regra.nome === String(valor.value) && regra.tipoaposta_id === tipoAposta.id)
+                        || await regraServices.pegaRegra(String(valor.value), tipoAposta);
                     const odd = await super.criaRegistro({
                         'nome': String(valor.value),
                         'odd': valorOdd,
@@ -38,7 +40,8 @@ class OddServices extends Services {
         } else {
             for (const valor of odds.values) {
                 const valorOdd = parseFloat(valor.odd);
-                const regra = await regraServices.pegaRegra(String(valor.value), tipoAposta);
+                let regra = regras.find(regra => regra.nome === String(valor.value) && regra.tipoaposta_id === tipoAposta.id)
+                    || await regraServices.pegaRegra(String(valor.value), tipoAposta);
                 const odd = await super.criaRegistro({
                     'nome': String(valor.value),
                     'odd': valorOdd,

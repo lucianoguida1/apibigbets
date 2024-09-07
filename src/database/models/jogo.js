@@ -11,25 +11,13 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       //Não tem o ID
-      Jogo.hasMany(models.Gol, {
-        foreignKey: 'jogo_id'
-      });
-      Jogo.hasMany(models.Odd, {
-        foreignKey: 'jogo_id'
-      });
+      Jogo.hasMany(models.Gol, {foreignKey: 'jogo_id'});
+      Jogo.hasMany(models.Odd, {foreignKey: 'jogo_id'});
 
       //Tem o ID
-      Jogo.belongsTo(models.Time, {
-        foreignKey: 'casa_id',
-        as: 'casa'
-      });
-      Jogo.belongsTo(models.Time, {
-        foreignKey: 'fora_id',
-        as: 'fora'
-      });
-      Jogo.belongsTo(models.Temporada, {
-        foreignKey: 'temporada_id'
-      });
+      Jogo.belongsTo(models.Time, {foreignKey: 'casa_id',as: 'casa'});
+      Jogo.belongsTo(models.Time, {foreignKey: 'fora_id',as: 'fora'});
+      Jogo.belongsTo(models.Temporada, {foreignKey: 'temporada_id'});
     }
   }
   Jogo.init({

@@ -3,10 +3,11 @@ const Services = require('./Services.js');
 
 class RegravalidacoeServices extends Services {
     constructor() {
-        super('regravalidacoe');
+        super('Regravalidacoe');
     }
 
     async pegaRegra(nome,tipoAposta) {
+        console.log('aaaa')
         try {
             let regra = await super.pegaUmRegistro({where: {'nome': nome, 'tipoaposta_id': tipoAposta.id}});
             if(!regra){

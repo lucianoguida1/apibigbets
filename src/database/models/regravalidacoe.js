@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     tipoaposta_id: DataTypes.INTEGER
   }, {
     sequelize,
-    modelName: 'regravalidacoe',
+    modelName: 'Regravalidacoe',
     tableName: 'regravalidacoes',
     paranoid: true
   });

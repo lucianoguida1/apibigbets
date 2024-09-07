@@ -99,7 +99,7 @@ class RequestController extends Controller {
                                 logTo(`Erro ao requisitar página: ${page}`);
                                 break;
                             }
-                        }else{
+                        } else {
                             reqPendente.destroy();
                         }
                         endTime = Date.now();
@@ -110,8 +110,8 @@ class RequestController extends Controller {
                     }
                 }
             } catch (error) {
-                logTo(`Erro durante a requisição: ${error.message}`);
-                console.error(`Erro durante a requisição: ${error.message}`);
+                logTo('Erro durante a requisição:', error.message);
+                console.error('Erro durante a requisição:', error.message);
             } finally {
                 let endTime = Date.now();
                 let duration = endTime - startTime;

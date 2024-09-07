@@ -5,6 +5,8 @@ const TimeServices = require('../services/TimeServices.js');
 const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const logTo = require('../utils/logTo.js');
+const dataSource = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Tipoaposta } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -16,6 +18,63 @@ const timetemporadaServices = new TimestemporadaServices();
 class JogoServices extends Services {
     constructor() {
         super('Jogo');
+    }
+
+    // Função para buscar todos os jogos com seus relacionamentos e filtro 'where'
+    static async pegaTodosOsJogos(modelosRelacionados = [], filtroWhere = {}) {
+        try {
+            // Defina os relacionamentos disponíveis para inclusão
+            const relacionamentos = [
+                {
+                    model: Time,
+                    as: 'casa',
+                    required: modelosRelacionados.includes('casa'), // Se incluído no array, será requerido
+                },
+                {
+                    model: Time,
+                    as: 'fora',
+                    required: modelosRelacionados.includes('fora'),
+                },
+                {
+                    model: Liga,
+                    required: modelosRelacionados.includes('liga'),
+                },
+                {
+                    model: Odd,
+                    required: modelosRelacionados.includes('odd'),
+                    include: [
+                        {
+                            model: Tipoaposta,
+                            required: true,
+                        },
+                        {
+                            model: Regravalidacoe,
+                            require: true,
+                            as: 'regra'
+                        }
+                    ]
+                },
+                {
+                    model: Gol,
+                    required: modelosRelacionados.includes('gol'),
+                }
+            ];
+
+            // Filtrar os relacionamentos que serão usados, considerando se foram incluídos no array
+            const relacionamentosFiltrados = relacionamentos.filter(rel => modelosRelacionados.includes(rel.as) || rel.required === true);
+
+            // Realiza a consulta com os relacionamentos filtrados
+            const jogos = await Jogo.findAll({
+                where: filtroWhere, // Aplica o filtro passado por parâmetro
+                include: relacionamentosFiltrados, // Inclui apenas os relacionamentos filtrados
+                order: [['data', 'DESC']], // Ordena os jogos pela data
+            });
+
+            return jogos;
+        } catch (error) {
+            console.error('Erro ao buscar os jogos:', error);
+            throw error;
+        }
     }
 
     async adicionaJogos(response) {
@@ -52,7 +111,7 @@ class JogoServices extends Services {
                         'id_sports': e.fixture.id,
                     }
                 });
-                
+
                 if (!jogo) {
                     jogosParaCriar.push({
                         'casa_id': casa.id,
@@ -78,7 +137,7 @@ class JogoServices extends Services {
             if (jogosParaCriar.length > 0) {
                 jogosInseridos = await super.criaVariosRegistros(jogosParaCriar);
             }
-            
+
             for (const jogo of jogosInseridos) {
                 const e = response.data.response.find(r => r.fixture.id === jogo.id_sports);
                 await golServices.adicionaGols(e.score, jogo);
