@@ -6,6 +6,7 @@ module.exports = {
             instances: 1, // Executar apenas uma instância
             exec_mode: 'fork', // Usar modo fork para uma única instância
             watch: false, // Ativa o monitoramento de alterações
+            node_args: '--trace-deprecation',
             ignore_watch: [
                 "src/database/storage/",
                 ".env",
@@ -21,9 +22,6 @@ module.exports = {
             restart_delay: 5000, // Aguardar 5 segundos antes de reiniciar
             env: {
                 NODE_ENV: 'production',
-            },
-            env_development: {
-                NODE_ENV: 'development',
             }
         },
     ],
