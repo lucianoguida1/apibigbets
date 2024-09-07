@@ -11,7 +11,6 @@ class ServicesBaseController extends Controller {
             const jogos = await JogoServices.pegaTodosOsJogos(modelosRelacionados);
             logTo('iniciando validação de regras odd');
             for (const jogo of jogos) {
-                const jogoJSON = jogo.toJSON();
                 if (jogo.Odds && jogo.Odds.length > 0) {
                     for (const odd of jogo.Odds) {
                         if (odd.regra && odd.regra.regra != null) {
