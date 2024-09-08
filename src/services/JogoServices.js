@@ -14,14 +14,13 @@ const temporadaServices = new TemporadaServices();
 const golServices = new GolServices();
 const timetemporadaServices = new TimestemporadaServices();
 
-
 class JogoServices extends Services {
     constructor() {
         super('Jogo');
     }
 
     // Função para buscar todos os jogos com seus relacionamentos e filtro 'where'
-    static async pegaTodosOsJogos(modelosRelacionados = [], filtroWhere = {}) {
+    static async pegaTodosOsJogos(modelosRelacionados = [], filtroWhere = {}, limit = 100, offset = 0) {
         try {
             // Defina os relacionamentos disponíveis para inclusão
             const relacionamentos = [
@@ -44,10 +43,6 @@ class JogoServices extends Services {
                     required: modelosRelacionados.includes('odd'),
                     include: [
                         {
-                            model: Tipoaposta,
-                            required: true,
-                        },
-                        {
                             model: Regravalidacoe,
                             require: true,
                             as: 'regra'
@@ -68,6 +63,8 @@ class JogoServices extends Services {
                 where: filtroWhere, // Aplica o filtro passado por parâmetro
                 include: relacionamentosFiltrados, // Inclui apenas os relacionamentos filtrados
                 order: [['data', 'DESC']], // Ordena os jogos pela data
+                limit, // Limite de registros por página
+                offset // Deslocamento da paginação
             });
 
             return jogos;
@@ -76,6 +73,7 @@ class JogoServices extends Services {
             throw error;
         }
     }
+
 
     async adicionaJogos(response) {
         try {
@@ -99,7 +97,7 @@ class JogoServices extends Services {
                     || await ligaServices.pegaLiga(e.league);
 
                 // Busca a temporada no cache ou cria se não existir
-                let temporadaKey = `${e.league.id}_${liga.id}`;
+                //let temporadaKey = ${e.league.id}_${liga.id};
                 let temporada = todasTemporadas.find(t => t.id_league === liga.id && t.ano === e.league.season)
                     || await temporadaServices.pegaTemporada(e.league, liga);
 
@@ -149,6 +147,5 @@ class JogoServices extends Services {
         }
     }
 }
-
 
 module.exports = JogoServices;

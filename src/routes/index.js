@@ -30,7 +30,6 @@ module.exports = app => {
         } else {
             await request.dadosSport();
         }
-
         res.status(200).send({ mensagem: 'Ok!' });
     });
     app.get('/executaregras', async (req, res) => {

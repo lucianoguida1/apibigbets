@@ -6,7 +6,7 @@ module.exports = {
             instances: 1, // Executar apenas uma instância
             exec_mode: 'fork', // Usar modo fork para uma única instância
             watch: false, // Ativa o monitoramento de alterações
-            node_args: '--trace-deprecation',
+            node_args: '--trace-deprecation --max-old-space-size=2048',
             ignore_watch: [
                 "src/database/storage/",
                 ".env",
