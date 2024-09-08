@@ -1,3 +1,5 @@
+const logTo = require('./src/utils/logTo.js');
+
 module.exports = {
     apps: [
         {
@@ -22,6 +24,12 @@ module.exports = {
             restart_delay: 5000, // Aguardar 5 segundos antes de reiniciar
             env: {
                 NODE_ENV: 'production',
+            },
+            restart: () => {
+                logTo('A aplicação foi reiniciada!');
+            },
+            error: () => {
+                logTo('Ocorreu um erro na aplicação!');
             }
         },
     ],
