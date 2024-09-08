@@ -54,7 +54,9 @@ class RequestController extends Controller {
                 let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
                     const totalPaginas = response.data.paging.total;
-                    await this.adicionaJogos(date);
+                    if (reqPendente.pagina == 1) {
+                        await this.adicionaJogos(date);
+                    }
                     const todasLigas = await ligaServices.pegaTodosOsRegistros();
                     const todosJogos = await jogoServices.pegaTodosOsRegistros({ 'data': date });
                     const todasCasasAposta = await betServices.pegaTodosOsRegistros();
@@ -80,10 +82,12 @@ class RequestController extends Controller {
                                         || await betServices.pegaBet(bookmaker);
                                     //LOOP RODANDOS AS ODDS
                                     for (const modeloAposta of bookmaker.bets) {
-                                        const tipoAposta = todosTipoAposta.find(l => l.id_sports === modeloAposta.id)
-                                            || await tipoApostaServices.pegaTipoAposta(modeloAposta);
-                                        await oddServices.pegaOdd(tipoAposta, jogo, casaAposta, modeloAposta);
-                                    }
+                                        if(!todosTipoAposta.some(l => l.id_sports === modeloAposta.id)){
+                                            const newTipoAposta = await tipoApostaServices.pegaTipoAposta(modeloAposta);
+                                            todosTipoAposta.push(newTipoAposta)
+                                        }
+                                    }                                    
+                                    await oddServices.pegaOdd(todosTipoAposta, jogo, casaAposta, bookmaker.bets);
                                 }
                             } else {
                                 logTo('Jogo não encontrado! fixture/jogo:' + e.fixture.id);

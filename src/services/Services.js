@@ -40,7 +40,7 @@ class Services {
   async atualizaRegistrosEmMassa(arrayDeAtualizacoes) {
     const promises = arrayDeAtualizacoes.map(async (registro) => {
       const { id, ...camposParaAtualizar } = registro;
-      return this.model.update(
+      return dataSource[this.model].update(
         camposParaAtualizar,
         { where: { id } } // Atualiza o registro correspondente ao id
       );
