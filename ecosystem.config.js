@@ -25,11 +25,13 @@ module.exports = {
             env: {
                 NODE_ENV: 'production',
             },
-            restart: () => {
-                logTo('A aplicação foi reiniciada!');
-            },
-            error: () => {
-                logTo('Ocorreu um erro na aplicação!');
+            events: {
+                restart: () => {
+                    logTo('A aplicação foi reiniciada!');
+                },
+                error: () => {
+                    logTo('Ocorreu um erro na aplicação!');
+                }
             }
         },
     ],
