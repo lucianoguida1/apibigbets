@@ -5,12 +5,6 @@ const tarefaCron = require('./tarefasCron.js');
 const app = express();
 routes(app);
 
-
-const Req = require('./controllers/RequestController.js')
-const req = new Req();
-req.dadosSport();
-
-
 // EXECUTA AS TAREFAS CRONS
 tarefaCron();
 
