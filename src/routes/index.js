@@ -6,6 +6,7 @@ const ServicesBaseController = require('../controllers/ServicesBaseController.js
 const regraValidacao = require('./regraValidacao.js');
 const odd = require('./odd.js');
 const servicesBase = require('./services.js')
+const requestRouter = require('./request.js')
 
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
@@ -16,6 +17,7 @@ module.exports = app => {
         regraValidacao,
         odd,
         servicesBase,
+        requestRouter
     );
 
     const dbFilePath = path.join(__dirname, '../database/storage/database.db');
