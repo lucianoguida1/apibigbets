@@ -1,15 +1,17 @@
 const express = require('express');
 const path = require('path');
-const Request = require('../controllers/RequestController.js');
+const RequestController = require('../controllers/RequestController.js');
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
-const serviceBase = new ServicesBaseController();
 
-const request = new Request();
+const regraValidacao = require('./regraValidacao.js');
+
+const serviceBase = new ServicesBaseController();
+const request = new RequestController();
 
 module.exports = app => {
     app.use(
         express.json(),
-        //consultas,
+        regraValidacao,
     );
 
     const dbFilePath = path.join(__dirname, '../database/storage/database.db');
