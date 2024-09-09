@@ -38,7 +38,7 @@ class RequestController extends Controller {
         super(requestServices);
     }
 
-    async dadosSport(date = toDay(1)) {
+    async dadosSport(date = toDay()) {
         if (await requestServices.podeRequisitar()) {
             const startTime = Date.now();
             logTo('Iniciando dadosSport...');
