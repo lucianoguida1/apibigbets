@@ -21,9 +21,23 @@ class ServicesBaseController extends Controller {
             const idJogos = new Set();
 
             if (regras.length > 0) {
+                // Data de ontem até hoje
+                const startOfYesterday = new Date();
+                startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+                startOfYesterday.setHours(0, 0, 0, 0);
+
+                const endOfToday = new Date();
+                endOfToday.setHours(23, 59, 59, 999);
                 // Processa as odds para todos os jogos em lote
                 for (const regra of regras) {
-                    const odds = await regra.getOdds();
+                    // Adiciona filtro de createdAt entre ontem e hoje
+                    const odds = await regra.getOdds({
+                        where: {
+                            createdAt: {
+                                [Op.between]: [startOfYesterday, endOfToday]
+                            }
+                        }
+                    });
 
                     // Adiciona os jogos relacionados às odds no Set
                     odds.forEach(odd => idJogos.add(odd.jogo_id));
