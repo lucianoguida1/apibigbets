@@ -6,12 +6,28 @@ const logTo = require('../utils/logTo.js');
 const { Op } = require('sequelize');
 const { Odd } = require('../database/models');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
+const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
+const RequestServices = require('../services/RequestServices.js');
+const toDay = require('../utils/toDay.js');
 
 const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
+const requisicaopendenteServices = new RequisicaopendenteServices();
+const requestServices = new RequestServices();
 
 class ServicesBaseController extends Controller {
-
+    async statusBasico(req, res) {
+        try {
+            let dados = {};
+            dados.requisicaoPendente = await requisicaopendenteServices.pegaTodosOsRegistros();
+            dados.RequisicaoSports = await requestServices.pegaRegistrosDeHoje();
+            dados.jogosHoje = await jogoServices.pegaEContaRegistros({where: {'data': toDay()}});
+            return res.status(200).json(dados);
+        } catch (error) {
+            console.log(error)
+            return res.status(500).json({ erro: error.message });
+        }
+    }
     async validaRegras() {
         try {
             const startTime = new Date();  // Marca o início da execução

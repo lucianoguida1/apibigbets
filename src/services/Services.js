@@ -1,4 +1,5 @@
 const dataSource = require('../database/models');
+const { Op } = require('sequelize');
 
 class Services {
   constructor(nomeDoModel) {
@@ -16,11 +17,16 @@ class Services {
   async pegaUmRegistroPorId(id) {
     return dataSource[this.model].findByPk(id);
   }
-  /*
-  async pegaUmRegistro(where) {
-    return dataSource[this.model].findOne({ where: { ...where } });
+
+  async pegaRegistrosDeHoje(date = new Date()) {
+    // Define o início e o final do dia
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);  // Início do dia (meia-noite)
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);  // Final do dia
+    return dataSource[this.model].findAll({ where: { createdAt: { [Op.between]: [startOfDay, endOfDay] } } });
   }
-  */
+
   async pegaUmRegistro(options) {
     return dataSource[this.model].findOne({ ...options });
   }

@@ -6,6 +6,7 @@ class RequestServices extends Services {
         super('Request');
     }
 
+
     async podeRequisitar() {
         // Pega o registro mais recente
         const request = await super.pegaUmRegistro({

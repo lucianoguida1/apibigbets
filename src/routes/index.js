@@ -4,7 +4,8 @@ const RequestController = require('../controllers/RequestController.js');
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 
 const regraValidacao = require('./regraValidacao.js');
-const odd = require('./odd.js')
+const odd = require('./odd.js');
+const servicesBase = require('./services.js')
 
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
@@ -14,6 +15,7 @@ module.exports = app => {
         express.json(),
         regraValidacao,
         odd,
+        servicesBase,
     );
 
     const dbFilePath = path.join(__dirname, '../database/storage/database.db');
