@@ -1,4 +1,5 @@
 const Services = require('./Services.js');
+const { Op } = require('sequelize');
 const LigaServices = require('../services/LigaServices.js');
 const TemporadaServices = require('../services/TemporadaServices.js');
 const TimeServices = require('../services/TimeServices.js');
@@ -7,6 +8,7 @@ const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const logTo = require('../utils/logTo.js');
 const dataSource = require('../database/models');
 const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Tipoaposta } = require('../database/models');
+const { where } = require('sequelize');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -18,7 +20,36 @@ class JogoServices extends Services {
     constructor() {
         super('Jogo');
     }
-
+    async jogoEstruturadoIds(ids) {
+        const jogos = await Jogo.findAll({
+            where: {
+                id: {
+                    [Op.in]: ids
+                }
+            },
+            include: [
+                {
+                    model: Time,
+                    as: 'casa',
+                    required: true,
+                },
+                {
+                    model: Time,
+                    as: 'fora',
+                    required: true,
+                },
+                {
+                    model: Temporada,
+                    required: true,
+                },
+                {
+                    model: Gol,
+                    required: true
+                }
+            ]
+        });
+        return jogos;
+    }
     // Função para buscar todos os jogos com seus relacionamentos e filtro 'where'
     static async pegaTodosOsJogos(modelosRelacionados = [], filtroWhere = {}, limit = 100, offset = 0) {
         try {

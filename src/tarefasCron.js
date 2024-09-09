@@ -10,9 +10,9 @@ const tarefas = () => {
 
     //// VALIDA SE AS ODD ATENDEU AS REGRAS
     // Roda a cada minuto
-    cron.schedule('0 * * * * *', async () => {
+    cron.schedule('0 */10 * * * *', async () => {
         try {
-            //serviceBase.validaRegras();
+            serviceBase.validaRegras();
         } catch (error) {
             logTo('Erro na tarefa agendada:', error.mesage);
         }
