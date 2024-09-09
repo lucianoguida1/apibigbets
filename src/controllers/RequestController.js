@@ -112,6 +112,8 @@ class RequestController extends Controller {
                     if (duration > ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
                         logTo(`Exedido tempo de execução. Tempo Maximo: ${formatMilliseconds((process.env.TEMPO_EXECUCAO || 1800000))}.. tempo em execução ${formatMilliseconds(duration)}..`);
                     }
+                }else{
+                    logTo(`Erro ao requisitar página: ${page}`);
                 }
             } catch (error) {
                 logTo('Erro durante a requisição:', error.message);
