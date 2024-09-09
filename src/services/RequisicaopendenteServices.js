@@ -1,4 +1,5 @@
 const Services = require('./Services.js');
+const { Op } = require('sequelize');
 
 class RequisicaopendenteServices extends Services {
     constructor() {
