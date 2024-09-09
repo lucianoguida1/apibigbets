@@ -19,6 +19,7 @@ class ServicesBaseController extends Controller {
 
             const regras = await regraServices.pegaTodosOsRegistros({ 'regra': { [Op.ne]: null } });
             const idJogos = new Set();
+            let totalAtualizado = 0;  // Variável para acumular o número de linhas atualizadas
 
             if (regras.length > 0) {
                 // Data de ontem até hoje
@@ -28,6 +29,7 @@ class ServicesBaseController extends Controller {
 
                 const endOfToday = new Date();
                 endOfToday.setHours(23, 59, 59, 999);
+
                 // Processa as odds para todos os jogos em lote
                 for (const regra of regras) {
                     // Adiciona filtro de createdAt entre ontem e hoje
@@ -65,18 +67,20 @@ class ServicesBaseController extends Controller {
 
                             // Atualiza em lotes de, por exemplo, 100 registros
                             if (oddsToUpdate.length >= 100) {
-                                await Odd.bulkCreate(oddsToUpdate, {
+                                const result = await Odd.bulkCreate(oddsToUpdate, {
                                     updateOnDuplicate: ['status']  // Atualizar o campo status quando houver duplicata
                                 });
+                                totalAtualizado += result.length;  // Acumula o número de linhas atualizadas
                                 oddsToUpdate.length = 0;  // Limpa o array após o lote ser processado
                             }
                         }
 
                         // Atualiza as odds restantes que não completaram o lote
                         if (oddsToUpdate.length > 0) {
-                            await Odd.bulkCreate(oddsToUpdate, {
+                            const result = await Odd.bulkCreate(oddsToUpdate, {
                                 updateOnDuplicate: ['status']
                             });
+                            totalAtualizado += result.length;  // Acumula o número de linhas atualizadas
                         }
                     }
                 }
@@ -84,7 +88,7 @@ class ServicesBaseController extends Controller {
 
             const endTime = new Date();  // Marca o fim da execução
             const executionTime = formatMilliseconds(endTime - startTime);
-            logTo(`Finalizado a validação de regras. Tempo de execução: ${executionTime}.`);
+            logTo(`Finalizado a validação de regras. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
         } catch (error) {
             logTo('Erro ao validar os regras:', error.message);
             console.error('Erro ao validar os regras:', error.message);

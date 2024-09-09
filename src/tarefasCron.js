@@ -9,8 +9,8 @@ const request = new RequestController();
 const tarefas = () => {
 
     //// VALIDA SE AS ODD ATENDEU AS REGRAS
-    // Roda a cada minuto
-    cron.schedule('0 */10 * * * *', async () => {
+    // Roda a cada 90 minuto
+    cron.schedule('*/90 * * * *', async () => {
         try {
             serviceBase.validaRegras();
         } catch (error) {
