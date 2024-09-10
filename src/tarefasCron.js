@@ -10,11 +10,17 @@ const tarefas = () => {
 
     //// VALIDA SE AS ODD ATENDEU AS REGRAS
     // Roda a cada 90 minuto
-    cron.schedule('*/90 * * * *', async () => {
+    let counter = 0;  // Contador para controlar o intervalo de 90 minutos
+
+    cron.schedule('*/30 * * * *', async () => {
         try {
-            serviceBase.validaRegras();
+            counter += 30;  // Incrementa o contador a cada 30 minutos
+            if (counter >= 90) {
+                serviceBase.validaRegras();  // Executa a tarefa
+                counter = 0;  // Reinicia o contador
+            }
         } catch (error) {
-            logTo('Erro na tarefa agendada:', error.mesage);
+            logTo('Erro na tarefa agendada:', error.message);
         }
     });
 
