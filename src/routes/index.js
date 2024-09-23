@@ -7,6 +7,8 @@ const regraValidacao = require('./regraValidacao.js');
 const odd = require('./odd.js');
 const servicesBase = require('./services.js')
 const requestRouter = require('./request.js')
+const estrategia = require('./estrategia.js')
+const regra = require('./regra.js')
 
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
@@ -17,7 +19,9 @@ module.exports = app => {
         regraValidacao,
         odd,
         servicesBase,
-        requestRouter
+        requestRouter,
+        estrategia,
+        regra,
     );
 
     const dbFilePath = path.join(__dirname, '../database/storage/database.db');
