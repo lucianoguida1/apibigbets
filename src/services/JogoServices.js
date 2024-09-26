@@ -7,7 +7,7 @@ const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const logTo = require('../utils/logTo.js');
 const dataSource = require('../database/models');
-const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Tipoaposta } = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Pai } = require('../database/models');
 const { where } = require('sequelize');
 
 const ligaServices = new LigaServices();
@@ -20,6 +20,106 @@ class JogoServices extends Services {
     constructor() {
         super('Jogo');
     }
+
+    async filtrarJogosPorRegra(regra) {
+        const whereJogo = {};
+        const include = [
+            {
+                model: Time,
+                as: 'casa',
+                where: {},
+            },
+            {
+                model: Time,
+                as: 'fora',
+                where: {},
+            }
+        ];
+
+        // Filtro por Pais (pai_id) - Acessando através de Liga > Temporada > Jogo
+        if (regra.pai_id) {
+            include.push({
+                model: Temporada,
+                required: true, // Esta associação é obrigatória
+                include: [
+                    {
+                        model: Liga,
+                        required: true, // Liga obrigatória
+                        include: [
+                            {
+                                model: Pai,
+                                required: true, // Pais obrigatório
+                                where: { id: regra.pai_id } // Filtro por pais através da Liga
+                            }
+                        ]
+                    }
+                ]
+            });
+        }
+
+        // Filtro por Liga (liga_id) - Acessando via Temporada
+        if (regra.liga_id) {
+            include.push({
+                model: Temporada,
+                required: true, // Temporada obrigatória
+                include: [
+                    {
+                        model: Liga,
+                        required: true, // Liga obrigatória
+                        where: { id: regra.liga_id } // Filtro por Liga
+                    }
+                ]
+            });
+        }
+
+        // Filtro por Temporada (temporada_id)
+        if (regra.temporada_id) {
+            include.push({
+                model: Temporada,
+                required: true, // Temporada obrigatória
+                where: { id: regra.temporada_id } // Filtro por Temporada
+            });
+        }
+
+        // Filtro por Time (time_id)
+        if (regra.time_id) {
+            whereJogo[Op.or] = [
+                { casa_id: regra.time_id },
+                { fora_id: regra.time_id }
+            ];
+        }
+
+        if (regra.regravalidacoe_id) {
+            include.push({
+                model: Odd,
+                required: true, // Esta associação é obrigatória
+                where: {
+                    odd: {
+                        [Op.between]: [regra.oddmin, regra.oddmax]
+                    }
+                },
+                include: [
+                    {
+                        model: Regravalidacoe,
+                        required: true, // Liga obrigatória
+                        as: 'regra',
+                        where: {
+                            id: regra.regravalidacoe_id
+                        } // Filtro por pais através da Liga
+                    }
+                ]
+            });
+        }
+
+        // Buscar jogos com base nos filtros da regra
+        const jogos = await Jogo.findAll({
+            where: whereJogo,
+            include
+        });
+        
+        return jogos;
+    }
+
     async jogoEstruturadoIds(ids) {
         const jogos = await Jogo.findAll({
             where: {

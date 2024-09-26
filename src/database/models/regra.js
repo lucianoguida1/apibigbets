@@ -18,8 +18,10 @@ module.exports = (sequelize, DataTypes) => {
     liga_id: DataTypes.NUMBER,
     temporada_id: DataTypes.NUMBER,
     time_id: DataTypes.NUMBER,
-    odd_id: DataTypes.NUMBER,    
-    estrategia_id: DataTypes.NUMBER
+    regravalidacoe_id: DataTypes.NUMBER,    
+    estrategia_id: DataTypes.NUMBER,
+    oddmin: DataTypes.NUMBER,
+    oddmax: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Regra',

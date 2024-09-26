@@ -25,12 +25,23 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
-      odd_id: {
+      regravalidacoe_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      oddmin: {
+        type: Sequelize.FLOAT,
+        allowNull: false,
+        defaultValue: 1
+      },
+      oddmax: {
+        type: Sequelize.FLOAT,
+        allowNull: false,
+        defaultValue: 2
+      },
       estrategia_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'estrategias',
           key: 'id',
