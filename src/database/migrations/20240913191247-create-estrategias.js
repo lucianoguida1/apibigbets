@@ -20,11 +20,11 @@ module.exports = {
         defaultValue: 0,
       },
       totalacerto: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         defaultValue: 0,
       },
       totalerro: {
-        type: Sequelize.NUMBER,
+        type: Sequelize.INTEGER,
         defaultValue: 0,
       },
       createdAt: {
