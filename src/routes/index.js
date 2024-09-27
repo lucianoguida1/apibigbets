@@ -1,5 +1,5 @@
 const express = require('express');
-const path = require('path');
+
 const RequestController = require('../controllers/RequestController.js');
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 
@@ -23,16 +23,6 @@ module.exports = app => {
         estrategia,
         regra,
     );
-
-    const dbFilePath = path.join(__dirname, '../database/storage/database.db');
-    app.get('/downloaddb', (req, res) => {
-        res.download(dbFilePath, 'database.db', (err) => {
-            if (err) {
-                console.error('Erro ao fazer download da base de dados:', err);
-                res.status(500).send('Erro ao baixar o banco de dados');
-            }
-        });
-    });
 
     app.get('/executa/:data?', async (req, res) => {
         const data = req.params.data;

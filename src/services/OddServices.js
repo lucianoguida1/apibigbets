@@ -17,7 +17,13 @@ class OddServices extends Services {
         for (const odd of odds) {
             const tipoAposta = tipoApostas.find(e => e.name === odd.name);
             for (const value of odd.values) {
-                const regra = regras.find(e => e.nome === value.value);
+                let regra = regras.find(e => e.nome === value.value && e.tipoaposta_id == tipoAposta.id);
+                if(!regra){
+                    regra = regraServices.criaRegistro({
+                        nome: value.value,
+                        tipoaposta_id: tipoAposta.id
+                    });
+                }
                 const valorOdd = parseFloat(value.odd);
 
                 const oddDoJogo = oddsDoJogo.find(e => String(e.nome) == value.value && e.tipoaposta_id == tipoAposta.id);

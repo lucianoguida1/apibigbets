@@ -5,14 +5,15 @@ const TemporadaServices = require('../services/TemporadaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
+const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
 const dataSource = require('../database/models');
 const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Pai } = require('../database/models');
-const { where } = require('sequelize');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
 const temporadaServices = new TemporadaServices();
+const tipoapostaServices = new TipoapostaServices();
 const golServices = new GolServices();
 const timetemporadaServices = new TimestemporadaServices();
 
@@ -112,11 +113,31 @@ class JogoServices extends Services {
         }
 
         // Buscar jogos com base nos filtros da regra
-        const jogos = await Jogo.findAll({
+        const results = await Jogo.findAll({
             where: whereJogo,
             include
         });
-        
+        let jogos = [];
+        if (results.length > 0) {
+            for (const result of results) {
+                const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id))
+                jogos.push({
+                    id: result.id,
+                    casa: result.casa.nome,
+                    fora: result.fora.nome,
+                    placar: result.gols_casa + '-' + result.gols_fora,
+                    data: result.data,
+                    datahora: result.datahora,
+                    temporada: result.Temporada.ano,
+                    liga: result.Temporada.Liga.nome,
+                    pais: result.Temporada.Liga.Pai.nome,
+                    tipoAposta: tipoAposta.name,
+                    nome: result.Odds[0].nome,
+                    odd: result.Odds[0].odd,
+                    statusOdd: result.Odds[0].status
+                });
+            }
+        }
         return jogos;
     }
 
