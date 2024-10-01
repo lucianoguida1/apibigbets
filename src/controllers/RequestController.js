@@ -10,6 +10,7 @@ const RequisicaopendenteServices = require('../services/RequisicaopendenteServic
 const axios = require('axios');
 const https = require('https');
 const logTo = require('../utils/logTo.js');
+const salvaJson = require('../utils/salvaJsonArquivo.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const toDay = require('../utils/toDay.js');
 
@@ -53,6 +54,7 @@ class RequestController extends Controller {
             try {
                 let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
+                    salvaJson('odds', page, response.data);
                     const totalPaginas = response.data.paging.total;
                     if (reqPendente.pagina == 1) {
                         await this.adicionaJogos(date);
@@ -82,11 +84,11 @@ class RequestController extends Controller {
                                         || await betServices.pegaBet(bookmaker);
                                     //LOOP RODANDOS AS ODDS
                                     for (const modeloAposta of bookmaker.bets) {
-                                        if(!todosTipoAposta.some(l => l.id_sports === modeloAposta.id)){
+                                        if (!todosTipoAposta.some(l => l.id_sports === modeloAposta.id)) {
                                             const newTipoAposta = await tipoApostaServices.pegaTipoAposta(modeloAposta);
                                             todosTipoAposta.push(newTipoAposta)
                                         }
-                                    }                                    
+                                    }
                                     await oddServices.pegaOdd(todosTipoAposta, jogo, casaAposta, bookmaker.bets);
                                 }
                             } else {
@@ -99,6 +101,7 @@ class RequestController extends Controller {
                             reqPendente.save();
                             params.page = page;
                             response = await axios.get(URL + 'odds', { headers, params });
+                            salvaJson('odds', page, response.data);
                             if (response.status !== 200) {
                                 logTo(`Erro ao requisitar página: ${page}`);
                                 break;
@@ -112,7 +115,7 @@ class RequestController extends Controller {
                     if (duration > ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
                         logTo(`Exedido tempo de execução. Tempo Maximo: ${formatMilliseconds((process.env.TEMPO_EXECUCAO || 1800000))}.. tempo em execução ${formatMilliseconds(duration)}..`);
                     }
-                }else{
+                } else {
                     logTo(`Erro ao requisitar página: ${page}`);
                 }
             } catch (error) {
@@ -140,6 +143,7 @@ class RequestController extends Controller {
                 let responseJogos = await axios.get(URL + 'fixtures', { headers, params: paramsJogos });
 
                 if (responseJogos.status === 200) {
+                    salvaJson('fixtures', 0, responseJogos.data);
                     await jogoServices.adicionaJogos(responseJogos);
                 } else {
                     logTo('Erro ao buscar dados de jogos! status <> 200. Status: ' + responseJogos.status);
