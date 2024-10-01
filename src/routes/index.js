@@ -79,7 +79,7 @@ module.exports = app => {
 
     // Nova rota para buscar arquivos JSON de fixtures sem pagina
     app.get('/api/json/fixtures', (req, res) => {
-        const jsonFilePath = path.join(__dirname, '../database/storage/jsons/fixtures.json');
+        const jsonFilePath = path.join(__dirname, '../database/storage/jsons/fixtures_0.json');
 
         // Verificar se o arquivo existe
         if (fs.existsSync(jsonFilePath)) {
