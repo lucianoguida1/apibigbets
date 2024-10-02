@@ -60,7 +60,7 @@ class RequestController extends Controller {
                     salvaJson('odds', page, response.data);
                     const totalPaginas = response.data.paging.total;
                     if (reqPendente.pagina == 1) {
-                        //await this.adicionaJogos(date);
+                        await this.adicionaJogos(date);
                     }
                     const todasLigas = await ligaServices.pegaTodosOsRegistros();
                     const todosJogos = await jogoServices.pegaTodosOsRegistros({ 'data': date });
