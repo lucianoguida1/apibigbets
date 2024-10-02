@@ -45,16 +45,21 @@ class Services {
 
   async atualizaRegistrosEmMassa(arrayDeAtualizacoes) {
     const promises = arrayDeAtualizacoes.map(async (registro) => {
-      const { id, ...camposParaAtualizar } = registro;
-      return dataSource[this.model].update(
-        camposParaAtualizar,
-        { where: { id } } // Atualiza o registro correspondente ao id
-      );
+      try {
+        const { id, ...camposParaAtualizar } = registro;
+        const resultado = await dataSource[this.model].update(
+          camposParaAtualizar,
+          { where: { id } }
+        );
+        return resultado;
+      } catch (error) {
+        console.error(`Erro ao atualizar registro: ${id}`, error);
+        throw error; // Opcional: relançar o erro
+      }
     });
-
-    // Executa todas as atualizações de uma vez
     return Promise.all(promises);
   }
+
 
   async atualizaRegistro(dadosAtualizados, where) {
     const listadeRegistrosAtualizados = await dataSource[this.model].update(dadosAtualizados, {

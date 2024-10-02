@@ -7,18 +7,17 @@ class OddServices extends Services {
     constructor() {
         super('Odd');
     }
-    async pegaOdd(tipoApostas, jogo, casaDeAposta, odds) {
+    async pegaOdd(tipoApostas, jogo, casaDeAposta, odds, regras) {
         const oddsDoJogo = await super.pegaTodosOsRegistros({ 'jogo_id': jogo.id });
-        const regras = await regraServices.pegaTodosOsRegistros();
 
         const novasOdds = [];
         const oddsParaAtualizar = [];
 
         for (const odd of odds) {
-            const tipoAposta = tipoApostas.find(e => e.name === odd.name);
+            const tipoAposta = tipoApostas.find(e => e.id_sports === odd.id);
             for (const value of odd.values) {
-                let regra = regras.find(e => e.nome === value.value && e.tipoaposta_id == tipoAposta.id);
-                if(!regra){
+                let regra = regras.find(e => e.nome == value.value && e.tipoaposta_id == tipoAposta.id);
+                if (!regra) {
                     regra = regraServices.criaRegistro({
                         nome: value.value,
                         tipoaposta_id: tipoAposta.id
@@ -26,7 +25,7 @@ class OddServices extends Services {
                 }
                 const valorOdd = parseFloat(value.odd);
 
-                const oddDoJogo = oddsDoJogo.find(e => String(e.nome) == value.value && e.tipoaposta_id == tipoAposta.id);
+                const oddDoJogo = oddsDoJogo.find(e => String(e.nome) == value.value && e.tipoaposta_id == tipoAposta.id && regra.id == e.regra_id);
                 if (oddDoJogo) {
                     if (valorOdd != oddDoJogo.odd) {
                         oddsParaAtualizar.push({ id: oddDoJogo.id, odd: valorOdd }); // Armazena para ser atualizado mais tarde
@@ -43,6 +42,7 @@ class OddServices extends Services {
                 }
             }
         }
+
         // Passo 3: Criar todas as novas odds de uma só vez
         if (novasOdds.length > 0) {
             await super.criaVariosRegistros(novasOdds);

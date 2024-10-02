@@ -6,6 +6,7 @@ const JogoServices = require('../services/JogoServices.js');
 const BetServices = require('../services/BetServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const OddServices = require('../services/OddServices.js');
+const Regra = require('../services/RegravalidacoeServices.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const axios = require('axios');
 const https = require('https');
@@ -14,6 +15,8 @@ const salvaJson = require('../utils/salvaJsonArquivo.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const toDay = require('../utils/toDay.js');
 
+
+const regraServices = new Regra();
 const requestServices = new RequestServices();
 const ligaServices = new LigaServices();
 const jogoServices = new JogoServices();
@@ -57,13 +60,13 @@ class RequestController extends Controller {
                     salvaJson('odds', page, response.data);
                     const totalPaginas = response.data.paging.total;
                     if (reqPendente.pagina == 1) {
-                        await this.adicionaJogos(date);
+                        //await this.adicionaJogos(date);
                     }
                     const todasLigas = await ligaServices.pegaTodosOsRegistros();
                     const todosJogos = await jogoServices.pegaTodosOsRegistros({ 'data': date });
                     const todasCasasAposta = await betServices.pegaTodosOsRegistros();
                     const todosTipoAposta = await tipoApostaServices.pegaTodosOsRegistros();
-
+                    const regras = await regraServices.pegaTodosOsRegistros();
 
                     let endTime = Date.now();
                     let duration = endTime - startTime;
@@ -77,11 +80,13 @@ class RequestController extends Controller {
                             // Busca o jogo no cache ou cria se não existir
                             let jogo = todosJogos.find(l => l.id_sports === e.fixture.id)
                                 || await jogoServices.pegaUmRegistro({ where: { id_sports: e.fixture.id } });
+                                
                             if (jogo !== null) {
                                 //LOOP RODANDO AS CASAS DE APOSTA
                                 for (const bookmaker of e.bookmakers) {
                                     let casaAposta = todasCasasAposta.find(l => l.id_sports === bookmaker.id)
                                         || await betServices.pegaBet(bookmaker);
+                                    
                                     //LOOP RODANDOS AS ODDS
                                     for (const modeloAposta of bookmaker.bets) {
                                         if (!todosTipoAposta.some(l => l.id_sports === modeloAposta.id)) {
@@ -89,7 +94,7 @@ class RequestController extends Controller {
                                             todosTipoAposta.push(newTipoAposta)
                                         }
                                     }
-                                    await oddServices.pegaOdd(todosTipoAposta, jogo, casaAposta, bookmaker.bets);
+                                    await oddServices.pegaOdd(todosTipoAposta, jogo, casaAposta, bookmaker.bets, regras);
                                 }
                             } else {
                                 logTo('Jogo não encontrado! fixture/jogo:' + e.fixture.id);

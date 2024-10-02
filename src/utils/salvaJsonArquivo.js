@@ -11,6 +11,6 @@ module.exports = (tipoRequisicao, page, data) => {
     }
 
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-    logTo(`Arquivo salvo em: ${filePath}`,false);
+    logTo(`Arquivo salvo em: ${filePath}`,false, false);
 
 }
