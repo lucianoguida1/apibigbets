@@ -103,7 +103,7 @@ class RequestController extends Controller {
                         }
 
                         reqPendente.pagina = page;
-                        if (++page <= totalPaginas) {
+                        if ((++page) <= totalPaginas) {
                             reqPendente.save();
                             params.page = page;
                             response = await axios.get(URL + 'odds', { headers, params });
@@ -140,6 +140,7 @@ class RequestController extends Controller {
 
     async adicionaJogos(date = toDay()) {
         let paramsJogos = {
+            timezone: 'America/Sao_Paulo',
             date: date
         }
 
