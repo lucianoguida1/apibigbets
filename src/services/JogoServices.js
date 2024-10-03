@@ -115,9 +115,12 @@ class JogoServices extends Services {
         // Buscar jogos com base nos filtros da regra
         const results = await Jogo.findAll({
             where: whereJogo,
+            order: [['datahora', 'DESC']],
             include
         });
+
         let jogos = [];
+
         if (results.length > 0) {
             for (const result of results) {
                 const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id))

@@ -23,12 +23,40 @@ class EstrategiaController extends Controller {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
             }
             const regras = await estrategia.getRegras();
-            let jogos = {};
+            let apostas = {};
             if (regras.length > 0) {
                 for (const regra of regras) {
-                    jogos[regra.id] = await jogoServices.filtrarJogosPorRegra(regra);
+                    const jogos = await jogoServices.filtrarJogosPorRegra(regra);
+                    if (regra.multipla > 1) {
+                        if (!apostas[regra.id]) {
+                            apostas[regra.id] = {};
+                        }
+                        let i = 1;
+                        for (const jogo of jogos) {
+                            // Verifica se `apostas[regra.id][i]` já existe, senão inicializa
+                            if (!apostas[regra.id][i]) {
+                                apostas[regra.id][i] = {
+                                    odd: 1,
+                                    status: true,
+                                    jogos: []
+                                };
+                            }
+                            apostas[regra.id][i]['jogos'].push(jogo);
+                            apostas[regra.id][i]['odd'] = apostas[regra.id][i]['odd'] * jogo.odd;
+                            if (apostas[regra.id][i]['jogos'].length >= regra.multipla) {
+                                for (const jogoo of apostas[regra.id][i].jogos) {
+                                    if (!jogoo.statusOdd) {
+                                        apostas[regra.id][i].status = false;
+                                    }
+                                }
+                                i++;
+                            }
+                        }
+                    } else {
+                        apostas[regra.id] = jogos;
+                    }
                 }
-                return res.status(200).json(jogos);
+                return res.status(200).json(apostas);
             }
 
             return res.status(404).json({ error: 'Estratégia não contem regras!' });

@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     estrategia_id: DataTypes.NUMBER,
     oddmin: DataTypes.NUMBER,
     oddmax: DataTypes.NUMBER,
+    multipla: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Regra',
