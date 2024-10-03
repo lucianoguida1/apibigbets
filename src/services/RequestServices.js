@@ -1,15 +1,15 @@
 const Services = require('./Services.js');
 const isHoje = require('../utils/isHoje.js');
+const { Op } = require('sequelize');
 
 class RequestServices extends Services {
     constructor(){
         super('Request');
     }
 
-
     async podeRequisitar() {
         // Pega o registro mais recente
-        const request = await super.pegaUmRegistro({
+        let request = await super.pegaUmRegistro({
             order: [['createdAt', 'DESC']]
         });
         
@@ -24,10 +24,21 @@ class RequestServices extends Services {
             return false;
         }
     
-        // Se não há um registro válido para hoje, cria um novo
-        await super.criaRegistro();
+        // Se não há um registro válido para hoje, verifique novamente antes de criar um novo
+        request = await super.pegaUmRegistro({
+            where: { createdAt: { [Op.gte]: new Date().setHours(0, 0, 0, 0) } }
+        });
+
+        if (!request) {
+            // Se não há nenhum registro para o dia de hoje, cria um novo
+            await super.criaRegistro();
+        }
+
         return true;
     }
 }
+
+module.exports = RequestServices;
+
 
 module.exports = RequestServices;
