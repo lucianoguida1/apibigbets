@@ -123,19 +123,20 @@ class JogoServices extends Services {
                 const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id))
                 jogos.push({
                     id: result.id,
-                    casa: result.casa.nome,
-                    fora: result.fora.nome,
-                    placar: result.gols_casa + '-' + result.gols_fora,
-                    data: result.data,
-                    datahora: result.datahora,
-                    temporada: result.Temporada.ano,
-                    liga: result.Temporada.Liga.nome,
-                    pais: result.Temporada.Liga.Pai.nome,
-                    tipoAposta: tipoAposta.name,
-                    nome: result.Odds[0].nome,
-                    odd: result.Odds[0].odd,
-                    statusOdd: result.Odds[0].status
-                });
+                    casa: result.casa?.nome || null, // Define como null se não houver dados
+                    fora: result.fora?.nome || null, // Define como null se não houver dados
+                    placar: (result.gols_casa !== undefined && result.gols_fora !== undefined) ? 
+                            result.gols_casa + '-' + result.gols_fora : null, // Define como null se não houver dados
+                    data: result.data || null, // Define como null se não houver dados
+                    datahora: result.datahora || null, // Define como null se não houver dados
+                    temporada: result.Temporada?.ano || null, // Define como null se não houver dados
+                    liga: result.Temporada?.Liga?.nome || null, // Define como null se não houver dados
+                    pais: result.Temporada?.Liga?.Pai?.nome || null, // Define como null se não houver dados
+                    tipoAposta: tipoAposta.name || null, // Define como null se não houver dados
+                    nome: result.Odds?.[0]?.nome || null, // Define como null se não houver dados
+                    odd: result.Odds?.[0]?.odd || null, // Define como null se não houver dados
+                    statusOdd: result.Odds?.[0]?.status || null // Define como null se não houver dados
+                });                
             }
         }
         return jogos;

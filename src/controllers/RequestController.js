@@ -49,6 +49,7 @@ class RequestController extends Controller {
             const reqPendente = await reqPendenteServices.pegaPendente('odds');
             let page = reqPendente.pagina;
             const params = {
+                timezone: 'America/Sao_Paulo',
                 bookmaker: '8',
                 date: date,
                 page: page
