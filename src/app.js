@@ -6,8 +6,8 @@ const app = express();
 routes(app);
 
 
-const RegraSev = require('./services/RegravalidacoeServices.js');
-const regraserv = new RegraSev();
+const pLimit = require('p-limit');
+const limit = pLimit(5000); // Limita a 100 exclusões simultâneas
 
 async function processarRegras() {
     try {
@@ -15,15 +15,16 @@ async function processarRegras() {
 
         const regras = await regraserv.pegaTodosOsRegistros();
 
-        // Mapeia as regras e cria promessas para processá-las
-        const promessas = regras.map(async (regra) => {
-            const odds = await regra.getOdds(); // Pega as odds associadas à regra
-            if (odds.length === 0) {
-                console.log('regra: ' + regra.id);
-                return regra.destroy({ force: true }); // Exclui a regra se não tiver odds associadas
-            }
-            return null; // Retorna null se a regra não for deletada
-        });
+        // Limita o número de promessas simultâneas
+        const promessas = regras.map((regra) =>
+            limit(async () => {
+                const odds = await regra.getOdds();
+                if (odds.length === 0) {
+                    console.log('regra: ' + regra.id);
+                    await regra.destroy({ force: true }); // Exclui a regra permanentemente
+                }
+            })
+        );
 
         // Espera todas as promessas serem resolvidas
         await Promise.all(promessas);
@@ -32,11 +33,9 @@ async function processarRegras() {
     } catch (error) {
         console.error("Erro ao buscar ou processar as regras:", error);
     }
-
     console.log('passou todos');
 }
 
-// Chama a função assíncrona
 processarRegras();
 
 
