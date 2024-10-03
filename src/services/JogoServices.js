@@ -279,6 +279,8 @@ class JogoServices extends Services {
                     jogo.gols_casa = e.goals.home;
                     jogo.gols_fora = e.goals.away;
                     jogo.status = e.fixture.status.long;
+                    jogo.datahora = e.fixture.date,
+                    jogo.data = e.fixture.date.split('T')[0],
                     await golServices.adicionaGols(e.score, jogo);
                     jogo.save();
                 }
