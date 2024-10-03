@@ -5,15 +5,14 @@ const tarefaCron = require('./tarefasCron.js');
 const app = express();
 routes(app);
 
-
 const RegraSev = require('./services/RegravalidacoeServices.js');
 const regraserv = new RegraSev();
 async function processarRegras() {
     try {
         console.time('Tempo de Execução'); // Inicia a contagem do tempo
 
-        const regras = await regraserv.pegaTodosOsRegistros();
-
+        const regras = await regraserv.pegaRegrasSemOdds();
+        
         for (const regra of regras) {
             const odds = await regra.getOdds(); // Pega as odds associadas à regra
             if (odds.length === 0) {
@@ -31,7 +30,6 @@ async function processarRegras() {
 
 // Chama a função assíncrona
 processarRegras();
-
 
 // EXECUTA AS TAREFAS CRONS
 tarefaCron();
