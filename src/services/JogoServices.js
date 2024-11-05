@@ -114,8 +114,11 @@ class JogoServices extends Services {
 
         // Buscar jogos com base nos filtros da regra
         const results = await Jogo.findAll({
-            where: whereJogo,
-            order: [['datahora', 'DESC']],
+            where: {
+                ...whereJogo,
+                //gols_casa: {[Op.ne]: null}
+            },
+            order: [['id', 'ASC']],
             include
         });
 
@@ -128,8 +131,8 @@ class JogoServices extends Services {
                     id: result.id,
                     casa: result.casa?.nome || null, // Define como null se não houver dados
                     fora: result.fora?.nome || null, // Define como null se não houver dados
-                    placar: (result.gols_casa !== undefined && result.gols_fora !== undefined) ? 
-                            result.gols_casa + '-' + result.gols_fora : null, // Define como null se não houver dados
+                    placar: (result.gols_casa !== undefined && result.gols_fora !== undefined) ?
+                        result.gols_casa + '-' + result.gols_fora : null, // Define como null se não houver dados
                     data: result.data || null, // Define como null se não houver dados
                     datahora: result.datahora || null, // Define como null se não houver dados
                     temporada: result.Temporada?.ano || null, // Define como null se não houver dados
@@ -139,15 +142,16 @@ class JogoServices extends Services {
                     nome: result.Odds?.[0]?.nome || null, // Define como null se não houver dados
                     odd: result.Odds?.[0]?.odd || null, // Define como null se não houver dados
                     statusOdd: result.Odds?.[0]?.status || null // Define como null se não houver dados
-                });                
+                });
             }
         }
         return jogos;
     }
 
-    async jogoEstruturadoIds(ids) {
+    async jogoEstruturadoIds(ids,where = {}) {
         const jogos = await Jogo.findAll({
             where: {
+                ...where,
                 id: {
                     [Op.in]: ids
                 }
@@ -283,8 +287,8 @@ class JogoServices extends Services {
                     jogo.gols_fora = e.goals.away;
                     jogo.status = e.fixture.status.long;
                     jogo.datahora = e.fixture.date,
-                    jogo.data = e.fixture.date.split('T')[0],
-                    await golServices.adicionaGols(e.score, jogo);
+                        jogo.data = e.fixture.date.split('T')[0],
+                        await golServices.adicionaGols(e.score, jogo);
                     jogo.save();
                 }
             }

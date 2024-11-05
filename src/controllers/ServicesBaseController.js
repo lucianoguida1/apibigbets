@@ -75,7 +75,7 @@ class ServicesBaseController extends Controller {
                 const idJogosArray = [...idJogos];  // Converte o Set para array uma vez
 
                 if (idJogosArray.length > 0) {
-                    const jogos = await jogoServices.jogoEstruturadoIds(idJogosArray);
+                    const jogos = await jogoServices.jogoEstruturadoIds(idJogosArray, { gols_casa: { [Op.ne]: null } });
 
                     // Processar as regras e atualizar odds em lotes
                     for (const regra of regras) {

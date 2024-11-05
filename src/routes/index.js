@@ -26,9 +26,9 @@ module.exports = app => {
         regra,
     );
 
-    const dbFilePath = path.join(__dirname, '../database/storage/bigbets.sql');
+    const dbFilePath = path.join(__dirname, '../database/storage/bigbets.backup');
     app.get('/downloaddb', (req, res) => {
-        res.download(dbFilePath, 'bigbets.sql', (err) => {
+        res.download(dbFilePath, 'bigbets.backup', (err) => {
             if (err) {
                 console.error('Erro ao fazer download da base de dados:', err);
                 res.status(500).send('Erro ao baixar o banco de dados');

@@ -45,7 +45,7 @@ class RequestController extends Controller {
     async dadosSport(date = toDay(1)) {
         if (await requestServices.podeRequisitar()) {
             const startTime = Date.now();
-            logTo('Iniciando dadosSport...');
+            logTo(`Iniciando dadosSport (${date})...`);
             const reqPendente = await reqPendenteServices.pegaPendente('odds');
             let page = reqPendente.pagina;
             const params = {
@@ -131,10 +131,10 @@ class RequestController extends Controller {
             } finally {
                 let endTime = Date.now();
                 let duration = endTime - startTime;
-                logTo(`Tempo de execução: ${formatMilliseconds(duration)}`);
+                logTo(`Tempo de execução: ${formatMilliseconds(duration)} data: ${date}`);
             }
         } else {
-            logTo('Limite de requisições atingido...');
+            logTo(`Limite de requisições atingido... (${date})`);
         }
     }
 
@@ -146,7 +146,7 @@ class RequestController extends Controller {
 
         try {
             if (await requestServices.podeRequisitar()) {
-                logTo("Iniciando a busca por jogos na API");
+                logTo(`Iniciando a busca por jogos na API data (${date})`);
                 let responseJogos = await axios.get(URL + 'fixtures', { headers, params: paramsJogos });
 
                 if (responseJogos.status === 200) {

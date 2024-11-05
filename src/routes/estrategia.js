@@ -10,5 +10,6 @@ router.get('/estrategia/executa/:id', (req, res) => estrategiaController.executa
 router.post('/estrategia', (req, res) => estrategiaController.criaNovo(req, res));
 router.put('/estrategia/:id', (req, res) => estrategiaController.atualiza(req, res));
 router.delete('/estrategia/:id', (req, res) => estrategiaController.exclui(req, res));
+router.get('/topestrategia', (req, res) => estrategiaController.getTopEstrategia(req, res));
 
 module.exports = router;

@@ -4,11 +4,6 @@ const {
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Estrategia extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
     static associate(models) {
       Estrategia.hasMany(models.Regra, {
         foreignKey: 'estrategia_id'
@@ -19,8 +14,26 @@ module.exports = (sequelize, DataTypes) => {
     nome: DataTypes.STRING,
     descricao: DataTypes.TEXT,
     taxaacerto: DataTypes.FLOAT,
-    totalacerto: DataTypes.NUMBER,
-    totalerro: DataTypes.NUMBER
+    totalacerto: DataTypes.INTEGER,
+    totalerro: DataTypes.INTEGER,
+    odd_media: DataTypes.FLOAT,
+    odd_minima: DataTypes.FLOAT,
+    odd_maxima: DataTypes.FLOAT,
+    media_odd_vitoriosa: DataTypes.FLOAT,
+    media_odd_derrotada: DataTypes.FLOAT,
+    total_apostas: DataTypes.INTEGER,
+    frequencia_apostas_dia: DataTypes.FLOAT,
+    sequencia_vitorias: DataTypes.INTEGER,
+    sequencia_derrotas: DataTypes.INTEGER,
+    total_vitorias: DataTypes.INTEGER,
+    total_derrotas: DataTypes.INTEGER,
+    lucro_total: DataTypes.FLOAT,
+    qtde_usuarios: DataTypes.INTEGER,
+    media_sequencia_vitorias: DataTypes.FLOAT,
+    maior_derrotas_dia: DataTypes.INTEGER,
+    maior_derrotas_semana: DataTypes.INTEGER,
+    maior_vitorias_dia: DataTypes.INTEGER,
+    maior_vitorias_semana: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Estrategia',
