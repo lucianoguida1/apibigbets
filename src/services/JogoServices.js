@@ -97,7 +97,8 @@ class JogoServices extends Services {
                 where: {
                     odd: {
                         [Op.between]: [regra.oddmin, regra.oddmax]
-                    }
+                    },
+                    //status: { [Op.ne]: null } // Limita a odds calculadas
                 },
                 include: [
                     {
@@ -116,7 +117,7 @@ class JogoServices extends Services {
         const results = await Jogo.findAll({
             where: {
                 ...whereJogo,
-                //gols_casa: {[Op.ne]: null}
+                //gols_casa: {[Op.ne]: null} // Limita a somente resultados com gols coletados
             },
             order: [['id', 'ASC']],
             include
@@ -126,7 +127,7 @@ class JogoServices extends Services {
 
         if (results.length > 0) {
             for (const result of results) {
-                const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id))
+                const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id));
                 jogos.push({
                     id: result.id,
                     casa: result.casa?.nome || null, // Define como null se não houver dados
@@ -141,14 +142,14 @@ class JogoServices extends Services {
                     tipoAposta: tipoAposta.name || null, // Define como null se não houver dados
                     nome: result.Odds?.[0]?.nome || null, // Define como null se não houver dados
                     odd: result.Odds?.[0]?.odd || null, // Define como null se não houver dados
-                    statusOdd: result.Odds?.[0]?.status || null // Define como null se não houver dados
+                    statusOdd: result.Odds?.[0]?.status // Define como null se não houver dados
                 });
             }
         }
         return jogos;
     }
 
-    async jogoEstruturadoIds(ids,where = {}) {
+    async jogoEstruturadoIds(ids, where = {}) {
         const jogos = await Jogo.findAll({
             where: {
                 ...where,
