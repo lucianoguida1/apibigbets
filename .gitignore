@@ -1,4 +1,5 @@
 node_modules/
 src/database/storage/
 logs/
+package-lock.json
 .env
