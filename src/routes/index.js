@@ -47,6 +47,24 @@ module.exports = app => {
         res.status(200).send({ mensagem: 'Ok!' });
     });
 
+    app.get('/buscajogos/', async (req, res) => {
+        const dates = req.body.dates;
+
+        if (!Array.isArray(dates)) {
+            return res.status(400).send({ mensagem: 'O campo "dates" deve ser um array.' });
+        }
+
+        try {
+            for (const date of dates) {
+                await request.adicionaJogos(date);
+            }
+            res.status(200).send({ mensagem: 'Jogos adicionados para todas as datas.' });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send({ mensagem: 'Erro ao adicionar jogos para as datas.', error });
+        }
+    });
+
     app.get('/executaregras', async (req, res) => {
         serviceBase.validaRegras();
         res.status(200).send({ mensagem: 'Ok!' });
