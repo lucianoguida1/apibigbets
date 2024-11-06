@@ -1,13 +1,16 @@
 const { Op, Sequelize } = require('sequelize');
+const { Regra } = require('../database/models')
 const Controller = require('./Controller.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
 const JogoServices = require('../services/JogoServices.js');
+const RegraServices = require('../services/RegraServices.js');
 const { startOfWeek } = require('date-fns'); // Para cálculo de semanas
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
 const jogoServices = new JogoServices();
+const regraServices = new RegraServices();
 
 class EstrategiaController extends Controller {
     constructor() {
@@ -16,10 +19,8 @@ class EstrategiaController extends Controller {
 
     async getTopEstrategia(req, res) {
         try {
-            const estrategia = await estrategiaServices.pegaUmRegistro({
-                where: { taxaacerto: { [Op.ne]: null } },
-                order: [['taxaacerto', 'DESC']]
-            });
+            const estrategia = await estrategiaServices.getTopEstrategia();
+
             if (!estrategia) {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
             }
@@ -30,6 +31,65 @@ class EstrategiaController extends Controller {
             return res.status(500).json({ error: 'Erro ao buscar estratégia: ' + error.message });
         }
     }
+
+    async criarEstrategia(req, res) {
+        try {
+            const { nome, descricao, regras } = req.body;
+    
+            // Verificação de campos obrigatórios
+            if (!nome || !descricao) {
+                return res.status(400).json({ error: 'Nome e descrição são obrigatórios!' });
+            }
+            if (!regras || regras.length < 1) {
+                return res.status(400).json({ error: 'Pelo menos uma regra é necessária!' });
+            }
+    
+            // Validação dos IDs de regravalidacoe
+            for (const regra of regras) {
+                if (!regra.aposta) {
+                    return res.status(400).json({ error: 'O campo aposta é obrigatório em cada regra!' });
+                }
+    
+                // Verifica se o regravalidacoe_id existe na tabela `Regravalidacoe`
+                const regravalidacoeExists = await regraServices.pegaUmRegistro({
+                    where: { id: regra.aposta }
+                });
+    
+                if (!regravalidacoeExists) {
+                    return res.status(400).json({ error: `O ID de aposta ${regra.aposta} não existe na tabela regravalidacoe.` });
+                }
+            }
+    
+            // Cria a estratégia
+            const novaEstrategia = await estrategiaServices.criaRegistro({ nome, descricao });
+    
+            // Converte campos vazios das regras para null e prepara as regras para criação
+            const regrasFormatadas = regras.map(regra => ({
+                estrategia_id: novaEstrategia.id,
+                pais_id: regra.pais || null,
+                liga_id: regra.liga || null,
+                time_id: regra.time || null,
+                regravalidacoe_id: regra.aposta, // Usa o ID de aposta para regravalidacoe_id
+                oddmin: regra.oddMin ? parseFloat(regra.oddMin) : null,
+                oddmax: regra.oddMax ? parseFloat(regra.oddMax) : null
+            }));
+    
+            // Cria as regras associadas à estratégia
+            await regraServices.criaVariosRegistros(regrasFormatadas);
+    
+            // Retorna a estratégia recém-criada com as regras incluídas
+            const estrategiaComRegras = await estrategiaServices.pegaUmRegistro({
+                where: { id: novaEstrategia.id },
+                include: [{ model: Regra }] // Inclui as regras associadas
+            });
+    
+            return res.status(201).json({ message: 'Estratégia criada com sucesso!', estrategia: estrategiaComRegras });
+        } catch (error) {
+            console.error('Erro ao criar estratégia:', error);
+            return res.status(500).json({ error: 'Erro ao criar estratégia: ' + error.message });
+        }
+    }
+    
 
     async executarEstrategia(req, res) {
         try {
@@ -74,7 +134,7 @@ class EstrategiaController extends Controller {
             });
 
             // Acessa o valor diretamente do primeiro registro ou define como 1 se for nulo ou não existir
-            let i  = result[0].get('maxBilheteId') || 1;
+            let i = result[0].get('maxBilheteId') || 1;
 
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
 
