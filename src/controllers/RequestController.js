@@ -138,7 +138,7 @@ class RequestController extends Controller {
         }
     }
 
-    async adicionaJogos(date = toDay()) {
+    async adicionaJogos(date = toDay(-1)) {
         let paramsJogos = {
             timezone: 'America/Sao_Paulo',
             date: date

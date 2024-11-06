@@ -113,6 +113,26 @@ class JogoServices extends Services {
             });
         }
 
+        // Adiciona as associações dos jogos.
+        if (!include.some(item => item.model === Temporada)) {
+            include.push({
+                model: Temporada,
+                required: true, // Esta associação é obrigatória
+                include: [
+                    {
+                        model: Liga,
+                        required: true, // Liga obrigatória
+                        include: [
+                            {
+                                model: Pai,
+                                required: true, // Pais obrigatório
+                            }
+                        ]
+                    }
+                ]
+            });
+        }
+
         // Buscar jogos com base nos filtros da regra
         const results = await Jogo.findAll({
             where: {
@@ -141,6 +161,7 @@ class JogoServices extends Services {
                     pais: result.Temporada?.Liga?.Pai?.nome || null, // Define como null se não houver dados
                     tipoAposta: tipoAposta.name || null, // Define como null se não houver dados
                     nome: result.Odds?.[0]?.nome || null, // Define como null se não houver dados
+                    odd_id: result.Odds?.[0]?.id,
                     odd: result.Odds?.[0]?.odd || null, // Define como null se não houver dados
                     statusOdd: result.Odds?.[0]?.status // Define como null se não houver dados
                 });

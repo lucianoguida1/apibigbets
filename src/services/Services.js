@@ -40,7 +40,9 @@ class Services {
   }
 
   async criaVariosRegistros(dadosDosRegistros) {
-    return dataSource[this.model].bulkCreate(dadosDosRegistros);
+    return dataSource[this.model].bulkCreate(dadosDosRegistros, {
+      ignoreDuplicates: true
+    });
   }
 
   async atualizaRegistrosEmMassa(arrayDeAtualizacoes) {

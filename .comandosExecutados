@@ -23,8 +23,8 @@ npx sequelize db:migrate:undo --step 3
 ## Gera uma nova migração
 npx sequelize-cli migration:generate --name add_cols_jogos
 
-
-
+## Restaura bancolocal no postgress
+pg_restore -U postgres -h localhost -p 5432 -d bigbets -v "C:\tmp\bigbets.backup"
 
 
 ##### comandos sequelize

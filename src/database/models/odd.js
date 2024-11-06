@@ -10,20 +10,14 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      // não tem o ID na tabela
+      Odd.hasMany(models.Bilhete, { foreignKey: 'odd_id' });
+
       //Tem o ID
-      Odd.belongsTo(models.Jogo, {
-        foreignKey: 'jogo_id'
-      });
-      Odd.belongsTo(models.Bet, {
-        foreignKey: 'bet_id'
-      });
-      Odd.belongsTo(models.Tipoaposta, {
-        foreignKey: 'tipoaposta_id'
-      });
-      Odd.belongsTo(models.Regravalidacoe, {
-        foreignKey: 'regra_id',
-        as: 'regra'
-      });
+      Odd.belongsTo(models.Jogo, { foreignKey: 'jogo_id' });
+      Odd.belongsTo(models.Bet, { foreignKey: 'bet_id' });
+      Odd.belongsTo(models.Tipoaposta, { foreignKey: 'tipoaposta_id' });
+      Odd.belongsTo(models.Regravalidacoe, { foreignKey: 'regra_id', as: 'regra' });
     }
   }
   Odd.init({

@@ -1,10 +1,12 @@
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const Controller = require('./Controller.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
+const BilheteServices = require('../services/BilheteServices.js');
 const JogoServices = require('../services/JogoServices.js');
 const { startOfWeek } = require('date-fns'); // Para cálculo de semanas
 
 const estrategiaServices = new EstrategiaServices();
+const bilheteServices = new BilheteServices();
 const jogoServices = new JogoServices();
 
 class EstrategiaController extends Controller {
@@ -66,9 +68,15 @@ class EstrategiaController extends Controller {
             const semanasDerrotas = {}; // Para contar derrotas por semana
             let totalSequenciaVitorias = 0;
             let numSequencias = 0;
+            const bilhetesCriar = [];
+            let result = await estrategia.getBilhetes({
+                attributes: [[Sequelize.fn('MAX', Sequelize.col('bilhete_id')), 'maxBilheteId']]
+            });
+
+            // Acessa o valor diretamente do primeiro registro ou define como 1 se for nulo ou não existir
+            let i  = result[0].get('maxBilheteId') || 1;
 
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
-            let i = 1;
 
             for (const jogo of jogosArray) {
                 if (!apostas[i]) {
@@ -78,6 +86,10 @@ class EstrategiaController extends Controller {
                         jogos: []
                     };
                 }
+
+                bilhetesCriar.push(
+                    { bilhete_id: i, jogo_id: jogo.id, estrategia_id: estrategia.id, odd_id: jogo.odd_id }
+                );
 
                 apostas[i].jogos.push(jogo);
                 apostas[i].odd *= jogo.odd;
@@ -117,6 +129,9 @@ class EstrategiaController extends Controller {
                     i++; // Passa para a próxima aposta
                 }
             }
+
+            //cria os bilhetes no banco
+            await bilheteServices.criaVariosRegistros(bilhetesCriar);
 
             // Calcula valores para os novos campos
             const totalApostas = i - 1;
@@ -194,7 +209,7 @@ class EstrategiaController extends Controller {
                 jogosUnicos[jogo.id] = jogo;
             }
         });
-        
+
         return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
     }
 }
