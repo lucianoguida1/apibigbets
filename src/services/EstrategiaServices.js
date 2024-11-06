@@ -157,7 +157,7 @@ class EstrategiaServices extends Services {
         estrategia.maior_vitorias_dia = maiorVitoriasDia;
         estrategia.maior_vitorias_semana = maiorVitoriasSemana;
         
-        await estrategia.save();        
+        await estrategia.save();
 
         return apostas;
     }
