@@ -76,6 +76,10 @@ class Services {
   async excluiRegistro(id) {
     return dataSource[this.model].destroy({ where: { id: id } });
   }
+
+  async excluiVarios(where) {
+    return dataSource[this.model].destroy({ where });
+  }
 }
 
 module.exports = Services;
