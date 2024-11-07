@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe_id' });
+      Regra.belongsTo(models.Pai, { foreignKey: 'pai_id' });
+      Regra.belongsTo(models.Liga, { foreignKey: 'liga_id' });
+      Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
       Regra.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id', as: 'estrategia' });
     }
   }

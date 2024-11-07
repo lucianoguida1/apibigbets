@@ -22,12 +22,15 @@ module.exports = (sequelize, DataTypes) => {
     jogo_id: DataTypes.NUMBER,
     estrategia_id: DataTypes.NUMBER,
     alert: DataTypes.BOOLEAN,
-    odd_id: DataTypes.NUMBER
+    odd_id: DataTypes.NUMBER,
+    status_jogo: DataTypes.BOOLEAN,
+    status_bilhete: DataTypes.BOOLEAN,
+    odd: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Bilhete',
     tableName: 'bilhetes',
-    paranoid: true,
+    //paranoid: true,
     uniqueKeys: {
       unique_jogo_estrategia: {
         fields: ['jogo_id', 'estrategia_id']

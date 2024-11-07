@@ -5,7 +5,9 @@ const estrategiaController = new EstrategiaController();
 const router = Router();
 
 router.get('/estrategia', (req, res) => estrategiaController.pegaTodos(req, res));
-router.get('/estrategia/:id', (req, res) => estrategiaController.pegaUmPorId(req, res));
+router.get('/estrategia/:id', (req, res) => estrategiaController.getEstrategia(req, res));
+router.get('/estrategia/grafico/:id', (req, res) => estrategiaController.getEstrategiaGrafico(req, res));
+router.get('/estrategia/bilhetes/:id', (req, res) => estrategiaController.getBilhetes(req, res));
 router.get('/estrategia/executa/:id', (req, res) => estrategiaController.executarEstrategia(req, res));
 router.post('/estrategia', (req, res) => estrategiaController.criarEstrategia(req, res));
 router.put('/estrategia/:id', (req, res) => estrategiaController.atualizarEstrategia(req, res));

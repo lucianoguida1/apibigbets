@@ -1,7 +1,7 @@
 const { Op, Sequelize } = require('sequelize');
 const { startOfWeek } = require('date-fns');
 const Services = require('./Services.js');
-const { Regra } = require('../database/models');
+const { Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
 const JogoServices = require('./JogoServices');
 const BilheteServices = require('./BilheteServices.js');
 
@@ -12,6 +12,62 @@ class EstrategiaServices extends Services {
     constructor() {
         super('Estrategia');
     }
+    async getEstrategia(estrategiaID) {
+        const estrategia = await super.pegaUmRegistro({
+            where: { id: estrategiaID },
+            include: {
+                model: Regra,
+                require: true,
+                include: [
+                    { model: Pai, required: false },             // Associação com Pai
+                    { model: Liga, required: false },            // Associação com Liga
+                    { model: Time, required: false },            // Associação com Time
+                    {
+                        model: Regravalidacoe,
+                        require: true,
+                        include: {
+                            model: Tipoaposta,
+                            require: true,
+                        }
+                    }
+                ]
+            }
+        });
+        return estrategia;
+    }
+    async getBilhetes(EstrategiaID) {
+        const estrategia = await super.pegaUmRegistro({
+            where: { id: EstrategiaID },
+            include: {
+                model: Bilhete,
+                required: false,
+                include: [
+                    {
+                        model: Jogo,
+                        required: false,
+                        include: [
+                            {
+                                model: Time,
+                                as: 'casa',
+                                required: true,
+                            },
+                            {
+                                model: Time,
+                                as: 'fora',
+                                required: true,
+                            }
+                        ]
+                    },
+                    {
+                        model: Odd,
+                        required: false,
+                        include: { model: Tipoaposta, require: true }
+                    },
+                ]
+            }
+        });
+        return estrategia;
+    }
 
     async getTopEstrategia() {
         const estrategia = await super.pegaUmRegistro({
@@ -20,6 +76,19 @@ class EstrategiaServices extends Services {
             include: {
                 model: Regra,
                 require: true,
+                include: [
+                    { model: Pai, required: false },             // Associação com Pai
+                    { model: Liga, required: false },            // Associação com Liga
+                    { model: Time, required: false },            // Associação com Time
+                    {
+                        model: Regravalidacoe,
+                        require: true,
+                        include: {
+                            model: Tipoaposta,
+                            require: true,
+                        }
+                    }
+                ]
             }
         });
         return estrategia;
@@ -40,7 +109,7 @@ class EstrategiaServices extends Services {
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
         }
-        if (jogosUnicos.length <= regras.length){
+        if (jogosUnicos.length <= regras.length) {
             throw new Error('Quantidade de jogos insuficiente!');
         }
         let apostas = {};
@@ -60,12 +129,7 @@ class EstrategiaServices extends Services {
         let totalSequenciaVitorias = 0;
         let numSequencias = 0;
         const bilhetesCriar = [];
-
-        let result = await estrategia.getBilhetes({
-            attributes: [[Sequelize.fn('MAX', Sequelize.col('bilhete_id')), 'maxBilheteId']]
-        });
-
-        let i = result[0]?.get('maxBilheteId') || 1;
+        let i = await bilheteServices.maxId() || 1;
 
         const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
 
@@ -78,7 +142,8 @@ class EstrategiaServices extends Services {
                 bilhete_id: i,
                 jogo_id: jogo.id,
                 estrategia_id: estrategia.id,
-                odd_id: jogo.odd_id
+                odd_id: jogo.odd_id,
+                status_jogo: jogo.statusOdd,
             });
 
             apostas[i].jogos.push(jogo);
@@ -88,9 +153,14 @@ class EstrategiaServices extends Services {
             const dataAposta = jogo.data;
             const semanaAposta = startOfWeek(new Date(dataAposta)).toISOString();
 
-            if (apostas[i].jogos.length >= regras.length) {
+            if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
                 apostas[i].status = apostas[i].jogos.every((j) => j.statusOdd === true);
-
+                bilhetesCriar.forEach(bilhete => {
+                    if (bilhete.bilhete_id === i) {
+                        bilhete.status_bilhete = apostas[i].status;
+                        bilhete.odd = apostas[i].odd.toFixed(2);
+                    }
+                });
                 if (apostas[i].status) {
                     acertos++;
                     oddsVitoriosas.push(apostas[i].odd);
@@ -112,7 +182,6 @@ class EstrategiaServices extends Services {
                     semanasDerrotas[semanaAposta] = (semanasDerrotas[semanaAposta] || 0) + 1;
                     sequenciaVitorias = 0;
                 }
-
                 i++;
             }
         }
@@ -128,13 +197,13 @@ class EstrategiaServices extends Services {
         const frequenciaApostasDia = Object.keys(diasVitorias).length > 0 ? totalApostas / Object.keys(diasVitorias).length : 0;
         const aposta = 1;
         const totalPerdas = erros * aposta;
-        const lucroTotal = oddsVitoriosas.reduce((acc, odd) => acc + (odd * aposta - aposta), 0) - totalPerdas;
+        const lucroTotal = oddsVitoriosas.reduce((acc, odd) => acc + ((odd) * aposta - aposta), 0) - totalPerdas;
         const mediaSequenciaVitorias = numSequencias > 0 ? totalSequenciaVitorias / numSequencias : 0;
         const maiorVitoriasDia = Object.values(diasVitorias).length > 0 ? Math.max(...Object.values(diasVitorias)) : 0;
         const maiorVitoriasSemana = Object.values(semanasVitorias).length > 0 ? Math.max(...Object.values(semanasVitorias)) : 0;
         const maiorDerrotasDia = Object.values(diasDerrotas).length > 0 ? Math.max(...Object.values(diasDerrotas)) : 0;
         const maiorDerrotasSemana = Object.values(semanasDerrotas).length > 0 ? Math.max(...Object.values(semanasDerrotas)) : 0;
-        
+
         estrategia.totalacerto = acertos;
         estrategia.totalerro = erros;
         estrategia.taxaacerto = (acertos + erros > 0) ? ((acertos / (acertos + erros)) * 100).toFixed(2) : 0;
@@ -156,7 +225,7 @@ class EstrategiaServices extends Services {
         estrategia.maior_derrotas_semana = maiorDerrotasSemana;
         estrategia.maior_vitorias_dia = maiorVitoriasDia;
         estrategia.maior_vitorias_semana = maiorVitoriasSemana;
-        
+
         await estrategia.save();
 
         return apostas;
