@@ -110,10 +110,6 @@ class EstrategiaController extends Controller {
         }
     }
     
-    
-
-
-
     async getEstrategia(req, res) {
         const { id } = req.params;
         try {
@@ -123,7 +119,6 @@ class EstrategiaController extends Controller {
             return res.status(500).json({ erro: erro.message });
         }
     }
-
 
     async getBilhetes(req, res) {
         const { id } = req.params;
@@ -310,7 +305,6 @@ class EstrategiaController extends Controller {
         }
     }
 
-
     async executarEstrategia(req, res) {
         try {
             if (!req.params.id) {
@@ -326,21 +320,6 @@ class EstrategiaController extends Controller {
         }
     }
 
-    // Função para filtrar jogos únicos usando Promise.all para desempenho
-    async filtrarJogosUnicos(regras) {
-        const jogosUnicos = {};
-        const jogosPorRegra = await Promise.all(
-            regras.map((regra) => jogoServices.filtrarJogosPorRegra(regra))
-        );
-
-        jogosPorRegra.flat().forEach((jogo) => {
-            if (!jogosUnicos[jogo.id]) {
-                jogosUnicos[jogo.id] = jogo;
-            }
-        });
-
-        return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
-    }
 }
 
 module.exports = EstrategiaController;

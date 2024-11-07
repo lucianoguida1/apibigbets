@@ -8,13 +8,14 @@ const { Odd } = require('../database/models');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const RequestServices = require('../services/RequestServices.js');
-const OddServices = require('../services/OddServices.js');
+const EstrategiaServices = require('../services/EstrategiaServices.js');
 const toDay = require('../utils/toDay.js');
 
 const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
 const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
+const estrategiaServices = new EstrategiaServices();
 
 class ServicesBaseController extends Controller {
     async statusBasico(req, res) {
@@ -43,6 +44,19 @@ class ServicesBaseController extends Controller {
         });
 
         logTo(`Quantidade de jogos deletados: ${quantidadeDeletados}`, true);
+    }
+
+    async executarEstrategias(req, res) {
+        try {
+            logTo(' - Executando estratégias - ', true);
+            const estrategias = await estrategiaServices.pegaTodosOsRegistros();
+            for (const est of estrategias) {
+                const apostas = await estrategiaServices.executarEstrategia(est.id);
+            }
+            logTo('Executado estratégias', true);
+        } catch (error) {
+            logTo('Erro ao executar estratégia: ' + error.message, true);
+        }
     }
 
     async validaRegras() {

@@ -28,6 +28,16 @@ const tarefas = () => {
     //Roda a cada 5 hora
     cron.schedule('0 */5 * * *', async () => {
         try {
+            await serviceBase.executarEstrategias();
+        } catch (error) {
+            logTo('Erro na tarefa agendada:', error.mesage);
+        }
+    });
+
+    //// EXECUTA O DELETE DE JOGOS SEM DADOS
+    //Roda a cada 5 hora
+    cron.schedule('0 */5 * * *', async () => {
+        try {
             await serviceBase.deletaJogosAntigos();
         } catch (error) {
             logTo('Erro na tarefa agendada:', error.mesage);

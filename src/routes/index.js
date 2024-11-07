@@ -75,6 +75,11 @@ module.exports = app => {
         res.status(200).send({ mensagem: 'Ok!' });
     });
 
+    app.get('/executarestrategias', async (req, res) => {
+        serviceBase.executarEstrategias();
+        res.status(200).send({ mensagem: 'Ok!' });
+    });
+
     app.get('/', async (req, res) => {
         res.status(200).send({ mensagem: 'Ok!' });
     });
