@@ -15,7 +15,6 @@ const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
 const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
-const oddServices = new OddServices();
 
 class ServicesBaseController extends Controller {
     async statusBasico(req, res) {
@@ -31,6 +30,20 @@ class ServicesBaseController extends Controller {
         }
     }
 
+    async deletaJogosAntigos() {
+        const doisDiasAtras = new Date();
+        doisDiasAtras.setDate(doisDiasAtras.getDate() - 2);
+        const dataFormatada = doisDiasAtras.toISOString().split('T')[0];
+
+        const quantidadeDeletados = await jogoServices.excluiVarios({
+            gols_casa: null,
+            data: {
+                [Op.lt]: dataFormatada
+            }
+        });
+
+        logTo(`Quantidade de jogos deletados: ${quantidadeDeletados}`, true);
+    }
 
     async validaRegras() {
         try {

@@ -24,6 +24,16 @@ const tarefas = () => {
         }
     });
 
+    //// EXECUTA O DELETE DE JOGOS SEM DADOS
+    //Roda a cada 5 hora
+    cron.schedule('0 */5 * * *', async () => {
+        try {
+            await serviceBase.deletaJogosAntigos();
+        } catch (error) {
+            logTo('Erro na tarefa agendada:', error.mesage);
+        }
+    });
+
     //// EXECUTA O CARREGAMENTO DE ODDS
     //Roda a cada 5 hora
     cron.schedule('0 */5 * * *', async () => {

@@ -22,6 +22,7 @@ class JogoServices extends Services {
         super('Jogo');
     }
 
+    
     async filtrarJogosPorRegra(regra) {
         const whereJogo = {};
         const include = [

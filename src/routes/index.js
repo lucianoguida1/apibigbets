@@ -70,6 +70,11 @@ module.exports = app => {
         res.status(200).send({ mensagem: 'Ok!' });
     });
 
+    app.get('/deletajogosantigo', async (req, res) => {
+        serviceBase.deletaJogosAntigos();
+        res.status(200).send({ mensagem: 'Ok!' });
+    });
+
     app.get('/', async (req, res) => {
         res.status(200).send({ mensagem: 'Ok!' });
     });
