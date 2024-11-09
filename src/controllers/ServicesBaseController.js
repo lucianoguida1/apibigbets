@@ -33,7 +33,7 @@ class ServicesBaseController extends Controller {
 
     async deletaJogosAntigos() {
         const doisDiasAtras = new Date();
-        doisDiasAtras.setDate(doisDiasAtras.getDate() - 2);
+        doisDiasAtras.setDate(doisDiasAtras.getDate() - 1);
         const dataFormatada = doisDiasAtras.toISOString().split('T')[0];
 
         const quantidadeDeletados = await jogoServices.excluiVarios({
@@ -42,7 +42,7 @@ class ServicesBaseController extends Controller {
                 [Op.lt]: dataFormatada
             }
         });
-
+        console.log(dataFormatada);
         logTo(`Quantidade de jogos deletados: ${quantidadeDeletados}`, true);
     }
 

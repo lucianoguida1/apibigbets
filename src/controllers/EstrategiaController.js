@@ -1,4 +1,3 @@
-const { Op, Sequelize } = require('sequelize');
 const { Regra } = require('../database/models')
 const Controller = require('./Controller.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
@@ -9,7 +8,6 @@ const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const RegraServices = require('../services/RegraServices.js');
-const { startOfWeek } = require('date-fns'); // Para cálculo de semanas
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();

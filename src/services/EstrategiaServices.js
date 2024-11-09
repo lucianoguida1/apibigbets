@@ -44,7 +44,10 @@ class EstrategiaServices extends Services {
                 include: [
                     {
                         model: Jogo,
-                        required: false,
+                        required: true,
+                        where: {
+                            gols_casa: { [Op.ne]: null }
+                        },
                         include: [
                             {
                                 model: Time,
