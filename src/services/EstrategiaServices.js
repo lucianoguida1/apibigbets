@@ -35,12 +35,14 @@ class EstrategiaServices extends Services {
         });
         return estrategia;
     }
-    async getBilhetes(EstrategiaID) {
-        const estrategia = await super.pegaUmRegistro({
+
+    async getBilhetes(EstrategiaID, page = 1, pageSize = null, order = "DESC") {
+        const options = {
             where: { id: EstrategiaID },
             include: {
                 model: Bilhete,
                 required: false,
+                order: [['bilhete_id', order]],
                 include: [
                     {
                         model: Jogo,
@@ -64,11 +66,19 @@ class EstrategiaServices extends Services {
                     {
                         model: Odd,
                         required: false,
-                        include: { model: Tipoaposta, require: true }
+                        include: { model: Tipoaposta, required: true }
                     },
                 ]
             }
-        });
+        };
+
+        // Aplica paginação somente se `pageSize` for definido
+        if (pageSize) {
+            options.include.limit = pageSize;
+            options.include.offset = (page - 1) * pageSize;
+        }
+
+        const estrategia = await super.pegaUmRegistro(options);
         return estrategia;
     }
 
