@@ -32,7 +32,8 @@ module.exports = (sequelize, DataTypes) => {
     maior_derrotas_dia: DataTypes.INTEGER,
     maior_derrotas_semana: DataTypes.INTEGER,
     maior_vitorias_dia: DataTypes.INTEGER,
-    maior_vitorias_semana: DataTypes.INTEGER
+    maior_vitorias_semana: DataTypes.INTEGER,
+    grafico_json: DataTypes.JSON
   }, {
     sequelize,
     modelName: 'Estrategia',

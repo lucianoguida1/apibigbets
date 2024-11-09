@@ -8,6 +8,7 @@ const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const RegraServices = require('../services/RegraServices.js');
+const toDay = require('../utils/toDay.js');
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
@@ -26,6 +27,17 @@ class EstrategiaController extends Controller {
     async getEstrategiaGrafico(req, res) {
         const { id } = req.params;
         try {
+            const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+
+            if (!estrategia) {
+                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            }
+
+            let salvaJson = false;
+            if (estrategia.updatedAt.toISOString().split('T')[0] != toDay()) {
+                return res.status(200).json(estrategia.grafico_json);
+            }
+
             const umRegistro = await estrategiaServices.getBilhetes(Number(id));
 
             let dadosGrafico = {
@@ -101,6 +113,10 @@ class EstrategiaController extends Controller {
                         bilhetesPerdidos: perdasPorData[data]
                     };
                 });
+            if (salvaJson) {
+                const grafico_json = JSON.stringify(dadosGrafico);
+                await estrategiaServices.atualizaRegistro({ grafico_json }, { id: Number(id) });
+            }
 
             return res.status(200).json(dadosGrafico);
         } catch (erro) {
@@ -112,6 +128,11 @@ class EstrategiaController extends Controller {
         const { id } = req.params;
         try {
             const umRegistro = await estrategiaServices.getEstrategia(Number(id));
+
+            if (!umRegistro) {
+                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            }
+
             return res.status(200).json(umRegistro);
         } catch (erro) {
             return res.status(500).json({ erro: erro.message });
@@ -125,6 +146,11 @@ class EstrategiaController extends Controller {
         try {
             // Chama o serviço com paginação
             const umRegistro = await estrategiaServices.getBilhetes(Number(id), Number(page), Number(pageSize), "ASC");
+
+            if (!umRegistro) {
+                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            }
+
             return res.status(200).json(umRegistro);
         } catch (erro) {
             return res.status(500).json({ erro: erro.message });
