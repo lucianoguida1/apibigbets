@@ -22,7 +22,7 @@ class JogoServices extends Services {
         super('Jogo');
     }
 
-    
+
     async filtrarJogosPorRegra(regra) {
         const whereJogo = {};
         const include = [
@@ -290,7 +290,8 @@ class JogoServices extends Services {
                         'casa_id': casa.id,
                         'fora_id': fora.id,
                         'id_sports': e.fixture.id,
-                    }
+                    },
+                    paranoid: false
                 });
 
                 if (!jogo) {
