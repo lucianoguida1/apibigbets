@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const RequestController = require('./controllers/RequestController.js');
 const ServicesBaseController = require('./controllers/ServicesBaseController.js');
+const toDay = require('./utils/toDay.js');
 
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
@@ -59,6 +60,7 @@ const tarefas = () => {
     cron.schedule('0 */3 * * *', async () => {
         try {
             await request.adicionaJogos();
+            await request.adicionaJogos(date = toDay());
         } catch (error) {
             logTo('Erro na tarefa agendada:', error.mesage);
         }
