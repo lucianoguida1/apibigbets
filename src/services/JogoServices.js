@@ -152,7 +152,7 @@ class JogoServices extends Services {
         const results = await Jogo.findAll({
             where: {
                 ...whereJogo,
-                //gols_casa: {[Op.ne]: null} // Limita a somente resultados com gols coletados
+                //data: { [Op.lt]: new Date('2024-11-01') },
             },
             order: [['id', 'ASC']],
             include

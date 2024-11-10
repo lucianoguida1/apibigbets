@@ -9,12 +9,14 @@ const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const RequestServices = require('../services/RequestServices.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
+const BilheteServices = require('../services/BilheteServices.js');
 const toDay = require('../utils/toDay.js');
 
 const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
 const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
+const bilheteServices = new BilheteServices();
 const estrategiaServices = new EstrategiaServices();
 
 class ServicesBaseController extends Controller {
@@ -51,7 +53,8 @@ class ServicesBaseController extends Controller {
             logTo(' - Executando estratégias - ', true);
             const estrategias = await estrategiaServices.pegaTodosOsRegistros();
             for (const est of estrategias) {
-                const apostas = await estrategiaServices.executarEstrategia(est.id);
+                await bilheteServices.montaBilhetes(est);
+                await estrategiaServices.geraEstistica(est);
             }
             logTo('Executado estratégias', true);
         } catch (error) {

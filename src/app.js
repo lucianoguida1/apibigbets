@@ -28,10 +28,15 @@ tarefaCron();
 const BilhetesServices = require('./services/BilheteServices.js');
 const bilheteServices2 = new BilhetesServices();
 const EstrategiaServices = require('./services/EstrategiaServices.js');
-const estrategia = new EstrategiaServices();
+const estrategiaS = new EstrategiaServices();
+const servicesBase = require('./controllers/ServicesBaseController.js');
+const servicesB = new servicesBase();
 
 async function teste() {
-    bilheteServices2.montaBilhetes(await estrategia.pegaUmRegistro(4));
+    await servicesB.executarEstrategias();
+    //const estrategia = await estrategiaS.pegaUmRegistroPorId(4);
+    //await bilheteServices2.montaBilhetes(estrategia);
+    //estrategiaS.executarEstrategia(estrategia);
 }
 teste();
 

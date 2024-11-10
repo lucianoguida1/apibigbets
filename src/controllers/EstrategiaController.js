@@ -219,14 +219,10 @@ class EstrategiaController extends Controller {
             await regraServices.criaVariosRegistros(regrasFormatadas);
 
 
-            const apostas = await estrategiaServices.executarEstrategia(novaEstrategia.id);
+            const apostas = await bilheteServices.montaBilhetes(novaEstrategia);
 
-            // Retorna a estratégia recém-criada com as regras incluídas
-            const estrategiaComRegras = await estrategiaServices.pegaUmRegistro({
-                where: { id: novaEstrategia.id },
-                include: [{ model: Regra }] // Inclui as regras associadas
-            });
-
+            // Calcula as estatiscica da estrategia
+            const estrategiaComRegras = await estrategiaServices.geraEstistica(novaEstrategia);
 
             return res.status(201).json({ message: 'Estratégia criada com sucesso!', estrategia: estrategiaComRegras, apostas });
         } catch (error) {
@@ -318,33 +314,15 @@ class EstrategiaController extends Controller {
                 await bilhete.destroy();
             }
             // Executa a estratégia para recalcular apostas
-            const apostas = await estrategiaServices.executarEstrategia(id);
+            const apostas = await bilheteServices.montaBilhetes(estrategiaExistente);
 
             // Retorna a estratégia atualizada com as regras incluídas
-            const estrategiaComRegras = await estrategiaServices.pegaUmRegistro({
-                where: { id },
-                include: [{ model: Regra }] // Inclui as regras associadas
-            });
+            const estrategiaComRegras = await estrategiaServices.geraEstistica(estrategiaExistente);
 
             return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaComRegras, apostas });
         } catch (error) {
             console.error('Erro ao atualizar estratégia:', error);
             return res.status(500).json({ error: 'Erro ao atualizar estratégia: ' + error.message });
-        }
-    }
-
-    async executarEstrategia(req, res) {
-        try {
-            if (!req.params.id) {
-                return res.status(400).json({ error: 'ID da estratégia não fornecido!' });
-            }
-
-            const apostas = await estrategiaServices.executarEstrategia(req.params.id);
-            return res.status(200).json(apostas);
-
-        } catch (error) {
-            console.error('Erro ao executar estratégia:', error);
-            return res.status(500).json({ error: 'Erro ao executar estratégia: ' + error.message });
         }
     }
 

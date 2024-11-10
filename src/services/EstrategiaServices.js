@@ -107,145 +107,127 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
-    /*
-    async executarEstrategia(estrategiaId) {
-        const estrategia = await this.pegaUmRegistroPorId(estrategiaId);
-        if (!estrategia) {
-            throw new Error('Estratégia não encontrada!');
+
+    async geraEstistica(estrategia) {
+        const bilhetes = await estrategia.getBilhetes({
+            attributes: [
+                'bilhete_id',
+                'status_bilhete',
+                'odd',
+                'data'
+            ],
+            group: ['bilhete_id', 'status_bilhete', 'odd', 'data']
+        });
+
+        if (bilhetes.length === 0) {
+            throw new Error('Estratégia não contém bilhetes!');
         }
 
-        const regras = await estrategia.getRegras();
-        if (regras.length === 0) {
-            throw new Error('Estratégia não contém regras!');
-        }
+        try {
+            // Inicialize as estatísticas da estratégia
+            estrategia.total_apostas = bilhetes.length;
+            estrategia.totalacerto = 0;
+            estrategia.totalerro = 0;
+            estrategia.odd_total = 0;
+            estrategia.odd_minima = Infinity;
+            estrategia.odd_maxima = -Infinity;
+            estrategia.total_vitorias = 0;
+            estrategia.total_derrotas = 0;
+            estrategia.lucro_total = 0;
+            estrategia.media_odd_vitoriosa = 0;
+            estrategia.media_odd_derrotada = 0;
+            estrategia.media_sequencia_vitorias = 0;
+            estrategia.maior_derrotas_dia = 0;
+            estrategia.maior_derrotas_semana = 0;
+            estrategia.maior_vitorias_dia = 0;
+            estrategia.maior_vitorias_semana = 0;
 
-        const jogosUnicos = await this.filtrarJogosUnicos(regras);
-        if (jogosUnicos.length === 0) {
-            throw new Error('Nenhum jogo encontrado!');
-        }
-        if (jogosUnicos.length <= regras.length) {
-            throw new Error('Quantidade de jogos insuficiente!');
-        }
-        let apostas = {};
-        let acertos = 0;
-        let erros = 0;
-        let odds = [];
-        let oddsVitoriosas = [];
-        let oddsDerrotadas = [];
-        let sequenciaVitorias = 0;
-        let sequenciaDerrotas = 0;
-        let maiorSequenciaVitorias = 0;
-        let maiorSequenciaDerrotas = 0;
-        const diasVitorias = {};
-        const diasDerrotas = {};
-        const semanasVitorias = {};
-        const semanasDerrotas = {};
-        let totalSequenciaVitorias = 0;
-        let numSequencias = 0;
-        const bilhetesCriar = [];
-        let i = await bilheteServices.maxId() || 1;
+            let sequenciaAtualVitoria = 0;
+            let sequenciaAtualDerrota = 0;
+            let somaOddVitoriosa = 0;
+            let somaOddDerrotada = 0;
+            let countVitoriosa = 0;
+            let countDerrotada = 0;
+            let dias = {};
+            let semanas = {};
+            let sequenciasVitoria = []; // Armazena todas as sequências de vitórias para calcular a média posteriormente
 
-        const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
+            bilhetes.forEach(bilhete => {
+                const { odd, status_bilhete, data } = bilhete.dataValues;
 
-        for (const jogo of jogosArray) {
-            if (!apostas[i]) {
-                apostas[i] = { odd: 1, status: true, jogos: [] };
-            }
+                estrategia.odd_total += odd;
+                estrategia.odd_minima = Math.min(estrategia.odd_minima, odd);
+                estrategia.odd_maxima = Math.max(estrategia.odd_maxima, odd);
 
-            bilhetesCriar.push({
-                bilhete_id: i,
-                jogo_id: jogo.id,
-                estrategia_id: estrategia.id,
-                odd_id: jogo.odd_id,
-                status_jogo: jogo.statusOdd,
+                const isVitoria = status_bilhete; // Supondo que `true` é vitória e `false` é derrota
+
+                const dia = data.toISOString().split('T')[0];
+                const semana = `${data.getUTCFullYear()}-W${Math.ceil((data.getUTCDate() - data.getUTCDay()) / 7)}`;
+
+                // Controle de frequência por dia e semana
+                dias[dia] = dias[dia] || { vitorias: 0, derrotas: 0 };
+                semanas[semana] = semanas[semana] || { vitorias: 0, derrotas: 0 };
+
+                if (isVitoria) {
+                    estrategia.totalacerto++;
+                    estrategia.total_vitorias++;
+                    dias[dia].vitorias++;
+                    semanas[semana].vitorias++;
+
+                    sequenciaAtualVitoria++;
+                    sequenciaAtualDerrota = 0;
+
+                    estrategia.lucro_total += (odd - 1); // ajustado conforme o cálculo de lucro desejado
+                    somaOddVitoriosa += odd;
+                    countVitoriosa++;
+                } else {
+                    estrategia.totalerro++;
+                    estrategia.total_derrotas++;
+                    dias[dia].derrotas++;
+                    semanas[semana].derrotas++;
+
+                    sequenciaAtualDerrota++;
+                    if (sequenciaAtualVitoria > 0) {
+                        sequenciasVitoria.push(sequenciaAtualVitoria); // Armazene a sequência de vitórias antes de zerar
+                        sequenciaAtualVitoria = 0;
+                    }
+
+                    estrategia.lucro_total -= 1; // ajustado conforme o cálculo de lucro desejado
+                    somaOddDerrotada += odd;
+                    countDerrotada++;
+                }
+
+                estrategia.sequencia_vitorias = Math.max(estrategia.sequencia_vitorias, sequenciaAtualVitoria);
+                estrategia.sequencia_derrotas = Math.max(estrategia.sequencia_derrotas, sequenciaAtualDerrota);
             });
 
-            apostas[i].jogos.push(jogo);
-            apostas[i].odd *= jogo.odd;
-            odds.push(jogo.odd);
+            if (sequenciaAtualVitoria > 0) sequenciasVitoria.push(sequenciaAtualVitoria); // Adicione a última sequência de vitórias, se houver
 
-            const dataAposta = jogo.data;
-            const semanaAposta = startOfWeek(new Date(dataAposta)).toISOString();
+            // Cálculos finais
+            estrategia.taxaacerto = ((estrategia.totalacerto / estrategia.total_apostas) * 100).toFixed(2);
+            estrategia.odd_media = (estrategia.odd_total / estrategia.total_apostas).toFixed(2);;
+            estrategia.media_odd_vitoriosa = countVitoriosa > 0 ? (somaOddVitoriosa / countVitoriosa).toFixed(2) : 0;
+            estrategia.media_odd_derrotada = countDerrotada > 0 ? (somaOddDerrotada / countDerrotada).toFixed(2) : 0;
+            estrategia.frequencia_apostas_dia = Object.keys(dias).length;
+            estrategia.media_sequencia_vitorias = sequenciasVitoria.length > 0 ? (sequenciasVitoria.reduce((a, b) => a + b, 0) / sequenciasVitoria.length).toFixed(2) : 0;
 
-            if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
-                apostas[i].status = apostas[i].jogos.every((j) => j.statusOdd === true);
-                bilhetesCriar.forEach(bilhete => {
-                    if (bilhete.bilhete_id === i) {
-                        bilhete.status_bilhete = apostas[i].status;
-                        bilhete.odd = apostas[i].odd.toFixed(2);
-                    }
-                });
-                if (apostas[i].status) {
-                    acertos++;
-                    oddsVitoriosas.push(apostas[i].odd);
-                    sequenciaVitorias++;
-                    totalSequenciaVitorias += sequenciaVitorias;
-                    numSequencias++;
+            // Maior número de vitórias e derrotas em um único dia
+            estrategia.maior_vitorias_dia = Math.max(...Object.values(dias).map(d => d.vitorias));
+            estrategia.maior_derrotas_dia = Math.max(...Object.values(dias).map(d => d.derrotas));
 
-                    diasVitorias[dataAposta] = (diasVitorias[dataAposta] || 0) + 1;
-                    semanasVitorias[semanaAposta] = (semanasVitorias[semanaAposta] || 0) + 1;
-                    maiorSequenciaVitorias = Math.max(maiorSequenciaVitorias, sequenciaVitorias);
-                    sequenciaDerrotas = 0;
-                } else {
-                    erros++;
-                    oddsDerrotadas.push(apostas[i].odd);
-                    sequenciaDerrotas++;
-                    maiorSequenciaDerrotas = Math.max(maiorSequenciaDerrotas, sequenciaDerrotas);
+            // Maior número de vitórias e derrotas em uma única semana
+            estrategia.maior_vitorias_semana = Math.max(...Object.values(semanas).map(s => s.vitorias));
+            estrategia.maior_derrotas_semana = Math.max(...Object.values(semanas).map(s => s.derrotas));
 
-                    diasDerrotas[dataAposta] = (diasDerrotas[dataAposta] || 0) + 1;
-                    semanasDerrotas[semanaAposta] = (semanasDerrotas[semanaAposta] || 0) + 1;
-                    sequenciaVitorias = 0;
-                }
-                i++;
-            }
+            estrategia.lucro_total = estrategia.lucro_total.toFixed(2);
+            estrategia.save();
+
+            return estrategia;
+        } catch (error){
+            console.error('EstrategiaServices:', error.message);
         }
 
-        await bilheteServices.criaVariosRegistros(bilhetesCriar);
-
-        const totalApostas = (acertos + erros);
-        const oddMedia = odds.length > 0 ? odds.reduce((acc, odd) => acc + odd, 0) / odds.length : 0;
-        const oddMinima = odds.length > 0 ? Math.min(...odds) : 0;
-        const oddMaxima = odds.length > 0 ? Math.max(...odds) : 0;
-        const mediaOddVitoriosa = oddsVitoriosas.length > 0 ? oddsVitoriosas.reduce((acc, odd) => acc + odd, 0) / oddsVitoriosas.length : 0;
-        const mediaOddDerrotada = oddsDerrotadas.length > 0 ? oddsDerrotadas.reduce((acc, odd) => acc + odd, 0) / oddsDerrotadas.length : 0;
-        const frequenciaApostasDia = Object.keys(diasVitorias).length > 0 ? totalApostas / Object.keys(diasVitorias).length : 0;
-        const aposta = 1;
-        const totalPerdas = erros * aposta;
-        const lucroTotal = oddsVitoriosas.reduce((acc, odd) => acc + ((odd) * aposta - aposta), 0) - totalPerdas;
-        const mediaSequenciaVitorias = numSequencias > 0 ? totalSequenciaVitorias / numSequencias : 0;
-        const maiorVitoriasDia = Object.values(diasVitorias).length > 0 ? Math.max(...Object.values(diasVitorias)) : 0;
-        const maiorVitoriasSemana = Object.values(semanasVitorias).length > 0 ? Math.max(...Object.values(semanasVitorias)) : 0;
-        const maiorDerrotasDia = Object.values(diasDerrotas).length > 0 ? Math.max(...Object.values(diasDerrotas)) : 0;
-        const maiorDerrotasSemana = Object.values(semanasDerrotas).length > 0 ? Math.max(...Object.values(semanasDerrotas)) : 0;
-
-        estrategia.totalacerto = acertos;
-        estrategia.totalerro = erros;
-        estrategia.taxaacerto = (acertos + erros > 0) ? ((acertos / (acertos + erros)) * 100).toFixed(2) : 0;
-        estrategia.odd_media = oddMedia.toFixed(2);
-        estrategia.odd_minima = oddMinima;
-        estrategia.odd_maxima = oddMaxima;
-        estrategia.media_odd_vitoriosa = mediaOddVitoriosa.toFixed(2);
-        estrategia.media_odd_derrotada = mediaOddDerrotada.toFixed(2);
-        estrategia.total_apostas = totalApostas;
-        estrategia.frequencia_apostas_dia = frequenciaApostasDia;
-        estrategia.sequencia_vitorias = maiorSequenciaVitorias;
-        estrategia.sequencia_derrotas = maiorSequenciaDerrotas;
-        estrategia.total_vitorias = acertos;
-        estrategia.total_derrotas = erros;
-        estrategia.lucro_total = lucroTotal.toFixed(2);
-        estrategia.qtde_usuarios = 0;
-        estrategia.media_sequencia_vitorias = mediaSequenciaVitorias;
-        estrategia.maior_derrotas_dia = maiorDerrotasDia;
-        estrategia.maior_derrotas_semana = maiorDerrotasSemana;
-        estrategia.maior_vitorias_dia = maiorVitoriasDia;
-        estrategia.maior_vitorias_semana = maiorVitoriasSemana;
-
-        await estrategia.save();
-
-        return apostas;
     }
-*/
-
 }
 
 module.exports = EstrategiaServices;
