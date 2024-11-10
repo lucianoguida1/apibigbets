@@ -125,7 +125,6 @@ class RequestController extends Controller {
                     logTo(`Erro ao requisitar página: ${page}`);
                 }
             } catch (error) {
-                console.log(error);
                 logTo('Erro durante a requisição:', error.message);
                 console.error('Erro durante a requisição:', error.message);
             } finally {

@@ -3,9 +3,9 @@ const { startOfWeek } = require('date-fns');
 const Services = require('./Services.js');
 const { Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
 const JogoServices = require('./JogoServices');
-const BilheteServices = require('./BilheteServices.js');
+//const BilheteServices = require('./BilheteServices.js');
 
-const bilheteServices = new BilheteServices();
+//const bilheteServices = new BilheteServices();
 const jogoServices = new JogoServices();
 
 class EstrategiaServices extends Services {
@@ -107,6 +107,7 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
+    /*
     async executarEstrategia(estrategiaId) {
         const estrategia = await this.pegaUmRegistroPorId(estrategiaId);
         if (!estrategia) {
@@ -243,21 +244,8 @@ class EstrategiaServices extends Services {
 
         return apostas;
     }
+*/
 
-    async filtrarJogosUnicos(regras) {
-        const jogosUnicos = {};
-        const jogosPorRegra = await Promise.all(
-            regras.map((regra) => jogoServices.filtrarJogosPorRegra(regra))
-        );
-
-        jogosPorRegra.flat().forEach((jogo) => {
-            if (!jogosUnicos[jogo.id]) {
-                jogosUnicos[jogo.id] = jogo;
-            }
-        });
-
-        return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
-    }
 }
 
 module.exports = EstrategiaServices;

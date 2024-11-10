@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     status_jogo: DataTypes.BOOLEAN,
     status_bilhete: DataTypes.BOOLEAN,
     odd: DataTypes.NUMBER,
+    data: DataTypes.DATE,
   }, {
     sequelize,
     modelName: 'Bilhete',

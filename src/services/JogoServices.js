@@ -7,7 +7,6 @@ const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
-const dataSource = require('../database/models');
 const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Pai } = require('../database/models');
 
 const ligaServices = new LigaServices();
@@ -22,6 +21,21 @@ class JogoServices extends Services {
         super('Jogo');
     }
 
+
+    async filtrarJogosUnicos(regras) {
+        const jogosUnicos = {};
+        const jogosPorRegra = await Promise.all(
+            regras.map((regra) => this.filtrarJogosPorRegra(regra))
+        );
+
+        jogosPorRegra.flat().forEach((jogo) => {
+            if (!jogosUnicos[jogo.id]) {
+                jogosUnicos[jogo.id] = jogo;
+            }
+        });
+
+        return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
+    }
 
     async filtrarJogosPorRegra(regra) {
         const whereJogo = {};

@@ -22,4 +22,19 @@ routes(app);
 // EXECUTA AS TAREFAS CRONS
 tarefaCron();
 
+
+
+
+const BilhetesServices = require('./services/BilheteServices.js');
+const bilheteServices2 = new BilhetesServices();
+const EstrategiaServices = require('./services/EstrategiaServices.js');
+const estrategia = new EstrategiaServices();
+
+async function teste() {
+    bilheteServices2.montaBilhetes(await estrategia.pegaUmRegistro(4));
+}
+teste();
+
+
+
 module.exports = app;
