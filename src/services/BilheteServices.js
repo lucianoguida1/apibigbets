@@ -12,7 +12,7 @@ class BilheteServices extends Services {
         super('Bilhete');
     }
 
-    async montaBilhetes(estrategia) {
+    async montaBilhetes(estrategia, novosJogos = false) {
         // Verifica se a estratégia foi passada
         if (!estrategia) {
             throw new Error('Estratégia não encontrada!');
@@ -23,12 +23,12 @@ class BilheteServices extends Services {
         if (!regras || regras.length === 0) {
             throw new Error('Estratégia não contém regras!');
         }
-        const jogosUnicos = await jogoServices.filtrarJogosUnicos(regras);
+        const jogosUnicos = await jogoServices.filtrarJogosUnicos(regras, novosJogos);
         if (jogosUnicos.length === 0) {
-            throw new Error('Nenhum jogo encontrado!');
+            return ('Nenhum jogo encontrado!');
         }
         if (jogosUnicos.length <= regras.length) {
-            throw new Error('Quantidade de jogos insuficiente!');
+            return ('Quantidade de jogos insuficiente!');
         }
 
         try {
@@ -75,7 +75,7 @@ class BilheteServices extends Services {
         }
     }
 
-    
+
 }
 
 module.exports = BilheteServices;

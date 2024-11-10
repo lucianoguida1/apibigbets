@@ -22,10 +22,10 @@ class JogoServices extends Services {
     }
 
 
-    async filtrarJogosUnicos(regras) {
+    async filtrarJogosUnicos(regras, jogosPendente = false) {
         const jogosUnicos = {};
         const jogosPorRegra = await Promise.all(
-            regras.map((regra) => this.filtrarJogosPorRegra(regra))
+            regras.map((regra) => this.filtrarJogosPorRegra(regra, jogosPendente))
         );
 
         jogosPorRegra.flat().forEach((jogo) => {
@@ -37,7 +37,7 @@ class JogoServices extends Services {
         return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
     }
 
-    async filtrarJogosPorRegra(regra) {
+    async filtrarJogosPorRegra(regra, jogosPendente = false) {
         const whereJogo = {};
         const include = [
             {
@@ -153,6 +153,7 @@ class JogoServices extends Services {
             where: {
                 ...whereJogo,
                 //data: { [Op.lt]: new Date('2024-11-01') },
+                ...(jogosPendente ? { gols_casa: null } : {})
             },
             order: [['id', 'ASC']],
             include
