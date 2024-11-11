@@ -24,6 +24,19 @@ class EstrategiaController extends Controller {
         super(estrategiaServices);
     }
 
+    async getCamposFormulario(req, res) {
+        try {
+            const paises = await paiServices.pegaTodosOsRegistros();
+            const ligas = await ligaServices.getLigasForm();
+            //const times = await timeServices.pegaTodosOsRegistros();
+            const apostas = await regravalidacoeServices.getRegrasValidacao();
+
+            return res.status(200).json({ paises, ligas, apostas })
+        } catch (error) {
+            return res.status(500).json({ erro: error.message });
+        }
+    }
+
     async getEstrategiaGrafico(req, res) {
         const { id } = req.params;
         try {
@@ -33,8 +46,7 @@ class EstrategiaController extends Controller {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
             }
 
-            let salvaJson = false;
-            if (estrategia.updatedAt.toISOString().split('T')[0] != toDay()) {
+            if (estrategia.updatedAt.toISOString().split('T')[0] == toDay() && estrategia.grafico_json != null) {
                 return res.status(200).json(estrategia.grafico_json);
             }
 
@@ -65,34 +77,36 @@ class EstrategiaController extends Controller {
 
             // Processar cada grupo de bilhete_id
             for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
-                // Encontrar a maior data entre os jogos do bilhete
-                const dataMaisRecente = bilhetes.reduce((max, bilhete) => {
-                    const dataJogo = new Date(bilhete.Jogo.datahora);
-                    return dataJogo > max ? dataJogo : max;
-                }, new Date(0));
+                if (bilhetes[0].status_jogo != null) {
+                    // Encontrar a maior data entre os jogos do bilhete
+                    const dataMaisRecente = bilhetes.reduce((max, bilhete) => {
+                        const dataJogo = new Date(bilhete.Jogo.datahora);
+                        return dataJogo > max ? dataJogo : max;
+                    }, new Date(0));
 
-                // Calcular o lucro do bilhete
-                const statusBilhete = bilhetes[0].status_bilhete; // Considera o mesmo status para o grupo
-                const odd = bilhetes[0].odd; // Considera a mesma odd para o grupo
-                const lucro = statusBilhete ? (odd - 1) : -1;
+                    // Calcular o lucro do bilhete
+                    const statusBilhete = bilhetes[0].status_bilhete; // Considera o mesmo status para o grupo
+                    const odd = bilhetes[0].odd; // Considera a mesma odd para o grupo
+                    const lucro = statusBilhete ? (odd - 1) : -1;
 
-                // Converter data para string e acumular o lucro e contagem no objeto lucroPorData
-                const dataStr = dataMaisRecente.toISOString().split('T')[0];
+                    // Converter data para string e acumular o lucro e contagem no objeto lucroPorData
+                    const dataStr = dataMaisRecente.toISOString().split('T')[0];
 
-                if (!lucroPorData[dataStr]) {
-                    lucroPorData[dataStr] = 0;
-                    bilhetesPorData[dataStr] = 0;
-                    ganhosPorData[dataStr] = 0;
-                    perdasPorData[dataStr] = 0;
-                }
+                    if (!lucroPorData[dataStr]) {
+                        lucroPorData[dataStr] = 0;
+                        bilhetesPorData[dataStr] = 0;
+                        ganhosPorData[dataStr] = 0;
+                        perdasPorData[dataStr] = 0;
+                    }
 
-                // Atualizar dados de lucro, quantidade total de bilhetes, ganhos e perdas
-                lucroPorData[dataStr] += lucro;
-                bilhetesPorData[dataStr] += 1;
-                if (statusBilhete) {
-                    ganhosPorData[dataStr] += 1;
-                } else {
-                    perdasPorData[dataStr] += 1;
+                    // Atualizar dados de lucro, quantidade total de bilhetes, ganhos e perdas
+                    lucroPorData[dataStr] += lucro;
+                    bilhetesPorData[dataStr] += 1;
+                    if (statusBilhete) {
+                        ganhosPorData[dataStr] += 1;
+                    } else {
+                        perdasPorData[dataStr] += 1;
+                    }
                 }
             }
 
@@ -113,10 +127,10 @@ class EstrategiaController extends Controller {
                         bilhetesPerdidos: perdasPorData[data]
                     };
                 });
-            if (salvaJson) {
-                const grafico_json = JSON.stringify(dadosGrafico);
-                await estrategiaServices.atualizaRegistro({ grafico_json }, { id: Number(id) });
-            }
+
+
+            await estrategiaServices.atualizaRegistro({ grafico_json: dadosGrafico }, { id: Number(id) });
+
 
             return res.status(200).json(dadosGrafico);
         } catch (erro) {

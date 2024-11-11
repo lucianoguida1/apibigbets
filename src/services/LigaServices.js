@@ -1,6 +1,8 @@
+const { Op, Sequelize } = require('sequelize');
 const Services = require('./Services.js');
 const PaiServices = require('../services/PaiServices.js');
 const TemporadaServices = require('./TemporadaServices.js');
+const { Jogo, Liga, Temporada, sequelize } = require('../database/models');
 
 const paiServices = new PaiServices();
 const temporadaServices = new TemporadaServices();
@@ -29,6 +31,29 @@ class LigaServices extends Services {
 
         return liga;
     }/// fim do metedo adiconaLiga
-}
 
+    async getLigasForm() {
+        const sql = `
+            SELECT l.id, l.nome, l.logo, COUNT(j.id) AS totalJogos
+            FROM ligas l
+            INNER JOIN temporadas t ON t.liga_id = l.id
+            INNER JOIN jogos j ON j.temporada_id = t.id
+            GROUP BY l.id, l.nome, l.logo
+            HAVING COUNT(j.id) > 50
+            ORDER BY totalJogos DESC
+            LIMIT 20;
+        `;
+
+        try {
+            const results = await sequelize.query(sql, {
+                type: sequelize.QueryTypes.SELECT,
+            });
+
+            return results;
+        } catch (error) {
+            console.error('Erro ao buscar as top 20 ligas:', error);
+            throw error;
+        }
+    }
+}
 module.exports = LigaServices;

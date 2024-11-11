@@ -33,7 +33,7 @@ const servicesBase = require('./controllers/ServicesBaseController.js');
 const servicesB = new servicesBase();
 
 async function teste() {
-    await servicesB.executarEstrategias();
+    //await servicesB.executarEstrategias();
     //const estrategia = await estrategiaS.pegaUmRegistroPorId(4);
     //await bilheteServices2.montaBilhetes(estrategia);
     //estrategiaS.executarEstrategia(estrategia);

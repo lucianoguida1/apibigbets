@@ -7,7 +7,7 @@ class Services {
   }
 
   async pegaTodosOsRegistros(where = {}) {
-    return dataSource[this.model].findAll({ where: { ...where } });
+    return dataSource[this.model].findAll({ where: { ...where }, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, });
   }
 
   async pegaRegistrosPorEscopo(escopo) {
@@ -32,7 +32,7 @@ class Services {
   }
 
   async pegaEContaRegistros(options) {
-    return dataSource[this.model].findAndCountAll({ ...options });
+    return dataSource[this.model].findAndCountAll({ ...options, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, });
   }
 
   async criaRegistro(dadosDoRegistro) {

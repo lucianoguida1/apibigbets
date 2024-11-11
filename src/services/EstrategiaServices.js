@@ -15,19 +15,27 @@ class EstrategiaServices extends Services {
     async getEstrategia(estrategiaID) {
         const estrategia = await super.pegaUmRegistro({
             where: { id: estrategiaID },
+            attributes: {
+                exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
+            },
             include: {
                 model: Regra,
                 require: true,
+                attributes: {
+                    exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
+                },
                 include: [
-                    { model: Pai, required: false },             // Associação com Pai
-                    { model: Liga, required: false },            // Associação com Liga
-                    { model: Time, required: false },            // Associação com Time
+                    { model: Pai, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },             // Associação com Pai
+                    { model: Liga, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Liga
+                    { model: Time, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Time
                     {
                         model: Regravalidacoe,
                         require: true,
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
                             require: true,
+                            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     }
                 ]
@@ -39,25 +47,30 @@ class EstrategiaServices extends Services {
     async getBilhetes(EstrategiaID, page = 1, pageSize = null, order = "DESC") {
         const options = {
             where: { id: EstrategiaID },
+            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "grafico_json"] },
             include: {
                 model: Bilhete,
                 required: false,
                 order: [['bilhete_id', order]],
+                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "jogo_id", "estrategia_id", "odd_id", "data",] },
                 include: [
                     {
                         model: Jogo,
                         required: true,
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "bilhete_id", "casa_id", "fora_id", "temporada_id", "id_sports", "halftime", "fulltime", "extratime", "penalty"] },
                         where: {
-                            gols_casa: { [Op.ne]: null }
+                            //gols_casa: { [Op.ne]: null }
                         },
                         include: [
                             {
                                 model: Time,
+                                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] },
                                 as: 'casa',
                                 required: true,
                             },
                             {
                                 model: Time,
+                                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] },
                                 as: 'fora',
                                 required: true,
                             }
@@ -66,7 +79,8 @@ class EstrategiaServices extends Services {
                     {
                         model: Odd,
                         required: false,
-                        include: { model: Tipoaposta, required: true }
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "jogo_id", "bet_id", "regra_id"] },
+                        include: { model: Tipoaposta, required: true, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] } }
                     },
                 ]
             }
@@ -86,19 +100,27 @@ class EstrategiaServices extends Services {
         const estrategia = await super.pegaUmRegistro({
             where: { taxaacerto: { [Op.ne]: null } },
             order: [['taxaacerto', 'DESC']],
+            attributes: {
+                exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
+            },
             include: {
                 model: Regra,
                 require: true,
+                attributes: {
+                    exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
+                },
                 include: [
-                    { model: Pai, required: false },             // Associação com Pai
-                    { model: Liga, required: false },            // Associação com Liga
-                    { model: Time, required: false },            // Associação com Time
+                    { model: Pai, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },             // Associação com Pai
+                    { model: Liga, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Liga
+                    { model: Time, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] }, },            // Associação com Time
                     {
                         model: Regravalidacoe,
                         require: true,
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
                             require: true,
+                            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     }
                 ]
@@ -223,7 +245,7 @@ class EstrategiaServices extends Services {
             estrategia.save();
 
             return estrategia;
-        } catch (error){
+        } catch (error) {
             console.error('EstrategiaServices:', error.message);
         }
 

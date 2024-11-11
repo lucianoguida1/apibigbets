@@ -54,7 +54,8 @@ class BilheteServices extends Services {
                 apostas[i].odd *= jogo.odd;
 
                 if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
-                    apostas[i].status = apostas[i].jogos.every((j) => j.statusOdd === true);
+                    const algumStatusNulo = apostas[i].jogos.some((j) => j.statusOdd === null);
+                    apostas[i].status = algumStatusNulo ? null : apostas[i].jogos.every((j) => j.statusOdd === true);
                     bilhetesCriar.forEach(bilhete => {
                         if (bilhete.bilhete_id === i) {
                             bilhete.status_bilhete = apostas[i].status;

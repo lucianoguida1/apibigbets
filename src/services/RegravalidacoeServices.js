@@ -1,6 +1,7 @@
 const logTo = require('../utils/logTo.js');
 const Services = require('./Services.js');
-const { Odd, Regravalidacoe } = require('../database/models');
+const { Odd, Regravalidacoe, Tipoaposta } = require('../database/models');
+const { Op } = require('sequelize');
 
 class RegravalidacoeServices extends Services {
     constructor() {
@@ -20,7 +21,21 @@ class RegravalidacoeServices extends Services {
             }
         });
     }
-    
+
+    async getRegrasValidacao() {
+        return await Regravalidacoe.findAll({
+            where: {
+                regra: { [Op.ne]: null }
+            },
+            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "regra", "tipoaposta_id"] },
+            include: {
+                model: Tipoaposta,
+                required: true,
+                attributes: ['nome','name']
+            }
+        })
+    }
+
     async pegaRegra(nome, tipoAposta) {
         try {
             let regra = await super.pegaUmRegistro({ where: { 'nome': nome, 'tipoaposta_id': tipoAposta.id } });
