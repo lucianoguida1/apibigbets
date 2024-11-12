@@ -26,7 +26,7 @@ class EstrategiaController extends Controller {
 
     async getCamposFormulario(req, res) {
         try {
-            const paises = await paiServices.pegaTodosOsRegistros();
+            const paises = await paiServices.pegaTodosOsRegistros({ order: [["nome", 'ASC']] });
             const ligas = await ligaServices.getLigasForm();
             //const times = await timeServices.pegaTodosOsRegistros();
             const apostas = await regravalidacoeServices.getRegrasValidacao();

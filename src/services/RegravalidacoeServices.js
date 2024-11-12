@@ -33,7 +33,7 @@ class RegravalidacoeServices extends Services {
                 required: true,
                 attributes: ['nome','name']
             }
-        })
+        });
     }
 
     async pegaRegra(nome, tipoAposta) {
