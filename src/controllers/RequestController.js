@@ -56,6 +56,7 @@ class RequestController extends Controller {
             };
 
             try {
+                console.log(URL + 'odds')
                 let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
                     salvaJson('odds', page, response.data);
@@ -64,7 +65,7 @@ class RequestController extends Controller {
                         await this.adicionaJogos(date);
                     }
                     const todasLigas = await ligaServices.pegaTodosOsRegistros();
-                    const todosJogos = await jogoServices.pegaTodosOsRegistros({ 'data': date });
+                    const todosJogos = await jogoServices.pegaTodosOsRegistros({where: {'data': date }});
                     const todasCasasAposta = await betServices.pegaTodosOsRegistros();
                     const todosTipoAposta = await tipoApostaServices.pegaTodosOsRegistros();
                     const regras = await regraServices.pegaTodosOsRegistros();

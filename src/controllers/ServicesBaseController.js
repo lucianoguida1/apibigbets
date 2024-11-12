@@ -67,7 +67,7 @@ class ServicesBaseController extends Controller {
             const startTime = new Date();  // Marca o início da execução
             logTo('Iniciando validação de regras odd');
 
-            const regras = await regraServices.pegaTodosOsRegistros({ 'regra': { [Op.ne]: null } });
+            const regras = await regraServices.pegaTodosOsRegistros({ where: { 'regra': { [Op.ne]: null } } });
             const idJogos = new Set();
             const jogoOddsMap = new Map(); // Mapeia os jogos para suas odds
             let totalAtualizado = 0;  // Variável para acumular o número de linhas atualizadas

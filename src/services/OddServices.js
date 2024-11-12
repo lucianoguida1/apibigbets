@@ -8,7 +8,7 @@ class OddServices extends Services {
         super('Odd');
     }
     async pegaOdd(tipoApostas, jogo, casaDeAposta, odds, regras) {
-        const oddsDoJogo = await super.pegaTodosOsRegistros({ 'jogo_id': jogo.id });
+        const oddsDoJogo = await super.pegaTodosOsRegistros({ where: { 'jogo_id': jogo.id } });
 
         const novasOdds = [];
         const oddsParaAtualizar = [];

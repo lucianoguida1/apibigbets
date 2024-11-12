@@ -8,7 +8,7 @@ class GolServices extends Services {
         let gols = null;
 
         if ('id' in jogo) {
-            gols = await super.pegaTodosOsRegistros({ 'jogo_id': jogo.id });
+            gols = await super.pegaTodosOsRegistros({ where: { 'jogo_id': jogo.id } });
         }
         // Caso não existam registros, cria novos
         if (gols != null) {

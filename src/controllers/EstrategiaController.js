@@ -238,7 +238,7 @@ class EstrategiaController extends Controller {
             // Calcula as estatiscica da estrategia
             const estrategiaComRegras = await estrategiaServices.geraEstistica(novaEstrategia);
 
-            return res.status(201).json({ message: 'Estratégia criada com sucesso!', estrategia: estrategiaComRegras, apostas });
+            return res.status(201).json({ message: 'Estratégia criada com sucesso!', estrategia: estrategiaComRegras });
         } catch (error) {
             console.error('Erro ao criar estratégia:', error);
             return res.status(500).json({ error: 'Erro ao criar estratégia: ' + error.message });
@@ -333,7 +333,7 @@ class EstrategiaController extends Controller {
             // Retorna a estratégia atualizada com as regras incluídas
             const estrategiaComRegras = await estrategiaServices.geraEstistica(estrategiaExistente);
 
-            return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaComRegras, apostas });
+            return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaComRegras });
         } catch (error) {
             console.error('Erro ao atualizar estratégia:', error);
             return res.status(500).json({ error: 'Erro ao atualizar estratégia: ' + error.message });
