@@ -1,12 +1,12 @@
-const { Op, Sequelize } = require('sequelize');
-const { startOfWeek } = require('date-fns');
+const { Op } = require('sequelize');
+//const { startOfWeek } = require('date-fns');
 const Services = require('./Services.js');
 const { Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
-const JogoServices = require('./JogoServices');
+//const JogoServices = require('./JogoServices');
 //const BilheteServices = require('./BilheteServices.js');
 
 //const bilheteServices = new BilheteServices();
-const jogoServices = new JogoServices();
+//const jogoServices = new JogoServices();
 
 class EstrategiaServices extends Services {
     constructor() {
@@ -51,7 +51,7 @@ class EstrategiaServices extends Services {
             include: {
                 model: Bilhete,
                 required: false,
-                order: [['bilhete_id', order]],
+                order: [['id', order]],
                 attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "jogo_id", "estrategia_id", "odd_id", "data",] },
                 include: [
                     {

@@ -22,24 +22,4 @@ routes(app);
 // EXECUTA AS TAREFAS CRONS
 tarefaCron();
 
-
-
-
-const BilhetesServices = require('./services/BilheteServices.js');
-const bilheteServices2 = new BilhetesServices();
-const EstrategiaServices = require('./services/EstrategiaServices.js');
-const estrategiaS = new EstrategiaServices();
-const servicesBase = require('./controllers/ServicesBaseController.js');
-const servicesB = new servicesBase();
-
-async function teste() {
-    //await servicesB.executarEstrategias();
-    //const estrategia = await estrategiaS.pegaUmRegistroPorId(4);
-    //await bilheteServices2.montaBilhetes(estrategia);
-    //estrategiaS.executarEstrategia(estrategia);
-}
-teste();
-
-
-
 module.exports = app;
