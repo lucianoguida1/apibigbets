@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # CONFIGURAÇÃO DO API BIG BETS
-cd /projetos/apibigbets/ || exit 1
+cd /root//projetos/apibigbets/ || exit 1
 
 # Caminho para o arquivo de log
-LOG_FILE="/projetos/log_gitpull.log"
+LOG_FILE="/root//projetos/log_gitpull.log"
 
 # Função para redefinir o log se tiver mais de 2 dias
 reset_log_if_needed() {
