@@ -39,7 +39,8 @@ if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
     npm run migrate:prod
 
     # Reinicia a aplicação no PM2
-    pm2 restart api-bigbets
+    pm2 delete api-bigbets
+    pm2 start ecosystem.config.js
     pm2 save
 
     echo "$(date): Atualizações aplicadas e aplicação reiniciada."
