@@ -129,7 +129,6 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
-
     async geraEstistica(estrategia) {
         const bilhetes = await estrategia.getBilhetes({
             attributes: [
@@ -230,7 +229,9 @@ class EstrategiaServices extends Services {
             estrategia.odd_media = (estrategia.odd_total / estrategia.total_apostas).toFixed(2);;
             estrategia.media_odd_vitoriosa = countVitoriosa > 0 ? (somaOddVitoriosa / countVitoriosa).toFixed(2) : 0;
             estrategia.media_odd_derrotada = countDerrotada > 0 ? (somaOddDerrotada / countDerrotada).toFixed(2) : 0;
-            estrategia.frequencia_apostas_dia = Object.keys(dias).length;
+            // Corrigir cálculo da frequência de apostas por dia
+            const totalApostasPorDia = Object.values(dias).reduce((total, dia) => total + dia.vitorias + dia.derrotas, 0);
+            estrategia.frequencia_apostas_dia = (totalApostasPorDia / Object.keys(dias).length).toFixed(2);
             estrategia.media_sequencia_vitorias = sequenciasVitoria.length > 0 ? (sequenciasVitoria.reduce((a, b) => a + b, 0) / sequenciasVitoria.length).toFixed(2) : 0;
 
             // Maior número de vitórias e derrotas em um único dia
