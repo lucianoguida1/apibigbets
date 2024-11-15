@@ -6,9 +6,6 @@ cd /projetos/apibigbets/ || exit 1
 # Caminho para o arquivo de log
 LOG_FILE="/projetos/log_gitpull.log"
 
-# Caminho para o backup do banco de dados
-BACKUP_FILE="/projetos/apibigbets/src/database/storage/bigbets.backup"
-
 # Função para redefinir o log se tiver mais de 2 dias
 reset_log_if_needed() {
   if [ -f "$LOG_FILE" ]; then
