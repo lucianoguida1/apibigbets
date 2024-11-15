@@ -32,15 +32,14 @@ REMOTE_COMMIT=$(git ls-remote origin -h refs/heads/main | awk '{print $1}')
 
 # Verifica se há diferenças
 if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
-    # Faz o git pull para baixar as atualizações
+    pm2 delete api-bigbets
+
     git pull
 
-    # Executa as migrações
     npm run migrate:prod
 
-    # Reinicia a aplicação no PM2
-    pm2 delete api-bigbets
     pm2 start ecosystem.config.js
+    
     pm2 save
 
     echo "$(date): Atualizações aplicadas e aplicação reiniciada."
