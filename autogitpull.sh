@@ -32,8 +32,6 @@ REMOTE_COMMIT=$(git ls-remote origin -h refs/heads/main | awk '{print $1}')
 
 # Verifica se há diferenças
 if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
-    echo "$(date): Há novas atualizações no repositório. Executando git pull..."
-
     # Faz o git pull para baixar as atualizações
     git pull
 
