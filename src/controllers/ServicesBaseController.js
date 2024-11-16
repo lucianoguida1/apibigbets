@@ -53,7 +53,7 @@ class ServicesBaseController extends Controller {
             logTo(' - Executando estratégias - ', true);
             const estrategias = await estrategiaServices.pegaTodosOsRegistros();
             for (const est of estrategias) {
-                await bilheteServices.montaBilhetes(est);
+                await bilheteServices.montaBilhetes(est, true);
                 await estrategiaServices.geraEstistica(est)
             }
             logTo('Executado estratégias', true);
