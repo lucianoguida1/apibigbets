@@ -511,7 +511,7 @@ class EstrategiaController extends Controller {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
             }
             await bilheteServices.montaBilhetes(estrategia);
-            await bilheteServices.montaBilhetes(estrategia,true);
+            await bilheteServices.montaBilhetes(estrategia, true);
             await estrategiaServices.geraEstistica(estrategia);
             const estrategiaA = await estrategiaServices.pegaUmRegistroPorId(id);
             return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaA });
