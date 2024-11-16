@@ -378,7 +378,7 @@ class EstrategiaController extends Controller {
 
         try {
             // Chama o serviço com paginação
-            const umRegistro = await estrategiaServices.getBilhetes(Number(id), Number(page), Number(pageSize), "ASC");
+            const umRegistro = await estrategiaServices.getBilhetes(Number(id), Number(page), Number(pageSize), "DESC");
 
             if (!umRegistro) {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });

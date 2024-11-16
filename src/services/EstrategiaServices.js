@@ -51,7 +51,7 @@ class EstrategiaServices extends Services {
             include: {
                 model: Bilhete,
                 required: false,
-                order: [['id', order]],
+                order: [['bilhete_id', order]],
                 attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "jogo_id", "estrategia_id", "odd_id", "data",] },
                 include: [
                     {

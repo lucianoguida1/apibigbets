@@ -66,7 +66,7 @@ class BilheteServices extends Services {
                     i++;
                 }
             }
-            const bilhetes = await this.criaVariosRegistros(bilhetesCriar)
+            const bilhetes = await this.criaVariosRegistros(bilhetesCriar);
             if (bilhetes) {
                 return bilhetes;
             }
