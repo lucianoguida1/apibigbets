@@ -269,84 +269,27 @@ class EstrategiaController extends Controller {
                 return res.status(200).json(estrategia.grafico_json);
             }
 
-            const umRegistro = await estrategiaServices.getBilhetes(Number(id));
+            const bilhetes = await bilheteServices.getBilhetesGrafico(estrategia);
 
-            let dadosGrafico = {
-                nome: umRegistro.nome,
-                descricao: umRegistro.descricao,
-                dados: []
+            if (!bilhetes) {
+                return res.status(404).json({ error: 'Bilhetes não encontrada!' });
+            }
+
+            let saldo = 0; // Saldo inicial
+
+            const bilhetesComSaldo = bilhetes.map(bilhete => {
+                saldo += parseFloat(bilhete.saldo_dia); // Somando saldo_dia ao saldo acumulado
+                return {
+                    ...bilhete,
+                    saldo: parseFloat(saldo.toFixed(2)) // Adicionando saldo acumulado no objeto
+                };
+            });
+
+            const dadosGrafico = {
+                "nome": estrategia.nome,
+                "descricao": estrategia.descricao,
+                "dados": bilhetesComSaldo
             };
-
-            if (!umRegistro.Bilhetes || umRegistro.Bilhetes.length === 0) {
-                // Retornar uma resposta vazia se não houver bilhetes
-                return res.status(200).json(dadosGrafico);
-            }
-
-            const lucroPorData = {}; // Objeto para armazenar o lucro acumulado por data
-            const bilhetesPorData = {}; // Objeto para armazenar a quantidade de bilhetes por data
-            const ganhosPorData = {}; // Objeto para armazenar quantidade de bilhetes ganhados por data
-            const perdasPorData = {}; // Objeto para armazenar quantidade de bilhetes perdidos por data
-
-            // Agrupar por bilhete_id
-            const bilhetesAgrupados = umRegistro.Bilhetes.reduce((acc, bilhete) => {
-                if (!acc[bilhete.bilhete_id]) acc[bilhete.bilhete_id] = [];
-                acc[bilhete.bilhete_id].push(bilhete);
-                return acc;
-            }, {});
-
-            // Processar cada grupo de bilhete_id
-            for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
-                if (bilhetes[0].status_jogo != null) {
-                    // Encontrar a maior data entre os jogos do bilhete
-                    const dataMaisRecente = bilhetes.reduce((max, bilhete) => {
-                        const dataJogo = new Date(bilhete.Jogo.datahora);
-                        return dataJogo > max ? dataJogo : max;
-                    }, new Date(0));
-
-                    // Calcular o lucro do bilhete
-                    const statusBilhete = bilhetes[0].status_bilhete; // Considera o mesmo status para o grupo
-                    const odd = bilhetes[0].odd; // Considera a mesma odd para o grupo
-                    const lucro = statusBilhete ? (odd - 1) : -1;
-
-                    // Converter data para string e acumular o lucro e contagem no objeto lucroPorData
-                    const dataStr = dataMaisRecente.toISOString().split('T')[0];
-
-                    if (!lucroPorData[dataStr]) {
-                        lucroPorData[dataStr] = 0;
-                        bilhetesPorData[dataStr] = 0;
-                        ganhosPorData[dataStr] = 0;
-                        perdasPorData[dataStr] = 0;
-                    }
-
-                    // Atualizar dados de lucro, quantidade total de bilhetes, ganhos e perdas
-                    lucroPorData[dataStr] += lucro;
-                    bilhetesPorData[dataStr] += 1;
-                    if (statusBilhete) {
-                        ganhosPorData[dataStr] += 1;
-                    } else {
-                        perdasPorData[dataStr] += 1;
-                    }
-                }
-            }
-
-            // Iniciar o saldo com 1 real
-            let saldo = 1;
-
-            // Transformar o objeto lucroPorData em um array ordenado e calcular saldo acumulado para o gráfico
-            dadosGrafico.dados = Object.entries(lucroPorData)
-                .sort((a, b) => new Date(a[0]) - new Date(b[0])) // Ordenar por data
-                .map(([data, lucro]) => {
-                    saldo = parseFloat((saldo + lucro).toFixed(2)); // Atualizar saldo acumulado e arredondar para evitar problemas de precisão
-                    return {
-                        data,
-                        lucro: parseFloat(lucro.toFixed(2)),
-                        saldo,
-                        quantidadeBilhetes: bilhetesPorData[data],
-                        bilhetesGanhados: ganhosPorData[data],
-                        bilhetesPerdidos: perdasPorData[data]
-                    };
-                });
-
 
             await estrategiaServices.atualizaRegistro({ grafico_json: dadosGrafico }, { id: Number(id) });
 
@@ -567,7 +510,8 @@ class EstrategiaController extends Controller {
             if (!estrategia) {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
             }
-            await bilheteServices.montaBilhetes(estrategia, true);
+            await bilheteServices.montaBilhetes(estrategia);
+            await bilheteServices.montaBilhetes(estrategia,true);
             await estrategiaServices.geraEstistica(estrategia);
             const estrategiaA = await estrategiaServices.pegaUmRegistroPorId(id);
             return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaA });

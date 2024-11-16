@@ -137,7 +137,12 @@ class EstrategiaServices extends Services {
                 'odd',
                 'data'
             ],
-            group: ['bilhete_id', 'status_bilhete', 'odd', 'data']
+            group: ['bilhete_id', 'status_bilhete', 'odd', 'data'],
+            where: {
+                status_bilhete: {
+                    [Op.not]: null
+                }
+            }
         });
 
         if (bilhetes.length === 0) {
