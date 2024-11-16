@@ -36,7 +36,7 @@ class BilheteServices extends Services {
             const bilhetesCriar = [];
             let i = await Bilhete.max('bilhete_id') || 1;
 
-            const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
+            const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
 
             for (const jogo of jogosArray) {
                 if (!apostas[i]) {
