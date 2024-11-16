@@ -558,6 +558,23 @@ class EstrategiaController extends Controller {
         }
     }
 
+    async executarEstrategia(req, res) {
+        try {
+
+            const { id } = req.params;
+            // Verifica se a estratégia existe
+            const estrategia = await estrategiaServices.pegaUmRegistroPorId(id);
+            if (!estrategia) {
+                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            }
+            await bilheteServices.montaBilhetes(estrategia);
+            await estrategiaServices.geraEstistica(estrategia);
+            const estrategiaA = await estrategiaServices.pegaUmRegistroPorId(id);
+            return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaA });
+        } catch (error) {
+            return res.status(500).json({ error: 'Erro ao executar estratégia: ' + error.message });
+        }
+    }
 }
 
 module.exports = EstrategiaController;
