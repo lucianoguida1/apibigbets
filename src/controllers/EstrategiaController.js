@@ -8,6 +8,7 @@ const LigaServices = require('../services/LigaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const RegraServices = require('../services/RegraServices.js');
 const toDay = require('../utils/toDay.js');
+const { Op } = require('sequelize');
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
@@ -60,8 +61,9 @@ class EstrategiaController extends Controller {
                     const paisesIds = regra.pais.split(',').map(Number);
 
                     const paisesValidos = await paiServices.pegaTodosOsRegistros({
-                        where: { id: paisesIds }
+                        where: { id: { [Op.in]: paisesIds } }
                     });
+                    
                     if (paisesValidos.length != paisesIds.length) {
                         return res.status(400).json({
                             error: `Os IDs de país ${paisesNaoEncontrados.join(', ')} não existem no sistema.`
