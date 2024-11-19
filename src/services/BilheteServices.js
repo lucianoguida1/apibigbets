@@ -1,5 +1,5 @@
 const Services = require('./Services.js');
-const { Bilhete, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
@@ -82,20 +82,25 @@ class BilheteServices extends Services {
             });
 
             return results;
-            
+
         } catch (error) {
             return new Error('Erro ao gerar bilhetes do Gráfico!')
         }
     }
 
-    async montaBilhetes(estrategia, novosJogos = false) {
+    async montaBilhetes(estrategia, novosJogos = false, salvaNoBanco = true) {
         // Verifica se a estratégia foi passada
         if (!estrategia) {
             throw new Error('Estratégia não encontrada!');
         }
 
         // Obtém as regras associadas à estratégia
-        const regras = await estrategia.getRegras();
+        var regras = null;
+        if (estrategia instanceof Estrategia) {
+            regras = await estrategia.getRegras();
+        } else {
+            regras = estrategia.regras;
+        }
         if (!regras || regras.length === 0) {
             throw new Error('Estratégia não contém regras!');
         }
@@ -112,7 +117,7 @@ class BilheteServices extends Services {
             let i = await Bilhete.max('bilhete_id') || 1;
 
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
-            
+
             for (const jogo of jogosArray) {
                 if (!apostas[i]) {
                     apostas[i] = { odd: 1, status: true, jogos: [] };
@@ -141,11 +146,12 @@ class BilheteServices extends Services {
                     i++;
                 }
             }
-            const bilhetes = await this.criaVariosRegistros(bilhetesCriar);
-            if (bilhetes) {
+
+            if (salvaNoBanco) {
+                const bilhetes = await this.criaVariosRegistros(bilhetesCriar);
                 return bilhetes;
             }
-            throw new Error('Algo deu errado ao criar os bilhetes.');
+            return bilhetesCriar;
         } catch (error) {
             console.error('BilhetesServices:', error.message);
         }

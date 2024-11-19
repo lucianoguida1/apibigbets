@@ -1,18 +1,15 @@
 const Controller = require('./Controller.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
-const JogoServices = require('../services/JogoServices.js');
 const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const RegraServices = require('../services/RegraServices.js');
-const toDay = require('../utils/toDay.js');
 const { Op } = require('sequelize');
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
-const jogoServices = new JogoServices();
 const regravalidacoeServices = new RegravalidacoeServices();
 const paiServices = new PaiServices();
 const timeServices = new TimeServices();
@@ -24,262 +21,92 @@ class EstrategiaController extends Controller {
         super(estrategiaServices);
     }
 
+    async #validaEstrategia(req, res) {
+        const { nome, descricao, regras } = req.body;
+
+        // Verificação de campos obrigatórios
+        if (!nome || !descricao) {
+            throw new Error('Nome e descrição são obrigatórios!');
+        }
+        if (!regras || regras.length < 1) {
+            throw new Error('Pelo menos uma regra é necessária!');
+        }
+
+        const novaRegras = [];
+
+        for (const regra of regras) {
+            const paisesIds = [];
+            const ligasIds = [];
+
+            // Verifica se `aposta` está presente
+            if (!regra.aposta) {
+                throw new Error('O campo aposta é obrigatório em cada regra!');
+            }
+
+            // Validação de `aposta`
+            const regravalidacoeExists = await regravalidacoeServices.pegaUmRegistro({
+                where: { id: regra.aposta }
+            });
+
+            if (!regravalidacoeExists) {
+                throw new Error(`Aposta não existe.`);
+            }
+
+            // Validação de `pais`
+            if (regra.pais && regra.pais.length > 0) {
+                const paisesIds = regra.pais.split(',').map(Number);
+
+                const paisesValidos = await paiServices.pegaTodosOsRegistros({
+                    where: { id: { [Op.in]: paisesIds } }
+                });
+
+                if (paisesValidos.length != paisesIds.length) {
+                    throw new Error("Algum pais não contem em nossos sistema!")
+                }
+            }
+
+            // Validação de `liga`
+            if (regra.liga && regra.liga.length > 0) {
+                const ligasIds = regra.liga.split(',').map(Number);
+
+                const ligasValidas = await ligaServices.pegaTodosOsRegistros({
+                    where: { id: ligasIds }
+                });
+
+                if (ligasValidas.length != ligasIds.length) {
+                    throw new Error("Algum liga não contem em nossos sistema!")
+                }
+            }
+
+            // Adiciona os dados validados à nova regra
+            novaRegras.push({
+                ...regra,
+                validPaisesIds: paisesIds,
+                validLigasIds: ligasIds,
+            });
+        }
+
+        const regrasCriar = novaRegras.map(regra => ({
+            oddmin: regra.oddMin ? parseFloat(regra.oddMin) : null,
+            oddmax: regra.oddMax ? parseFloat(regra.oddMax) : null,
+            pai_id: regra.validPaisesIds.length > 0 ? regra.validPaisesIds.join(',') : null,
+            liga_id: regra.validLigasIds.length > 0 ? regra.validLigasIds.join(',') : null,
+            regravalidacoe_id: regra.aposta,
+        }));
+
+        return ({ nome, descricao, regras: regrasCriar });
+    }
+
     async estrategiaTeste(req, res) {
         try {
-            const { nome, descricao, regras } = req.body;
 
-            // Verificação de campos obrigatórios
-            if (!nome || !descricao) {
-                return res.status(400).json({ error: 'Nome e descrição são obrigatórios!' });
-            }
-            if (!regras || regras.length < 1) {
-                return res.status(400).json({ error: 'Pelo menos uma regra é necessária!' });
-            }
+            var estrategiaValida = await this.#validaEstrategia(req, res);
 
-            const novaRegras = [];
+            estrategiaValida.bilhetes = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
 
-            for (const regra of regras) {
-                const paisesIds = [];
-                const ligasIds = [];
+            estrategiaValida = await estrategiaServices.geraEstistica(estrategiaValida, false);
 
-                // Verifica se `aposta` está presente
-                if (!regra.aposta) {
-                    return res.status(400).json({ error: 'O campo aposta é obrigatório em cada regra!' });
-                }
-
-                // Validação de `aposta`
-                const regravalidacoeExists = await regravalidacoeServices.pegaUmRegistro({
-                    where: { id: regra.aposta }
-                });
-
-                if (!regravalidacoeExists) {
-                    return res.status(400).json({ error: `O ID de aposta ${regra.aposta} não existe na tabela regravalidacoe.` });
-                }
-
-                // Validação de `pais`
-                if (regra.pais && regra.pais.length > 0) {
-                    const paisesIds = regra.pais.split(',').map(Number);
-
-                    const paisesValidos = await paiServices.pegaTodosOsRegistros({
-                        where: { id: { [Op.in]: paisesIds } }
-                    });
-                    
-                    if (paisesValidos.length != paisesIds.length) {
-                        return res.status(400).json({
-                            error: `Os IDs de país ${paisesNaoEncontrados.join(', ')} não existem no sistema.`
-                        });
-                    }
-                }
-
-                // Validação de `liga`
-                if (regra.liga && regra.liga.length > 0) {
-                    const ligasIds = regra.liga.split(',').map(Number);
-
-                    const ligasValidas = await ligaServices.pegaTodosOsRegistros({
-                        where: { id: ligasIds }
-                    });
-
-                    if (ligasValidas.length != ligasIds.length) {
-                        return res.status(400).json({
-                            error: `Os IDs de liga ${ligasNaoEncontradas.join(', ')} não existem no sistema.`
-                        });
-                    }
-                }
-
-                // Adiciona os dados validados à nova regra
-                novaRegras.push({
-                    ...regra,
-                    validPaisesIds: paisesIds,
-                    validLigasIds: ligasIds,
-                });
-            }
-
-            const regrasCriar = novaRegras.map(regra => ({
-                oddmin: regra.oddMin ? parseFloat(regra.oddMin) : null,
-                oddmax: regra.oddMax ? parseFloat(regra.oddMax) : null,
-                pai_id: regra.validPaisesIds.length > 0 ? regra.validPaisesIds.join(',') : null,
-                liga_id: regra.validLigasIds.length > 0 ? regra.validLigasIds.join(',') : null,
-                regravalidacoe_id: regra.aposta,
-            }));
-
-            let estrategia = {};
-
-            try {
-                const jogosUnicos = await jogoServices.filtrarJogosUnicos(regrasCriar);
-                if (jogosUnicos.length === 0) {
-                    throw new Error('Nenhum jogo encontrado!');
-                }
-                if (jogosUnicos.length <= regras.length) {
-                    throw new Error('Quantidade de jogos insuficiente!');
-                }
-
-                let apostas = {};
-                const bilhetesCriar = [];
-                let i = 1;
-
-                const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
-
-                for (const jogo of jogosArray) {
-                    if (!apostas[i]) {
-                        apostas[i] = { odd: 1, status: true, jogos: [] };
-                    }
-                    bilhetesCriar.push({
-                        bilhete_id: i,
-                        jogo_id: jogo.id,
-                        odd_id: jogo.odd_id,
-                        status_jogo: jogo.statusOdd
-                    });
-
-                    apostas[i].jogos.push(jogo);
-                    apostas[i].odd *= jogo.odd;
-
-                    if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
-                        const algumStatusNulo = apostas[i].jogos.some((j) => j.statusOdd === null);
-                        apostas[i].status = algumStatusNulo ? null : apostas[i].jogos.every((j) => j.statusOdd === true);
-                        bilhetesCriar.forEach(bilhete => {
-                            if (bilhete.bilhete_id === i) {
-                                bilhete.status_bilhete = apostas[i].status;
-                                bilhete.odd = apostas[i].odd.toFixed(2);
-                                bilhete.data = jogo.data;
-                            }
-                        });
-                        i++;
-                    }
-                }
-
-
-                // Agrupar e filtrar informações únicas
-                const filteredBilhetes = bilhetesCriar.reduce((acc, bilhete) => {
-                    // Verifica se já existe um registro para este bilhete_id com os mesmos valores
-                    const exists = acc.some(item =>
-                        item.bilhete_id === bilhete.bilhete_id &&
-                        item.status_bilhete === bilhete.status_bilhete &&
-                        item.odd === bilhete.odd &&
-                        item.data === bilhete.data
-                    );
-
-                    // Se não existir, adiciona ao acumulador
-                    if (!exists && bilhete.status_bilhete != null) {
-                        acc.push({
-                            bilhete_id: bilhete.bilhete_id,
-                            status_bilhete: bilhete.status_bilhete,
-                            odd: bilhete.odd,
-                            data: bilhete.data
-                        });
-                    }
-
-                    return acc;
-                }, []);
-
-
-
-                estrategia.total_apostas = filteredBilhetes.length;
-                estrategia.totalacerto = 0;
-                estrategia.totalerro = 0;
-                estrategia.odd_total = 0;
-                estrategia.odd_minima = Infinity;
-                estrategia.odd_maxima = -Infinity;
-                estrategia.total_vitorias = 0;
-                estrategia.total_derrotas = 0;
-                estrategia.lucro_total = 0;
-                estrategia.media_odd_vitoriosa = 0;
-                estrategia.media_odd_derrotada = 0;
-                estrategia.media_sequencia_vitorias = 0;
-                estrategia.maior_derrotas_dia = 0;
-                estrategia.maior_derrotas_semana = 0;
-                estrategia.maior_vitorias_dia = 0;
-                estrategia.maior_vitorias_semana = 0;
-                estrategia.sequencia_vitorias = 0;
-                estrategia.sequencia_derrotas = 0;
-
-                let sequenciaAtualVitoria = 0;
-                let sequenciaAtualDerrota = 0;
-                let somaOddVitoriosa = 0;
-                let somaOddDerrotada = 0;
-                let countVitoriosa = 0;
-                let countDerrotada = 0;
-                let dias = {};
-                let semanas = {};
-                let sequenciasVitoria = []; // Armazena todas as sequências de vitórias para calcular a média posteriormente
-
-
-                filteredBilhetes.forEach(bilhete => {
-                    const { odd, status_bilhete, data } = bilhete;
-
-                    estrategia.odd_total += Number(odd);
-                    estrategia.odd_minima = Math.min(estrategia.odd_minima, odd);
-                    estrategia.odd_maxima = Math.max(estrategia.odd_maxima, odd);
-
-                    const isVitoria = status_bilhete; // Supondo que `true` é vitória e `false` é derrota
-
-                    const data2 = new Date(data);
-                    const dia = data2.toISOString().split('T')[0];
-                    const semana = `${data2.getUTCFullYear()}-W${Math.ceil((data2.getUTCDate() - data2.getUTCDay() + 7) / 7)}`;
-
-                    // Controle de frequência por dia e semana
-                    dias[dia] = dias[dia] || { vitorias: 0, derrotas: 0 };
-                    semanas[semana] = semanas[semana] || { vitorias: 0, derrotas: 0 };
-
-                    if (isVitoria) {
-                        estrategia.totalacerto++;
-                        estrategia.total_vitorias++;
-                        dias[dia].vitorias++;
-                        semanas[semana].vitorias++;
-
-                        sequenciaAtualVitoria++;
-                        sequenciaAtualDerrota = 0;
-
-                        estrategia.lucro_total += (Number(odd) - 1); // ajustado conforme o cálculo de lucro desejado
-                        somaOddVitoriosa += Number(odd);
-                        countVitoriosa++;
-                    } else {
-                        estrategia.totalerro++;
-                        estrategia.total_derrotas++;
-                        dias[dia].derrotas++;
-                        semanas[semana].derrotas++;
-
-                        sequenciaAtualDerrota++;
-                        if (sequenciaAtualVitoria > 0) {
-                            sequenciasVitoria.push(sequenciaAtualVitoria); // Armazene a sequência de vitórias antes de zerar
-                            sequenciaAtualVitoria = 0;
-                        }
-
-                        estrategia.lucro_total -= 1; // ajustado conforme o cálculo de lucro desejado
-                        somaOddDerrotada += Number(odd);
-                        countDerrotada++;
-                    }
-
-                    estrategia.sequencia_vitorias = Math.max(estrategia.sequencia_vitorias, sequenciaAtualVitoria);
-                    estrategia.sequencia_derrotas = Math.max(estrategia.sequencia_derrotas, sequenciaAtualDerrota);
-                });
-
-                if (sequenciaAtualVitoria > 0) sequenciasVitoria.push(sequenciaAtualVitoria); // Adicione a última sequência de vitórias, se houver
-
-                // Cálculos finais
-                estrategia.taxaacerto = ((estrategia.totalacerto / estrategia.total_apostas) * 100).toFixed(2);
-                estrategia.odd_media = (estrategia.odd_total / estrategia.total_apostas).toFixed(2);;
-                estrategia.media_odd_vitoriosa = countVitoriosa > 0 ? (somaOddVitoriosa / countVitoriosa).toFixed(2) : 0;
-                estrategia.media_odd_derrotada = countDerrotada > 0 ? (somaOddDerrotada / countDerrotada).toFixed(2) : 0;
-                // Corrigir cálculo da frequência de apostas por dia
-                const totalApostasPorDia = Object.values(dias).reduce((total, dia) => total + dia.vitorias + dia.derrotas, 0);
-                estrategia.frequencia_apostas_dia = (totalApostasPorDia / Object.keys(dias).length).toFixed(2);
-                estrategia.media_sequencia_vitorias = sequenciasVitoria.length > 0 ? (sequenciasVitoria.reduce((a, b) => a + b, 0) / sequenciasVitoria.length).toFixed(2) : 0;
-
-                // Maior número de vitórias e derrotas em um único dia
-                estrategia.maior_vitorias_dia = Math.max(...Object.values(dias).map(d => d.vitorias));
-                estrategia.maior_derrotas_dia = Math.max(...Object.values(dias).map(d => d.derrotas));
-
-                // Maior número de vitórias e derrotas em uma única semana
-                estrategia.maior_vitorias_semana = Math.max(...Object.values(semanas).map(s => s.vitorias));
-                estrategia.maior_derrotas_semana = Math.max(...Object.values(semanas).map(s => s.derrotas));
-
-                estrategia.lucro_total = estrategia.lucro_total.toFixed(2);
-
-            } catch (error) {
-                console.error('BilhetesServicesTeste:', error.message);
-            }
-
-            return res.status(201).json({ message: 'Teste realizado com sucesso!', estrategia });
+            return res.status(201).json({ message: 'Teste realizado com sucesso!', estrategia: estrategiaValida });
         } catch (error) {
             return res.status(500).json({ error: 'Erro ao testar estratégia: ' + error.message });
         }

@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 //const { startOfWeek } = require('date-fns');
 const Services = require('./Services.js');
-const { Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
+const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
 //const JogoServices = require('./JogoServices');
 //const BilheteServices = require('./BilheteServices.js');
 
@@ -162,21 +162,46 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
-    async geraEstistica(estrategia) {
-        const bilhetes = await estrategia.getBilhetes({
-            attributes: [
-                'bilhete_id',
-                'status_bilhete',
-                'odd',
-                'data'
-            ],
-            group: ['bilhete_id', 'status_bilhete', 'odd', 'data'],
-            where: {
-                status_bilhete: {
-                    [Op.not]: null
+    async geraEstistica(estrategia, salvaNoBanco = true) {
+        var bilhetes = [];
+        if (estrategia instanceof Estrategia) {
+            bilhetes = await estrategia.getBilhetes({
+                attributes: [
+                    'bilhete_id',
+                    'status_bilhete',
+                    'odd',
+                    'data'
+                ],
+                group: ['bilhete_id', 'status_bilhete', 'odd', 'data'],
+                where: {
+                    status_bilhete: {
+                        [Op.not]: null
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            bilhetes = estrategia.bilhetes.reduce((acc, bilhete) => {
+                // Verifica se já existe um registro para este bilhete_id com os mesmos valores
+                const exists = acc.some(item =>
+                    item.bilhete_id === bilhete.bilhete_id &&
+                    item.status_bilhete === bilhete.status_bilhete &&
+                    item.odd === bilhete.odd &&
+                    item.data === bilhete.data
+                );
+
+                // Se não existir, adiciona ao acumulador
+                if (!exists && bilhete.status_bilhete != null) {
+                    acc.push({
+                        bilhete_id: bilhete.bilhete_id,
+                        status_bilhete: bilhete.status_bilhete,
+                        odd: bilhete.odd,
+                        data: bilhete.data
+                    });
+                }
+
+                return acc;
+            }, []);
+        }
 
         if (bilhetes.length === 0) {
             throw new Error('Estratégia não contém bilhetes!');
@@ -212,14 +237,14 @@ class EstrategiaServices extends Services {
             let sequenciasVitoria = []; // Armazena todas as sequências de vitórias para calcular a média posteriormente
 
             bilhetes.forEach(bilhete => {
-                const { odd, status_bilhete, data } = bilhete.dataValues;
+                let { odd, status_bilhete, data } = bilhete;
 
+                odd = Number(odd);
                 estrategia.odd_total += odd;
                 estrategia.odd_minima = Math.min(estrategia.odd_minima, odd);
                 estrategia.odd_maxima = Math.max(estrategia.odd_maxima, odd);
 
-                const isVitoria = status_bilhete; // Supondo que `true` é vitória e `false` é derrota
-
+                if (!(data instanceof Date)) data = new Date(data)
                 const dia = data.toISOString().split('T')[0];
                 const semana = `${data.getUTCFullYear()}-W${Math.ceil((data.getUTCDate() - data.getUTCDay()) / 7)}`;
 
@@ -227,7 +252,7 @@ class EstrategiaServices extends Services {
                 dias[dia] = dias[dia] || { vitorias: 0, derrotas: 0 };
                 semanas[semana] = semanas[semana] || { vitorias: 0, derrotas: 0 };
 
-                if (isVitoria) {
+                if (status_bilhete) {
                     estrategia.totalacerto++;
                     estrategia.total_vitorias++;
                     dias[dia].vitorias++;
@@ -281,10 +306,12 @@ class EstrategiaServices extends Services {
             estrategia.maior_derrotas_semana = Math.max(...Object.values(semanas).map(s => s.derrotas));
 
             estrategia.lucro_total = estrategia.lucro_total.toFixed(2);
-            estrategia.save();
-
+            if (salvaNoBanco) {
+                estrategia.save();
+            }
             return estrategia;
         } catch (error) {
+            console.log(error)
             console.error('EstrategiaServices:', error.message);
         }
 
