@@ -4,7 +4,6 @@ const BilheteServices = require('../services/BilheteServices.js');
 const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
-const TimeServices = require('../services/TimeServices.js');
 const RegraServices = require('../services/RegraServices.js');
 const { Op } = require('sequelize');
 
@@ -12,7 +11,6 @@ const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
 const regravalidacoeServices = new RegravalidacoeServices();
 const paiServices = new PaiServices();
-const timeServices = new TimeServices();
 const ligaServices = new LigaServices();
 const regraServices = new RegraServices();
 
