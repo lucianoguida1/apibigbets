@@ -11,6 +11,8 @@ const servicesBase = require('./services.js');
 const requestRouter = require('./request.js');
 const estrategia = require('./estrategia.js');
 const regra = require('./regra.js');
+const pais = require('./pais.js');
+const liga = require('./liga.js');
 
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
@@ -24,6 +26,8 @@ module.exports = app => {
         requestRouter,
         estrategia,
         regra,
+        pais,
+        liga,
     );
 
     const dbFilePath = path.join(__dirname, '../database/storage/bigbets.backup');

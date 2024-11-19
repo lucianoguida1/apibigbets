@@ -12,37 +12,73 @@ class EstrategiaServices extends Services {
     constructor() {
         super('Estrategia');
     }
-    async getEstrategia(estrategiaID) {
-        const estrategia = await super.pegaUmRegistro({
+
+    async getEstrategia(estrategiaID, options = {}) {
+        const convertStringToArray = (stringValue) => {
+            return stringValue ? stringValue.split(',').map(Number) : [];
+        };
+
+        const estrategiaSequelize = await super.pegaUmRegistro({
             where: { id: estrategiaID },
+            ...options,
             attributes: {
                 exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
             },
             include: {
                 model: Regra,
-                require: true,
+                required: true,
                 attributes: {
-                    exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
+                    exclude: ["updatedAt", "createdAt", "deletedAt", "time_id", "regravalidacoe_id", "estrategia_id"]
                 },
                 include: [
-                    { model: Pai, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },             // Associação com Pai
-                    { model: Liga, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Liga
-                    { model: Time, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Time
                     {
                         model: Regravalidacoe,
-                        require: true,
+                        required: true,
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
-                            require: true,
+                            required: true,
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     }
                 ]
             }
         });
+
+        const estrategia = estrategiaSequelize ? estrategiaSequelize.toJSON() : null;
+
+        if (!estrategia) {
+            throw new Error('Estratégia não encontrada');
+        }
+
+        const regras = estrategia.Regras || [];
+
+        const regraCompleta = [];
+        for (const regra of regras) {
+            if (regra.liga_id) {
+                const Ligas = await Liga.findAll({
+                    where: { id: { [Op.in]: convertStringToArray(regra.liga_id) } },
+                    attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
+                });
+                regra.Ligas = Ligas;
+                delete regra.liga_id;
+            }
+            if (regra.pai_id) {
+                const Pais = await Pai.findAll({
+                    where: { id: { [Op.in]: convertStringToArray(regra.pai_id) } },
+                    attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
+                });
+                regra.Pais = Pais;
+                delete regra.pai_id;
+            }
+            regraCompleta.push(regra);
+        }
+
+        estrategia.Regras = regraCompleta;
+
         return estrategia;
     }
+
 
     async getBilhetes(EstrategiaID, page = 1, pageSize = null, order = "DESC") {
         const options = {
@@ -110,9 +146,6 @@ class EstrategiaServices extends Services {
                     exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
                 },
                 include: [
-                    { model: Pai, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },             // Associação com Pai
-                    { model: Liga, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt"] }, },            // Associação com Liga
-                    { model: Time, required: false, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] }, },            // Associação com Time
                     {
                         model: Regravalidacoe,
                         require: true,

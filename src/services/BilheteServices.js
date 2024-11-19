@@ -106,14 +106,13 @@ class BilheteServices extends Services {
         if (jogosUnicos.length <= regras.length) {
             return ('Quantidade de jogos insuficiente!');
         }
-
         try {
             let apostas = {};
             const bilhetesCriar = [];
             let i = await Bilhete.max('bilhete_id') || 1;
 
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
-
+            
             for (const jogo of jogosArray) {
                 if (!apostas[i]) {
                     apostas[i] = { odd: 1, status: true, jogos: [] };

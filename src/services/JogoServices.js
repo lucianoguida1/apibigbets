@@ -38,6 +38,10 @@ class JogoServices extends Services {
     }
 
     async filtrarJogosPorRegra(regra, jogosPendente = false) {
+        const convertStringToArray = (stringValue) => {
+            return stringValue ? stringValue.split(',').map(Number) : [];
+        };
+
         const whereJogo = {};
         const include = [
             {
@@ -49,114 +53,85 @@ class JogoServices extends Services {
                 model: Time,
                 as: 'fora',
                 where: {},
-            }
+            },
         ];
 
-        // Filtro por Pais (pai_id) - Acessando através de Liga > Temporada > Jogo
         if (regra.pai_id) {
             include.push({
                 model: Temporada,
-                required: true, // Esta associação é obrigatória
+                required: true,
                 include: [
                     {
                         model: Liga,
-                        required: true, // Liga obrigatória
+                        required: true,
                         include: [
                             {
                                 model: Pai,
-                                required: true, // Pais obrigatório
-                                where: { id: regra.pai_id } // Filtro por pais através da Liga
-                            }
-                        ]
-                    }
-                ]
+                                required: true,
+                                where: {
+                                    id: { [Op.in]: convertStringToArray(regra.pai_id) },
+                                },
+                            },
+                        ],
+                    },
+                ],
             });
         }
 
-        // Filtro por Liga (liga_id) - Acessando via Temporada
+
         if (regra.liga_id) {
             include.push({
                 model: Temporada,
-                required: true, // Temporada obrigatória
+                required: true,
                 include: [
                     {
                         model: Liga,
-                        required: true, // Liga obrigatória
-                        where: { id: regra.liga_id } // Filtro por Liga
-                    }
-                ]
+                        required: true,
+                        where: {
+                            id: { [Op.in]: convertStringToArray(regra.liga_id) },
+                        },
+                    },
+                ],
             });
         }
 
-        // Filtro por Temporada (temporada_id)
-        if (regra.temporada_id) {
-            include.push({
-                model: Temporada,
-                required: true, // Temporada obrigatória
-                where: { id: regra.temporada_id } // Filtro por Temporada
-            });
-        }
-
-        // Filtro por Time (time_id)
         if (regra.time_id) {
+            const timeIds = convertStringToArray(regra.time_id);
             whereJogo[Op.or] = [
-                { casa_id: regra.time_id },
-                { fora_id: regra.time_id }
+                { casa_id: { [Op.in]: timeIds } },
+                { fora_id: { [Op.in]: timeIds } },
             ];
         }
 
         if (regra.regravalidacoe_id) {
             include.push({
                 model: Odd,
-                required: true, // Esta associação é obrigatória
+                required: true,
                 where: {
                     odd: {
-                        [Op.between]: [regra.oddmin, regra.oddmax]
+                        [Op.between]: [regra.oddmin || 0, regra.oddmax || Number.MAX_VALUE],
                     },
-                    //status: { [Op.ne]: null } // Limita a odds calculadas
                 },
                 include: [
                     {
                         model: Regravalidacoe,
-                        required: true, // Liga obrigatória
+                        required: true,
                         as: 'regra',
                         where: {
-                            id: regra.regravalidacoe_id
-                        } // Filtro por pais através da Liga
-                    }
-                ]
+                            id: regra.regravalidacoe_id,
+                        },
+                    },
+                ],
             });
         }
 
-        // Adiciona as associações dos jogos.
-        if (!include.some(item => item.model === Temporada)) {
-            include.push({
-                model: Temporada,
-                required: true, // Esta associação é obrigatória
-                include: [
-                    {
-                        model: Liga,
-                        required: true, // Liga obrigatória
-                        include: [
-                            {
-                                model: Pai,
-                                required: true, // Pais obrigatório
-                            }
-                        ]
-                    }
-                ]
-            });
-        }
-
-        // Buscar jogos com base nos filtros da regra
         const results = await Jogo.findAll({
             where: {
                 ...whereJogo,
-                //data: { [Op.lt]: new Date('2024-11-01') },
-                ...(jogosPendente ? { gols_casa: null } : {})
+                ...(jogosPendente ? { gols_casa: null } : {}),
             },
             order: [['id', 'ASC']],
-            include
+            include,
         });
 
         let jogos = [];
@@ -183,6 +158,7 @@ class JogoServices extends Services {
                 });
             }
         }
+
         return jogos;
     }
 

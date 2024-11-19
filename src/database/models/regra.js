@@ -11,17 +11,17 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe_id' });
-      Regra.belongsTo(models.Pai, { foreignKey: 'pai_id' });
-      Regra.belongsTo(models.Liga, { foreignKey: 'liga_id' });
-      Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
+      //Regra.belongsTo(models.Pai, { foreignKey: 'pai_id' });
+      //Regra.belongsTo(models.Liga, { foreignKey: 'liga_id' });
+      //Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
       Regra.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id', as: 'estrategia' });
     }
   }
   Regra.init({
-    pai_id: DataTypes.NUMBER,
-    liga_id: DataTypes.NUMBER,
-    temporada_id: DataTypes.NUMBER,
-    time_id: DataTypes.NUMBER,
+    pai_id: DataTypes.STRING,
+    liga_id: DataTypes.STRING,
+    temporada_id: DataTypes.STRING,
+    time_id: DataTypes.STRING,
     regravalidacoe_id: DataTypes.NUMBER,    
     estrategia_id: DataTypes.NUMBER,
     oddmin: DataTypes.NUMBER,

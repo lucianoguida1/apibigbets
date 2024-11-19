@@ -75,7 +75,7 @@ class ServicesBaseController extends Controller {
             if (regras.length > 0) {
                 // Data de ontem até hoje
                 const startOfYesterday = new Date();
-                startOfYesterday.setDate(startOfYesterday.getDate() - 50);
+                startOfYesterday.setDate(startOfYesterday.getDate() - 100);
                 startOfYesterday.setHours(0, 0, 0, 0);
 
                 const endOfToday = new Date();
