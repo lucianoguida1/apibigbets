@@ -57,42 +57,31 @@ class EstrategiaController extends Controller {
 
                 // Validação de `pais`
                 if (regra.pais && regra.pais.length > 0) {
-                    const idsPais = regra.pais.map((p) => p.value);
+                    const paisesIds = regra.pais.split(',').map(Number);
 
                     const paisesValidos = await paiServices.pegaTodosOsRegistros({
-                        where: { id: idsPais }
+                        where: { id: paisesIds }
                     });
-
-                    const paisesEncontrados = paisesValidos.map((p) => p.id);
-                    const paisesNaoEncontrados = idsPais.filter((id) => !paisesEncontrados.includes(id));
-
-                    if (paisesNaoEncontrados.length > 0) {
+                    if (paisesValidos.length != paisesIds.length) {
                         return res.status(400).json({
                             error: `Os IDs de país ${paisesNaoEncontrados.join(', ')} não existem no sistema.`
                         });
                     }
-
-                    paisesIds.push(...paisesEncontrados);
                 }
 
                 // Validação de `liga`
                 if (regra.liga && regra.liga.length > 0) {
-                    const idsLiga = regra.liga.map((l) => l.value);
+                    const ligasIds = regra.liga.split(',').map(Number);
 
                     const ligasValidas = await ligaServices.pegaTodosOsRegistros({
-                        where: { id: idsLiga }
+                        where: { id: ligasIds }
                     });
 
-                    const ligasEncontradas = ligasValidas.map((l) => l.id);
-                    const ligasNaoEncontradas = idsLiga.filter((id) => !ligasEncontradas.includes(id));
-
-                    if (ligasNaoEncontradas.length > 0) {
+                    if (ligasValidas.length != ligasIds.length) {
                         return res.status(400).json({
                             error: `Os IDs de liga ${ligasNaoEncontradas.join(', ')} não existem no sistema.`
                         });
                     }
-
-                    ligasIds.push(...ligasEncontradas);
                 }
 
                 // Adiciona os dados validados à nova regra
@@ -180,7 +169,7 @@ class EstrategiaController extends Controller {
                     return acc;
                 }, []);
 
-                
+
 
                 estrategia.total_apostas = filteredBilhetes.length;
                 estrategia.totalacerto = 0;
@@ -432,42 +421,31 @@ class EstrategiaController extends Controller {
 
                 // Validação de `pais`
                 if (regra.pais && regra.pais.length > 0) {
-                    const idsPais = regra.pais.map((p) => p.value);
+                    const paisesIds = regra.pais.split(',').map(Number);
 
                     const paisesValidos = await paiServices.pegaTodosOsRegistros({
-                        where: { id: idsPais }
+                        where: { id: paisesIds }
                     });
-
-                    const paisesEncontrados = paisesValidos.map((p) => p.id);
-                    const paisesNaoEncontrados = idsPais.filter((id) => !paisesEncontrados.includes(id));
-
-                    if (paisesNaoEncontrados.length > 0) {
+                    if (paisesValidos.length != paisesIds.length) {
                         return res.status(400).json({
                             error: `Os IDs de país ${paisesNaoEncontrados.join(', ')} não existem no sistema.`
                         });
                     }
-
-                    paisesIds.push(...paisesEncontrados);
                 }
 
                 // Validação de `liga`
                 if (regra.liga && regra.liga.length > 0) {
-                    const idsLiga = regra.liga.map((l) => l.value);
+                    const ligasIds = regra.liga.split(',').map(Number);
 
                     const ligasValidas = await ligaServices.pegaTodosOsRegistros({
-                        where: { id: idsLiga }
+                        where: { id: ligasIds }
                     });
 
-                    const ligasEncontradas = ligasValidas.map((l) => l.id);
-                    const ligasNaoEncontradas = idsLiga.filter((id) => !ligasEncontradas.includes(id));
-
-                    if (ligasNaoEncontradas.length > 0) {
+                    if (ligasValidas.length != ligasIds.length) {
                         return res.status(400).json({
                             error: `Os IDs de liga ${ligasNaoEncontradas.join(', ')} não existem no sistema.`
                         });
                     }
-
-                    ligasIds.push(...ligasEncontradas);
                 }
 
                 // Adiciona os dados validados à nova regra
@@ -481,7 +459,7 @@ class EstrategiaController extends Controller {
             // Cria a estratégia
             const novaEstrategia = await estrategiaServices.criaRegistro({ nome, descricao });
 
-            if(!novaEstrategia || !novaEstrategia.id) return res.status(500).json({ error: 'Erro ao criar estratégia: Tente novamente!' });
+            if (!novaEstrategia || !novaEstrategia.id) return res.status(500).json({ error: 'Erro ao criar estratégia: Tente novamente!' });
 
             // Criando as regras a serem salvas no banco
             const regrasCriar = novaRegras.map(regra => ({
@@ -495,7 +473,7 @@ class EstrategiaController extends Controller {
 
             // Cria as regras associadas à estratégia
             const regrasCriadas = await regraServices.criaVariosRegistros(regrasCriar);
-            
+
             const apostas = await bilheteServices.montaBilhetes(novaEstrategia);
 
             // Calcula as estatiscica da estrategia
