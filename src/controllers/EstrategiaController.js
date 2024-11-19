@@ -218,92 +218,26 @@ class EstrategiaController extends Controller {
 
     async criarEstrategia(req, res) {
         try {
-            const { nome, descricao, regras } = req.body;
 
-            // Verificação de campos obrigatórios
-            if (!nome || !descricao) {
-                return res.status(400).json({ error: 'Nome e descrição são obrigatórios!' });
-            }
-            if (!regras || regras.length < 1) {
-                return res.status(400).json({ error: 'Pelo menos uma regra é necessária!' });
-            }
-
-            const novaRegras = [];
-
-            for (const regra of regras) {
-                const paisesIds = [];
-                const ligasIds = [];
-
-                // Verifica se `aposta` está presente
-                if (!regra.aposta) {
-                    return res.status(400).json({ error: 'O campo aposta é obrigatório em cada regra!' });
-                }
-
-                // Validação de `aposta`
-                const regravalidacoeExists = await regravalidacoeServices.pegaUmRegistro({
-                    where: { id: regra.aposta }
-                });
-
-                if (!regravalidacoeExists) {
-                    return res.status(400).json({ error: `O ID de aposta ${regra.aposta} não existe na tabela regravalidacoe.` });
-                }
-
-                // Validação de `pais`
-                if (regra.pais && regra.pais.length > 0) {
-                    const paisesIds = regra.pais.split(',').map(Number);
-
-                    const paisesValidos = await paiServices.pegaTodosOsRegistros({
-                        where: { id: paisesIds }
-                    });
-                    if (paisesValidos.length != paisesIds.length) {
-                        return res.status(400).json({
-                            error: `Os IDs de país ${paisesNaoEncontrados.join(', ')} não existem no sistema.`
-                        });
-                    }
-                }
-
-                // Validação de `liga`
-                if (regra.liga && regra.liga.length > 0) {
-                    const ligasIds = regra.liga.split(',').map(Number);
-
-                    const ligasValidas = await ligaServices.pegaTodosOsRegistros({
-                        where: { id: ligasIds }
-                    });
-
-                    if (ligasValidas.length != ligasIds.length) {
-                        return res.status(400).json({
-                            error: `Os IDs de liga ${ligasNaoEncontradas.join(', ')} não existem no sistema.`
-                        });
-                    }
-                }
-
-                // Adiciona os dados validados à nova regra
-                novaRegras.push({
-                    ...regra,
-                    validPaisesIds: paisesIds,
-                    validLigasIds: ligasIds,
-                });
-            }
+            const estrategiaValida = await this.#validaEstrategia(req, res);
 
             // Cria a estratégia
-            const novaEstrategia = await estrategiaServices.criaRegistro({ nome, descricao });
+            const novaEstrategia = await estrategiaServices.criaRegistro({
+                nome: estrategiaValida.nome,
+                descricao: estrategiaValida.descricao
+            });
 
             if (!novaEstrategia || !novaEstrategia.id) return res.status(500).json({ error: 'Erro ao criar estratégia: Tente novamente!' });
 
-            // Criando as regras a serem salvas no banco
-            const regrasCriar = novaRegras.map(regra => ({
-                estrategia_id: novaEstrategia.id,
-                oddmin: regra.oddMin ? parseFloat(regra.oddMin) : null,
-                oddmax: regra.oddMax ? parseFloat(regra.oddMax) : null,
-                pai_id: regra.validPaisesIds.length > 0 ? regra.validPaisesIds.join(',') : null,
-                liga_id: regra.validLigasIds.length > 0 ? regra.validLigasIds.join(',') : null,
-                regravalidacoe_id: regra.aposta,
+            // Cria as regras associadas à estratégia
+            const regrasAtualizadas = estrategiaValida.regras.map(regra => ({
+                ...regra,
+                estrategia_id: novaEstrategia.id
             }));
 
-            // Cria as regras associadas à estratégia
-            const regrasCriadas = await regraServices.criaVariosRegistros(regrasCriar);
+            await regraServices.criaVariosRegistros(regrasAtualizadas);
 
-            const apostas = await bilheteServices.montaBilhetes(novaEstrategia);
+            await bilheteServices.montaBilhetes(novaEstrategia);
 
             // Calcula as estatiscica da estrategia
             const estrategiaComRegras = await estrategiaServices.geraEstistica(novaEstrategia);
@@ -315,6 +249,7 @@ class EstrategiaController extends Controller {
         }
     }
 
+    /*
     async atualizarEstrategia(req, res) {
         try {
             const { id } = req.params;
@@ -409,6 +344,7 @@ class EstrategiaController extends Controller {
             return res.status(500).json({ error: 'Erro ao atualizar estratégia: ' + error.message });
         }
     }
+    */
 
     async executarEstrategia(req, res) {
         try {
