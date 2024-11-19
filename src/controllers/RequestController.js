@@ -56,7 +56,6 @@ class RequestController extends Controller {
             };
 
             try {
-                console.log(URL + 'odds')
                 let response = await axios.get(URL + 'odds', { headers, params });
                 if (response.status === 200) {
                     salvaJson('odds', page, response.data);

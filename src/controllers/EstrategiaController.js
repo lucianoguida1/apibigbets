@@ -180,7 +180,7 @@ class EstrategiaController extends Controller {
                     return acc;
                 }, []);
 
-                console.log(filteredBilhetes)
+                
 
                 estrategia.total_apostas = filteredBilhetes.length;
                 estrategia.totalacerto = 0;

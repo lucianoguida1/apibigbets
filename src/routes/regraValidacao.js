@@ -4,6 +4,7 @@ const RegraValidacaoController = require('../controllers/RegraValidacaoControlle
 const regraValidacao = new RegraValidacaoController();
 const router = Router();
 
+router.get('/regrasvalidacaoform', (req, res) => regraValidacao.regrasvalidacaoform(req, res));
 router.get('/regrasvalidacao', (req, res) => regraValidacao.pegaTodos(req, res));
 router.get('/regrasvalidacao/:id', (req, res) => regraValidacao.pegaUmPorId(req, res));
 //router.post('/regrasvalidacao', (req, res) => regraValidacao.criaNovo(req, res));

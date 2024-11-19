@@ -21,7 +21,7 @@ class PaisController extends Controller {
                 limit: parseInt(limit, 10), // Limite máximo de registros
                 offset: parseInt(offset, 10), // Paginação
             });
-            console.log(paises)
+            
             return res.status(200).json({
                 message: 'Países buscados com sucesso!',
                 data: paises,

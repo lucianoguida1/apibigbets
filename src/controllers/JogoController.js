@@ -18,7 +18,6 @@ class JogoController extends Controller {
             do {
                 // Busca a próxima página de jogos
                 paginaJogos = await JogoServices.pegaTodosOsJogos(modelosRelacionados, where, limit, offset);
-                console.log(paginaJogos.length);
 
                 if (paginaJogos.length > 0) {
                     // Processa as odds da página atual

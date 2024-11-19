@@ -45,7 +45,6 @@ class RegravalidacoeServices extends Services {
             return regra;
         } catch (error) {
             logTo(error.message);
-            console.log(error);
         }
     }
 }

@@ -53,8 +53,4 @@ module.exports = async (message, telegram = true, cons = true) => {
             console.error('TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID não configurados no .env.');
         }
     }
-    
-    if (cons) {
-        console.log(message);
-    }
 }

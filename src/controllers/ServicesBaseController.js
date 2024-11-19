@@ -28,7 +28,6 @@ class ServicesBaseController extends Controller {
             dados.jogosHoje = await jogoServices.pegaEContaRegistros({ where: { 'data': toDay() } });
             return res.status(200).json(dados);
         } catch (error) {
-            console.log(error)
             return res.status(500).json({ erro: error.message });
         }
     }
@@ -44,7 +43,6 @@ class ServicesBaseController extends Controller {
                 [Op.lt]: dataFormatada
             }
         });
-        console.log(dataFormatada);
         logTo(`Quantidade de jogos deletados: ${quantidadeDeletados}`, true);
     }
 

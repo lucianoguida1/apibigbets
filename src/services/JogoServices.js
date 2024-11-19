@@ -320,7 +320,6 @@ class JogoServices extends Services {
             }
         } catch (error) {
             logTo(error.message);
-            console.log(error);
         }
     }
 }
