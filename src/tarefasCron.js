@@ -32,12 +32,13 @@ const tarefas = () => {
             logTo('Erro na tarefa agendada as 19hrs:', error.mesage);
         }
     });
-
+    
     // roda a cada 3 horas
     cron.schedule('0 */3 * * *', async () => {
         try {
             await request.adicionaJogos(date = toDay());
             await serviceBase.validaRegras();
+            await serviceBase.validaBilhetes();
         } catch (error) {
             logTo('Erro na tarefa agendada:', error.mesage);
         }

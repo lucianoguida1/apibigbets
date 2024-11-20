@@ -4,7 +4,7 @@ const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const JogosServices = require('../services/JogoServices.js');
 const logTo = require('../utils/logTo.js');
 const { Op } = require('sequelize');
-const { Odd } = require('../database/models');
+const { Odd, Bilhete } = require('../database/models');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const RequestServices = require('../services/RequestServices.js');
@@ -77,7 +77,7 @@ class ServicesBaseController extends Controller {
                 });
                 const jogoIds = odds.map(odd => odd.jogo_id);
                 const jogos = await jogoServices.jogoEstruturadoIds(jogoIds, { gols_casa: { [Op.ne]: null } });
-                
+
                 const oddsToUpdate = [];
                 if (jogos.length > 0) {
                     const funcaoValidacao = new Function('jogo', regra.regra);
@@ -97,6 +97,90 @@ class ServicesBaseController extends Controller {
                         updateOnDuplicate: ['status']
                     });
                     totalAtualizado += result.length;
+                }
+            }
+            const endTime = new Date();
+            const executionTime = formatMilliseconds(endTime - startTime);
+            logTo(`Finalizado a validação de regras. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
+        } catch (error) {
+            logTo('Erro ao validar os regras:', error.message);
+            console.error('Erro ao validar os regras:', error.message);
+        }
+    }
+
+    async validaBilhetes() {
+        try {
+            const startTime = new Date();  // Marca o início da execução
+            logTo('Iniciando validação bilhetes');
+            let totalAtualizado = 0;
+            const bilhetes = await bilheteServices.pegaTodosOsRegistros({
+                where: { status_jogo: null },
+                include: [
+                    {
+                        model: Odd,
+                        required: true,
+                        where: {
+                            status: { [Op.ne]: null }
+                        },
+                    }
+                ]
+            });
+
+            if (bilhetes.length > 0) {
+                const bilhetesToUpdate = [];
+                for (const bilhete of bilhetes) {
+                    bilhetesToUpdate.push({
+                        id: bilhete.id,
+                        bilhete_id: bilhete.bilhete_id,
+                        status_jogo: bilhete.Odd.status,
+                        jogo_id: bilhete.jogo_id,
+                        estrategia_id: bilhete.estrategia_id,
+                        odd_id: bilhete.odd_id,
+                    });
+                }
+                const result = await Bilhete.bulkCreate(bilhetesToUpdate, {
+                    updateOnDuplicate: ['status_jogo']
+                });
+                totalAtualizado += result.length;
+            }
+
+            const bilhetesA = await bilheteServices.pegaTodosOsRegistros({
+                where: {
+                    status_jogo: { [Op.ne]: null },
+                    status_bilhete: null
+                }
+            })
+            if (bilhetesA.length > 0) {
+                // Agrupa os bilhetes pelo bilhete_id
+                const bilhetesAgrupados = bilhetesA.reduce((acc, bilhete) => {
+                    if (!acc[bilhete.bilhete_id]) {
+                        acc[bilhete.bilhete_id] = [];
+                    }
+                    acc[bilhete.bilhete_id].push(bilhete);
+                    return acc;
+                }, {});
+
+                // Processa cada grupo
+                for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
+                    let statusBilhete = true;
+
+                    for (const bilhete of bilhetes) {
+                        if (bilhete.status_jogo === false) {
+                            statusBilhete = false;
+                            break; // Se encontrar um false, sai do loop
+                        } else if (bilhete.status_jogo === null) {
+                            statusBilhete = null;
+                            break; // Se encontrar um null, sai do loop
+                        }
+                    }
+
+                    // Atualiza o campo status_bilhete no banco de dados
+                    await Bilhete.update(
+                        { status_bilhete: statusBilhete },
+                        { where: { bilhete_id: bilheteId } }
+                    );
+
+                    totalAtualizado++
                 }
             }
             const endTime = new Date();
