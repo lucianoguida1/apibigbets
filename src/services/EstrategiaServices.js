@@ -1,12 +1,7 @@
 const { Op } = require('sequelize');
-//const { startOfWeek } = require('date-fns');
 const Services = require('./Services.js');
 const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
-//const JogoServices = require('./JogoServices');
-//const BilheteServices = require('./BilheteServices.js');
 
-//const bilheteServices = new BilheteServices();
-//const jogoServices = new JogoServices();
 
 class EstrategiaServices extends Services {
     constructor() {
@@ -78,7 +73,6 @@ class EstrategiaServices extends Services {
 
         return estrategia;
     }
-
 
     async getBilhetes(EstrategiaID, page = 1, pageSize = null, order = "DESC") {
         const options = {
