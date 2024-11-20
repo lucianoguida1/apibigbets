@@ -7,15 +7,37 @@ class EstrategiaServices extends Services {
     constructor() {
         super('Estrategia');
     }
+    async getEstrategias(page = 1, pageSize = 5) {
+        try {
+            const estrategiaSequelize = await Estrategia.findAll({
+                limit: pageSize,
+                offset: (page - 1) * pageSize,
+                order: [['lucro_total', 'DESC']],
+                attributes: {
+                    exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
+                },
+                include: {
+                    model: Regra,
+                    required: true,
+                    attributes: {
+                        exclude: ["updatedAt", "createdAt", "deletedAt", "time_id", "regravalidacoe_id", "estrategia_id"]
+                    }
+                }
+            });
 
-    async getEstrategia(estrategiaID, options = {}) {
+            return estrategiaSequelize;
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    async getEstrategia(estrategiaID) {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
 
         const estrategiaSequelize = await super.pegaUmRegistro({
             where: { id: estrategiaID },
-            ...options,
             attributes: {
                 exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
             },

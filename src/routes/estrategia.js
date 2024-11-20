@@ -4,7 +4,7 @@ const EstrategiaController = require('../controllers/EstrategiaController.js');
 const estrategiaController = new EstrategiaController();
 const router = Router();
 
-router.get('/estrategia', (req, res) => estrategiaController.pegaTodos(req, res));
+router.get('/estrategia', (req, res) => estrategiaController.getEstrategias(req, res));
 router.get('/estrategiaform', (req, res) => estrategiaController.getCamposFormulario(req, res));
 router.get('/estrategia/:id', (req, res) => estrategiaController.getEstrategia(req, res));
 router.get('/estrategia/grafico/:id', (req, res) => estrategiaController.getEstrategiaGrafico(req, res));

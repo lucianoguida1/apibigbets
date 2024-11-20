@@ -166,10 +166,28 @@ class EstrategiaController extends Controller {
         }
     }
 
+    async getEstrategias(req, res) {
+        const { page = 1, pageSize = 10 } = req.query;
+
+        try {
+            const estrategias = await estrategiaServices.getEstrategias(Number(page), Number(pageSize));
+
+            if (!estrategias) {
+                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            }
+
+            return res.status(200).json({ rows: estrategias });
+        } catch (erro) {
+            return res.status(500).json({ erro: erro.message });
+        }
+    }
+
     async getEstrategia(req, res) {
         const { id } = req.params;
+        const { page = 1, pageSize = 10 } = req.query;
+
         try {
-            const umRegistro = await estrategiaServices.getEstrategia(Number(id));
+            const umRegistro = await estrategiaServices.getEstrategia(Number(id), Number(page), Number(pageSize));
 
             if (!umRegistro) {
                 return res.status(404).json({ error: 'Estratégia não encontrada!' });
