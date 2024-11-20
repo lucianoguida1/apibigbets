@@ -115,6 +115,7 @@ class BilheteServices extends Services {
             let apostas = {};
             const bilhetesCriar = [];
             let i = await Bilhete.max('bilhete_id') || 1;
+            i++;
 
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
 

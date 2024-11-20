@@ -159,11 +159,10 @@ class ServicesBaseController extends Controller {
                     acc[bilhete.bilhete_id].push(bilhete);
                     return acc;
                 }, {});
-
                 // Processa cada grupo
                 for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
                     let statusBilhete = true;
-
+                    
                     for (const bilhete of bilhetes) {
                         if (bilhete.status_jogo === false) {
                             statusBilhete = false;
@@ -173,7 +172,7 @@ class ServicesBaseController extends Controller {
                             break;
                         }
                     }
-
+                    
                     // Atualiza o campo status_bilhete no banco de dados
                     await Bilhete.update(
                         { status_bilhete: statusBilhete },
