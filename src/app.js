@@ -22,7 +22,20 @@ routes(app);
 // EXECUTA AS TAREFAS CRONS
 tarefaCron();
 
-// Chamando a função assíncrona
+
+
+
+
+const ServicesBaseController = require('./controllers/ServicesBaseController.js');
+
+const executar = async () => {
+    const serviceBase = new ServicesBaseController();
+    try {
+        await serviceBase.validaBilhetes();
+    } catch (error) {
+        console.error('Erro ao validar regras:', error.message);
+    }
+};  
 executar();
 
 

@@ -146,7 +146,7 @@ class ServicesBaseController extends Controller {
 
             const bilhetesA = await bilheteServices.pegaTodosOsRegistros({
                 where: {
-                    status_jogo: { [Op.ne]: null },
+                    //status_jogo: { [Op.ne]: null },
                     status_bilhete: null
                 }
             })
@@ -167,10 +167,10 @@ class ServicesBaseController extends Controller {
                     for (const bilhete of bilhetes) {
                         if (bilhete.status_jogo === false) {
                             statusBilhete = false;
-                            break; // Se encontrar um false, sai do loop
+                            break;
                         } else if (bilhete.status_jogo === null) {
                             statusBilhete = null;
-                            break; // Se encontrar um null, sai do loop
+                            break;
                         }
                     }
 
