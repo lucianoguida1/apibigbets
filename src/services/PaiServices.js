@@ -18,7 +18,7 @@ class PaiServices extends Services {
                     include: {
                         model: Jogo,
                         require: true,
-                        //where: { data: data },
+                        where: { data: data },
                         include: [
                             {
                                 model: Odd,

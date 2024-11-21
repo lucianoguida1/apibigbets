@@ -8,6 +8,15 @@ const request = new RequestController();
 
 
 const tarefas = () => {
+    
+    // Executa as 20hrs
+    cron.schedule('0 20 * * *', async () => {
+        try {
+            await serviceBase.geraEstisticaGeral();
+        } catch (error) {
+            logTo('Erro na tarefa agendada as 20hrs:', error.mesage);
+        }
+    });
 
     // Executa as 19hrs
     cron.schedule('0 19 * * *', async () => {
