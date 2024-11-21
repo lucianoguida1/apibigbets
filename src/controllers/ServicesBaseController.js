@@ -200,7 +200,6 @@ class ServicesBaseController extends Controller {
             const pais = await paiServices.paisCompleto();
             for (const pai of pais) {
                 for (const liga of pai.Ligas) {
-                    console.log(liga.Temporadas);
                     for (const temporada of liga.Temporadas) {
                         for (const jogo of temporada.Jogos) {
                             const casa = await jogo.getCasa();

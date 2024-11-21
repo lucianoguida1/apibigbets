@@ -9,7 +9,6 @@ class PaiServices extends Services {
 
     async paisCompleto(data = toDay(-1)) {
         const pais = await Pai.findAll({
-            where: { id: 26 },
             include: {
                 model: Liga,
                 require: true,
