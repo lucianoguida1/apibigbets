@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     logo: DataTypes.TEXT,
     pai_id: DataTypes.NUMBER,
     id_sports: DataTypes.NUMBER,
+    dados_json: DataTypes.JSONB,
   }, {
     sequelize,
     modelName: 'Liga',

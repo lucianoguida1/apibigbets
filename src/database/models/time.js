@@ -37,7 +37,8 @@ module.exports = (sequelize, DataTypes) => {
     nome: DataTypes.STRING,
     logo: DataTypes.TEXT,
     pai_id: DataTypes.NUMBER,
-    id_sports: DataTypes.NUMBER
+    id_sports: DataTypes.NUMBER,
+    dados_json: DataTypes.JSONB,
   }, {
     sequelize,
     modelName: 'Time',

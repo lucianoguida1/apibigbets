@@ -29,7 +29,8 @@ module.exports = (sequelize, DataTypes) => {
     ano: DataTypes.STRING,
     inicio: DataTypes.DATE,
     fim: DataTypes.DATE,
-    liga_id: DataTypes.NUMBER
+    liga_id: DataTypes.NUMBER,
+    dados_json: DataTypes.JSONB,
   }, {
     sequelize,
     modelName: 'Temporada',

@@ -23,7 +23,8 @@ module.exports = (sequelize, DataTypes) => {
   Pai.init({
     nome: DataTypes.STRING,
     code: DataTypes.STRING,
-    logo: DataTypes.TEXT
+    logo: DataTypes.TEXT,
+    dados_json: DataTypes.JSONB,
   }, {
     sequelize,
     modelName: 'Pai',

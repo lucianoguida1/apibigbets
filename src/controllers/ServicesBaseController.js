@@ -10,7 +10,9 @@ const RequisicaopendenteServices = require('../services/RequisicaopendenteServic
 const RequestServices = require('../services/RequestServices.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
+const OddServices = require('../services/OddServices.js');
 const toDay = require('../utils/toDay.js');
+const PaiServices = require('../services/PaiServices.js');
 
 const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
@@ -18,6 +20,8 @@ const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
 const bilheteServices = new BilheteServices();
 const estrategiaServices = new EstrategiaServices();
+const oddServices = new OddServices();
+const paiServices = new PaiServices();
 
 class ServicesBaseController extends Controller {
     async statusBasico(req, res) {
@@ -162,7 +166,7 @@ class ServicesBaseController extends Controller {
                 // Processa cada grupo
                 for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
                     let statusBilhete = true;
-                    
+
                     for (const bilhete of bilhetes) {
                         if (bilhete.status_jogo === false) {
                             statusBilhete = false;
@@ -172,7 +176,7 @@ class ServicesBaseController extends Controller {
                             break;
                         }
                     }
-                    
+
                     // Atualiza o campo status_bilhete no banco de dados
                     await Bilhete.update(
                         { status_bilhete: statusBilhete },
@@ -191,6 +195,75 @@ class ServicesBaseController extends Controller {
         }
     }
 
+    async geraEstisticaGeral() {
+        try {
+            const pais = await paiServices.paisCompleto();
+            for (const pai of pais) {
+                for (const liga of pai.Ligas) {
+                    console.log(liga.Temporadas);
+                    for (const temporada of liga.Temporadas) {
+                        for (const jogo of temporada.Jogos) {
+                            const casa = await jogo.getCasa();
+                            const fora = await jogo.getFora();
+                            temporada.dados_json = updateDadosJson(temporada.dados_json, 'num_jogos');
+                            liga.dados_json = updateDadosJson(liga.dados_json, 'num_jogos');
+                            pai.dados_json = updateDadosJson(pai.dados_json, 'num_jogos');
+                            fora.dados_json = updateDadosJson(fora.dados_json, 'num_jogos');
+                            casa.dados_json = updateDadosJson(casa.dados_json, 'num_jogos');
+                            for (const odd of jogo.Odds) {
+                                if (odd.regra_id == 1 && odd.status) {
+                                    // valida ganhadores [Casa, Casa ou Empate, Casa ou Fora]
+                                    temporada.dados_json = updateDadosJson(temporada.dados_json, ['casa_ganha', 'casa_ou_empate', 'casa_ou_fora']);
+                                    liga.dados_json = updateDadosJson(liga.dados_json, ['casa_ganha', 'casa_ou_empate', 'casa_ou_fora']);
+                                    pai.dados_json = updateDadosJson(pai.dados_json, ['casa_ganha', 'casa_ou_empate', 'casa_ou_fora']);
+                                    casa.dados_json = updateDadosJson(casa.dados_json, ['casa_ganha', 'casa_ou_empate', 'casa_ou_fora']);
+                                    fora.dados_json = updateDadosJson(fora.dados_json, ['jogos_perdidos', 'casa_ou_fora']);
+                                }
+                                if (odd.regra_id == 2 && odd.status) {
+                                    // valida jogos empatados [jogos empate, Casa ou Empate, fora ou empate]
+                                    temporada.dados_json = updateDadosJson(temporada.dados_json, ['jogos_empatados', 'casa_ou_empate', 'fora_ou_empate']);
+                                    liga.dados_json = updateDadosJson(liga.dados_json, ['jogos_empatados', 'casa_ou_empate', 'fora_ou_empate']);
+                                    pai.dados_json = updateDadosJson(pai.dados_json, ['jogos_empatados', 'casa_ou_empate', 'fora_ou_empate']);
+                                    casa.dados_json = updateDadosJson(casa.dados_json, ['jogos_empatados', 'casa_ou_empate']);
+                                    fora.dados_json = updateDadosJson(fora.dados_json, ['jogos_empatados', 'fora_ou_empate']);
+                                }
+                                if (odd.regra_id == 3 && odd.status) {
+                                    // valida ganhadores [Fora, Fora ou Empate, Casa ou Fora]
+                                    temporada.dados_json = updateDadosJson(temporada.dados_json, ['fora_ganha', 'fora_ou_empate', 'casa_ou_fora']);
+                                    liga.dados_json = updateDadosJson(liga.dados_json, ['fora_ganha', 'fora_ou_empate', 'casa_ou_fora']);
+                                    pai.dados_json = updateDadosJson(pai.dados_json, ['fora_ganha', 'fora_ou_empate', 'casa_ou_fora']);
+                                    fora.dados_json = updateDadosJson(fora.dados_json, ['fora_ganha', 'fora_ou_empate', 'casa_ou_fora']);
+                                    casa.dados_json = updateDadosJson(casa.dados_json, ['jogos_perdidos', 'casa_ou_fora']);
+                                }
+                            }// fim do loop de Odds
+                            await casa.save();
+                            await fora.save();
+                        }/// fim do loop Jogos
+                        await temporada.save();
+                    }// fim do loop de Temporada
+                    await liga.save();
+                }//fim do loop de Ligas
+                await pai.save();
+            }
+
+            console.log(`Total de pais processados: ${pais.length}`);
+        } catch (error) {
+            console.log('✌️error --->', error);
+        }
+    }
+}
+function updateDadosJson(dadosJson, chaves) {
+    const json = { ...dadosJson }; // Garante que não mutamos o objeto original
+    if (Array.isArray(chaves)) {
+        // Caso `chaves` seja um array, itera sobre ele
+        chaves.forEach(chave => {
+            json[chave] = (json[chave] || 0) + 1; // Incrementa ou inicializa com 1
+        });
+    } else {
+        // Caso `chaves` seja uma string (chave única)
+        json[chaves] = (json[chaves] || 0) + 1;
+    }
+    return json;
 }
 
 module.exports = ServicesBaseController;
