@@ -5,7 +5,8 @@ const paisController = new PaisController();
 const router = Router();
 
 
-router.get('/paisform', (req, res) => paisController.paisForm(req, res));
+router.get('/paisform', (req, res) => paisController.getPais(req, res));
+router.get('/pais', (req, res) => paisController.getPais(req, res));
 
 
 module.exports = router;

@@ -5,7 +5,8 @@ const ligasController = new LigasController();
 const router = Router();
 
 
-router.get('/ligasform', (req, res) => ligasController.ligasForm(req, res));
+router.get('/ligasform', (req, res) => ligasController.getLigas(req, res));
+router.get('/ligas', (req, res) => ligasController.getLigas(req, res));
 
 
 module.exports = router;
