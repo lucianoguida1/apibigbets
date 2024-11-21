@@ -193,7 +193,7 @@ class JogoServices extends Services {
         });
         return jogos;
     }
-    
+
     static async pegaTodosOsJogos(modelosRelacionados = [], filtroWhere = {}, limit = 100, offset = 0) {
         try {
             // Defina os relacionamentos disponíveis para inclusão
@@ -303,7 +303,7 @@ class JogoServices extends Services {
                     jogo.datahora = e.fixture.date,
                         jogo.data = e.fixture.date.split('T')[0],
                         await golServices.adicionaGols(e.score, jogo);
-                    
+
                     jogo.save();
                 }
             }

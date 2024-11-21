@@ -245,9 +245,9 @@ class ServicesBaseController extends Controller {
                 await pai.save();
             }
 
-            console.log(`Total de pais processados: ${pais.length}`);
+            logTo(`Total de pais processados: ${pais.length}`);
         } catch (error) {
-            console.log('✌️error --->', error);
+            logTo('✌️error --->', error);
         }
     }
 }
