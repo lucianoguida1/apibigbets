@@ -188,10 +188,10 @@ class ServicesBaseController extends Controller {
             }
             const endTime = new Date();
             const executionTime = formatMilliseconds(endTime - startTime);
-            logTo(`Finalizado a validação de regras. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
+            logTo(`Finalizado a validação de bilhetes. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
         } catch (error) {
-            logTo('Erro ao validar os regras:', error.message);
-            console.error('Erro ao validar os regras:', error.message);
+            logTo('Erro ao validar os bilhetes:', error.message);
+            console.error('Erro ao validar os bilhetes:', error.message);
         }
     }
 

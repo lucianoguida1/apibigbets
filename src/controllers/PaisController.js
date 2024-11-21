@@ -28,18 +28,18 @@ class PaisController extends Controller {
             });
             if (ligas.length == 0) {
                 return res.status(404).json({
-                    error: 'Nenhuma liga nessa pagina!',
+                    error: 'Nenhum Pais nessa pagina!',
                     pagina: { pagina: parseInt(page), total_registro: ligas.length },
                 });
             }
             return res.status(200).json({
-                message: 'Ligas buscadas com sucesso!',
+                message: 'Pais buscadas com sucesso!',
                 pagina: { pagina: parseInt(page), total_registro: ligas.length },
                 data: ligas,
             });
         } catch (error) {
             return res.status(500).json({
-                error: `Erro ao buscar as ligas: ${error.message}`,
+                error: `Erro ao buscar os paise: ${error.message}`,
             });
         }
     }
