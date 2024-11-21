@@ -24,19 +24,17 @@ const tarefas = () => {
             await request.dadosSport();
             await serviceBase.deletaJogosAntigos();
             await serviceBase.executarEstrategias();
-            await serviceBase.validaRegras();
         } catch (error) {
             logTo('Erro na tarefa agendada as 19hrs:', error.mesage);
         }
     });
 
-    // Executa as 19hrs
+    // Executa as 7hrs
     cron.schedule('0 7 * * *', async () => {
         try {
             await request.dadosSport(date = toDay());
-            await serviceBase.deletaJogosAntigos();
+            await request.adicionaJogos(date = toDay(-1));
             await serviceBase.executarEstrategias();
-            await serviceBase.validaRegras();
         } catch (error) {
             logTo('Erro na tarefa agendada as 19hrs:', error.mesage);
         }
