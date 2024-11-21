@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 const Controller = require('./Controller.js');
 const PaiServices = require('../services/PaiServices.js');
 
@@ -21,8 +21,8 @@ class PaisController extends Controller {
 
             // Buscar registros com filtros aplicados e limite
             const ligas = await paiServices.pegaTodosOsRegistros({
-                where: filters,
-                order: [['id', 'asc']],
+                where: {...filters, dados_json: { [Op.ne]: null }},
+                order: [[Sequelize.literal("(dados_json->>'num_jogos')::int"), 'DESC']],
                 limit: parseInt(pageSize, 10),
                 offset: parseInt((page - 1) * pageSize),
             });
