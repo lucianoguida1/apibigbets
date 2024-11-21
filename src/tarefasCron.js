@@ -36,7 +36,7 @@ const tarefas = () => {
             await request.adicionaJogos(date = toDay(-1));
             await serviceBase.executarEstrategias();
         } catch (error) {
-            logTo('Erro na tarefa agendada as 19hrs:', error.mesage);
+            logTo('Erro na tarefa agendada as 7hrs:', error.mesage);
         }
     });
     
