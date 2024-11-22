@@ -8,7 +8,7 @@ class LigasController extends Controller {
     async getLigas(req, res) {
         try {
             const { search, paisesId, ids, page = 1, pageSize = 30 } = req.query;
-
+            console.log(req.query)
             // Construir filtros dinamicamente
             const filters = {};
             if (search) {
