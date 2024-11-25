@@ -6,50 +6,55 @@ const toDay = require('./utils/toDay.js');
 const serviceBase = new ServicesBaseController();
 const request = new RequestController();
 
-
-const tarefas = () => {
-    
-    // Executa as 20hrs
-    cron.schedule('0 20 * * *', async () => {
+// Define cada tarefa como uma função separada
+const tarefas = {
+    async tarefa20hrs() {
         try {
             await serviceBase.geraEstisticaGeral();
         } catch (error) {
-            logTo('Erro na tarefa agendada as 20hrs:', error.mesage);
+            console.error('Erro na tarefa agendada às 20hrs:', error.message);
         }
-    });
+    },
 
-    // Executa as 19hrs
-    cron.schedule('0 19 * * *', async () => {
+    async tarefa19hrs() {
         try {
             await request.dadosSport();
             await serviceBase.deletaJogosAntigos();
             await serviceBase.executarEstrategias();
+            await serviceBase.validaRegras();
         } catch (error) {
-            logTo('Erro na tarefa agendada as 19hrs:', error.mesage);
+            console.error('Erro na tarefa agendada às 19hrs:', error.message);
         }
-    });
+    },
 
-    // Executa as 7hrs
-    cron.schedule('0 7 * * *', async () => {
+    async tarefa10hrs() {
         try {
-            await request.dadosSport(date = toDay());
-            await request.adicionaJogos(date = toDay(-1));
+            await request.dadosSport(toDay());
+            await serviceBase.deletaJogosAntigos();
             await serviceBase.executarEstrategias();
+            await serviceBase.validaRegras();
         } catch (error) {
-            logTo('Erro na tarefa agendada as 7hrs:', error.mesage);
+            console.error('Erro na tarefa agendada às 7hrs:', error.message);
         }
-    });
-    
-    // roda a cada 3 horas
-    cron.schedule('0 */3 * * *', async () => {
+    },
+
+    async tarefa3Horas() {
         try {
-            await request.adicionaJogos(date = toDay());
+            await request.adicionaJogos(toDay());
             await serviceBase.validaRegras();
             await serviceBase.validaBilhetes();
         } catch (error) {
-            logTo('Erro na tarefa agendada:', error.mesage);
+            console.error('Erro na tarefa agendada a cada 3 horas:', error.message);
         }
-    });
-}
+    },
+};
 
-module.exports = tarefas;
+// Agendamento automático com `node-cron`
+const agendarTarefas = () => {
+    cron.schedule('0 20 * * *', tarefas.tarefa20hrs);
+    cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
+    cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
+    cron.schedule('0 */3 * * *', tarefas.tarefa3Horas);
+};
+
+module.exports = { agendarTarefas, tarefas };

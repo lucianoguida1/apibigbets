@@ -104,6 +104,8 @@ class EstrategiaController extends Controller {
 
             estrategiaValida.bilhetes = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
 
+            if(estrategiaValida.bilhetes)
+
             estrategiaValida = await estrategiaServices.geraEstistica(estrategiaValida, false);
 
             return res.status(201).json({ message: 'Teste realizado com sucesso!', estrategia: estrategiaValida });

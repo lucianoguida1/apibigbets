@@ -20,6 +20,6 @@ app.use(bodyParser.json());
 routes(app);
 
 // EXECUTA AS TAREFAS CRONS
-tarefaCron();
+tarefaCron.agendarTarefas();
 
 module.exports = app;

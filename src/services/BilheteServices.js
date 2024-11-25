@@ -106,10 +106,10 @@ class BilheteServices extends Services {
         }
         const jogosUnicos = await jogoServices.filtrarJogosUnicos(regras, novosJogos);
         if (jogosUnicos.length === 0) {
-            return ('Nenhum jogo encontrado!');
+            throw new Error('Nenhum jogo encontrado!');
         }
         if (jogosUnicos.length <= regras.length) {
-            return ('Quantidade de jogos insuficiente!');
+            throw new Error('Quantidade de jogos insuficiente!');
         }
         try {
             let apostas = {};
