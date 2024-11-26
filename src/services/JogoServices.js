@@ -7,7 +7,7 @@ const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
-const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Pai } = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, sequelize } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -41,125 +41,35 @@ class JogoServices extends Services {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
+        const sql = `
+        select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
+        j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
+        o.nome,o.id as odd_id,o.odd,o.status as statusodd
+        from jogos j
+        inner join times casa on j.casa_id = casa.id
+        inner join times fora on j.fora_id = fora.id
+        inner join temporadas t on t.id = j.temporada_id
+        inner join ligas l on l.id = t.liga_id
+        inner join pais p on p.id = l.pai_id
+        inner join odds o on o.jogo_id = j.id
+        ${regra.regravalidacoe2_id ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
+        ${regra.regravalidacoe3_id ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
+        inner join tipoapostas tp on tp.id = o.tipoaposta_id
+        where j."deletedAt" is null
+        ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
+        and (o.regra_id = ${regra.regravalidacoe_id})
+        ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
+        ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
+        and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
+        ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
+        ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
+        ORDER BY j.id ASC;`;
 
-        const whereJogo = {};
-        const include = [
-            {
-                model: Time,
-                as: 'casa',
-                where: {},
-            },
-            {
-                model: Time,
-                as: 'fora',
-                where: {},
-            },
-        ];
-
-        if (regra.pai_id) {
-            include.push({
-                model: Temporada,
-                required: true,
-                include: [
-                    {
-                        model: Liga,
-                        required: true,
-                        include: [
-                            {
-                                model: Pai,
-                                required: true,
-                                where: {
-                                    id: { [Op.in]: convertStringToArray(regra.pai_id) },
-                                },
-                            },
-                        ],
-                    },
-                ],
-            });
-        }
-
-
-        if (regra.liga_id) {
-            include.push({
-                model: Temporada,
-                required: true,
-                include: [
-                    {
-                        model: Liga,
-                        required: true,
-                        where: {
-                            id: { [Op.in]: convertStringToArray(regra.liga_id) },
-                        },
-                    },
-                ],
-            });
-        }
-
-        if (regra.time_id) {
-            const timeIds = convertStringToArray(regra.time_id);
-            whereJogo[Op.or] = [
-                { casa_id: { [Op.in]: timeIds } },
-                { fora_id: { [Op.in]: timeIds } },
-            ];
-        }
-
-        if (regra.regravalidacoe_id) {
-            include.push({
-                model: Odd,
-                required: true,
-                where: {
-                    odd: {
-                        [Op.between]: [regra.oddmin || 0, regra.oddmax || Number.MAX_VALUE],
-                    },
-                },
-                include: [
-                    {
-                        model: Regravalidacoe,
-                        required: true,
-                        as: 'regra',
-                        where: {
-                            id: regra.regravalidacoe_id,
-                        },
-                    },
-                ],
-            });
-        }
-
-        const results = await Jogo.findAll({
-            where: {
-                ...whereJogo,
-                ...(jogosPendente ? { gols_casa: null } : {}),
-            },
-            order: [['id', 'ASC']],
-            include,
+        const results = await sequelize.query(sql, {
+            type: sequelize.QueryTypes.SELECT,
         });
 
-        let jogos = [];
-
-        if (results.length > 0) {
-            for (const result of results) {
-                const tipoAposta = (await tipoapostaServices.pegaUmRegistroPorId(result.Odds[0].tipoaposta_id));
-                jogos.push({
-                    id: result.id,
-                    casa: result.casa?.nome || null, // Define como null se não houver dados
-                    fora: result.fora?.nome || null, // Define como null se não houver dados
-                    placar: (result.gols_casa !== undefined && result.gols_fora !== undefined) ?
-                        result.gols_casa + '-' + result.gols_fora : null, // Define como null se não houver dados
-                    data: result.data || null, // Define como null se não houver dados
-                    datahora: result.datahora || null, // Define como null se não houver dados
-                    temporada: result.Temporada?.ano || null, // Define como null se não houver dados
-                    liga: result.Temporada?.Liga?.nome || null, // Define como null se não houver dados
-                    pais: result.Temporada?.Liga?.Pai?.nome || null, // Define como null se não houver dados
-                    tipoAposta: tipoAposta.name || null, // Define como null se não houver dados
-                    nome: result.Odds?.[0]?.nome || null, // Define como null se não houver dados
-                    odd_id: result.Odds?.[0]?.id,
-                    odd: result.Odds?.[0]?.odd || null, // Define como null se não houver dados
-                    statusOdd: result.Odds?.[0]?.status // Define como null se não houver dados
-                });
-            }
-        }
-
-        return jogos;
+        return results;
     }
 
     async jogoEstruturadoIds(ids, where = {}) {

@@ -23,7 +23,7 @@ class EstrategiaController extends Controller {
         const { nome, descricao, regras } = req.body;
 
         // Verificação de campos obrigatórios
-        if (!nome || !descricao) {
+        if (!nome) {
             throw new Error('Nome e descrição são obrigatórios!');
         }
         if (!regras || regras.length < 1) {
@@ -35,49 +35,49 @@ class EstrategiaController extends Controller {
         for (const regra of regras) {
             const paisesIds = [];
             const ligasIds = [];
-        
+
             // Verifica se `aposta` está presente
             if (!regra.aposta) {
                 throw new Error('O campo aposta é obrigatório em cada regra!');
             }
-        
+
             // Validação de `aposta`
             const regravalidacoeExists = await regravalidacoeServices.pegaUmRegistro({
                 where: { id: regra.aposta }
             });
-        
+
             if (!regravalidacoeExists) {
                 throw new Error(`Aposta não existe.`);
             }
-        
+
             // Validação de `pais`
             if (regra.pais && regra.pais.length > 0) {
                 const ids = regra.pais.split(',').map(Number); // Sem `const` aqui
                 const paisesValidos = await paiServices.pegaTodosOsRegistros({
                     where: { id: { [Op.in]: ids } }
                 });
-        
+
                 if (paisesValidos.length !== ids.length) {
                     throw new Error("Algum pais não contem em nossos sistema!");
                 }
-        
+
                 paisesIds.push(...ids); // Adiciona os valores ao array global
             }
-        
+
             // Validação de `liga`
             if (regra.liga && regra.liga.length > 0) {
                 const ids = regra.liga.split(',').map(Number); // Sem `const` aqui
                 const ligasValidas = await ligaServices.pegaTodosOsRegistros({
                     where: { id: { [Op.in]: ids } }
                 });
-        
+
                 if (ligasValidas.length !== ids.length) {
                     throw new Error("Alguma liga não contem em nossos sistema!");
                 }
-        
+
                 ligasIds.push(...ids); // Adiciona os valores ao array global
             }
-        
+
             // Adiciona os dados validados à nova regra
             novaRegras.push({
                 ...regra,
@@ -92,8 +92,15 @@ class EstrategiaController extends Controller {
             pai_id: regra.validPaisesIds.length > 0 ? regra.validPaisesIds.join(',') : null,
             liga_id: regra.validLigasIds.length > 0 ? regra.validLigasIds.join(',') : null,
             regravalidacoe_id: regra.aposta,
+            regravalidacoe2_id: regra.aposta2 ? regra.aposta2 : null,
+            oddmin2: regra.oddMin2 ? parseFloat(regra.oddMin2) : null,
+            oddmax2: regra.oddMax2 ? parseFloat(regra.oddMax2) : null,
+            regravalidacoe3_id: regra.aposta3 ? regra.aposta3 : null,
+            oddmin3: regra.oddMin3 ? parseFloat(regra.oddMin3) : null,
+            oddmax3: regra.oddMax3 ? parseFloat(regra.oddMax3) : null,
         }));
-        
+
+
         return ({ nome, descricao, regras: regrasCriar });
     }
 
@@ -102,9 +109,9 @@ class EstrategiaController extends Controller {
 
             var estrategiaValida = await this.#validaEstrategia(req, res);
 
-            estrategiaValida.bilhetes = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
-
-            if(estrategiaValida.bilhetes)
+            const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
+            estrategiaValida.bilhetes = bilhetes;
+            estrategiaValida.jogos = jogos;
 
             estrategiaValida = await estrategiaServices.geraEstistica(estrategiaValida, false);
 

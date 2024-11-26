@@ -128,15 +128,15 @@ class BilheteServices extends Services {
                     jogo_id: jogo.id,
                     estrategia_id: estrategia.id,
                     odd_id: jogo.odd_id,
-                    status_jogo: jogo.statusOdd
+                    status_jogo: jogo.statusodd,
                 });
 
                 apostas[i].jogos.push(jogo);
                 apostas[i].odd *= jogo.odd;
 
                 if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
-                    const algumStatusNulo = apostas[i].jogos.some((j) => j.statusOdd === null);
-                    apostas[i].status = algumStatusNulo ? null : apostas[i].jogos.every((j) => j.statusOdd === true);
+                    const algumStatusNulo = apostas[i].jogos.some((j) => j.statusodd === null);
+                    apostas[i].status = algumStatusNulo ? null : apostas[i].jogos.every((j) => j.statusodd === true);
                     bilhetesCriar.forEach(bilhete => {
                         if (bilhete.bilhete_id === i) {
                             bilhete.status_bilhete = apostas[i].status;
@@ -152,7 +152,8 @@ class BilheteServices extends Services {
                 const bilhetes = await this.criaVariosRegistros(bilhetesCriar);
                 return bilhetes;
             }
-            return bilhetesCriar;
+
+            return { bilhetes: bilhetesCriar, jogos: jogosArray };
         } catch (error) {
             console.error('BilhetesServices:', error.message);
         }
