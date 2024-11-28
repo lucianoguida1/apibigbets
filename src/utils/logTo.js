@@ -28,6 +28,8 @@ module.exports = async (message, telegram = true, cons = true) => {
     const logFileName = `${date}.log`;
     const logFilePath = path.join(logsDir, logFileName);
 
+    if(cons) console.log(message);
+
     // Assegura que a pasta logs existe
     if (!fs.existsSync(logsDir)) {
         fs.mkdirSync(logsDir, { recursive: true });

@@ -48,3 +48,8 @@ sequelize init:seeders	Inicia os seeders
 sequelize migration:generate	Gera um novo arquivo de migração
 sequelize model:generate	Gera uma model e sua migração [alias: model:create]
 sequelize seed:generate	Gera um novo arquivo de seed
+
+
+##### Rodar tarefas crons
+node src/runTask.js tarefa20hrs
+node src/runTask.js tarefa19hrs

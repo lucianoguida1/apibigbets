@@ -10,7 +10,6 @@ const RequisicaopendenteServices = require('../services/RequisicaopendenteServic
 const RequestServices = require('../services/RequestServices.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
-const OddServices = require('../services/OddServices.js');
 const toDay = require('../utils/toDay.js');
 const PaiServices = require('../services/PaiServices.js');
 
@@ -20,7 +19,6 @@ const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
 const bilheteServices = new BilheteServices();
 const estrategiaServices = new EstrategiaServices();
-const oddServices = new OddServices();
 const paiServices = new PaiServices();
 
 class ServicesBaseController extends Controller {
@@ -52,15 +50,19 @@ class ServicesBaseController extends Controller {
 
     async executarEstrategias(req, res) {
         try {
-            logTo(' - Executando estratégias - ', true);
+            logTo(' - Executando estratégias - ', true, true);
             const estrategias = await estrategiaServices.pegaTodosOsRegistros();
             for (const est of estrategias) {
-                await bilheteServices.montaBilhetes(est, true);
-                await estrategiaServices.geraEstistica(est)
+                try {
+                    await bilheteServices.montaBilhetes(est, true);
+                    await estrategiaServices.geraEstistica(est)
+                } catch (error) {
+                   // não faz nada só para n parar o loop
+                }
             }
-            logTo('Executado estratégias', true);
+            logTo('Finalizado a execução estratégias', true);
         } catch (error) {
-            logTo('Erro ao executar estratégia: ' + error.message, true);
+            logTo('Erro ao executar estratégia: ' + error.message, true, true);
         }
     }
 
