@@ -51,13 +51,34 @@ class EstrategiaServices extends Services {
                     {
                         model: Regravalidacoe,
                         required: true,
+                        as: 'aposta',
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
                             required: true,
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
-                    }
+                    },
+                    {
+                        model: Regravalidacoe,
+                        as: 'regra2',
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
+                        include: {
+                            model: Tipoaposta,
+                            required: true,
+                            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
+                        }
+                    },
+                    {
+                        model: Regravalidacoe,
+                        as: 'regra3',
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
+                        include: {
+                            model: Tipoaposta,
+                            required: true,
+                            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
+                        }
+                    },
                 ]
             }
         });
@@ -161,6 +182,7 @@ class EstrategiaServices extends Services {
                 attributes: {
                     exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
                 },
+                /*
                 include: [
                     {
                         model: Regravalidacoe,
@@ -173,6 +195,7 @@ class EstrategiaServices extends Services {
                         }
                     }
                 ]
+                */
             }
         });
         return estrategia;
