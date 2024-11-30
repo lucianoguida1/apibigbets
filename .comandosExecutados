@@ -53,3 +53,4 @@ sequelize seed:generate	Gera um novo arquivo de seed
 ##### Rodar tarefas crons
 node src/runTask.js tarefa20hrs
 node src/runTask.js tarefa19hrs
+node src/runTask.js tarefa10hrs

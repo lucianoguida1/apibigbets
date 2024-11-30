@@ -108,7 +108,7 @@ class BilheteServices extends Services {
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
         }
-        if (jogosUnicos.length <= regras.length) {
+        if (jogosUnicos.length < regras.length) {
             throw new Error('Quantidade de jogos insuficiente!');
         }
         try {
@@ -116,7 +116,7 @@ class BilheteServices extends Services {
             const bilhetesCriar = [];
             let i = await Bilhete.max('bilhete_id') || 1;
             i++;
-
+            
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
 
             for (const jogo of jogosArray) {
