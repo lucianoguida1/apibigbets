@@ -12,6 +12,7 @@ const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
 const toDay = require('../utils/toDay.js');
 const PaiServices = require('../services/PaiServices.js');
+const { TELEGRAM_BOT_TOKEN } = process.env;
 
 const regraServices = new RegravalidacoeServices();
 const jogoServices = new JogosServices();
@@ -57,7 +58,7 @@ class ServicesBaseController extends Controller {
                     await bilheteServices.montaBilhetes(est, true);
                     await estrategiaServices.geraEstistica(est)
                 } catch (error) {
-                   // não faz nada só para n parar o loop
+                    // não faz nada só para n parar o loop
                 }
             }
             logTo('Finalizado a execução estratégias', true);
@@ -250,9 +251,138 @@ class ServicesBaseController extends Controller {
             logTo(`Total de pais processados: ${pais.length}`);
         } catch (error) {
             logTo('✌️error --->', error);
+            throw new Error('Erro ao gerar estatísticas gerais: ' + error.message);
+        }
+    }
+
+    async verificaGrupoBot(req, res) {
+        try {
+            const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
+            const data = await response.json();
+            if (!data.ok) {
+                throw new Error('Erro ao buscar atualizações do Telegram');
+            }
+
+            const updates = data.result;
+            for (const update of updates) {
+                if (update.message && update.message.chat && update.message.chat.type === 'supergroup') {
+                    const grupo = update.message.chat;
+                    const nomeGrupo = grupo.title;
+                    const match = nomeGrupo.match(/#(\w{4})/);
+                    if (match) {
+                        const chaveGrupo = match[1];
+                        const estrategia = await estrategiaServices.pegaUmRegistro({ where: { chave_grupo: chaveGrupo } });
+                        if (estrategia) {
+                            // Busca o link do grupo
+                            const groupLinkResponse = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/exportChatInviteLink`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ chat_id: grupo.id })
+                            });
+                            const groupLinkData = await groupLinkResponse.json();
+
+                            if (!groupLinkData.ok) {
+                                logTo(`Erro ao buscar link do grupo ${grupo.id}: ${groupLinkData.description}`);
+                                continue; // Não continua com o restante do código se não encontrar o link do grupo
+                            }
+
+                            await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result});
+                            logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
+                        }
+                    }
+                }
+            }
+            
+            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ offset: data.result[data.result.length - 1].update_id + 1 })
+            });
+            return ({ mensagem: 'Verificação de grupos concluída' });
+        } catch (error) {
+            if (error.message) {
+                console.error('Erro ao verificar grupos do bot:', error.message);
+                logTo('Erro ao verificar grupos do bot:', error.message);
+            }
+            return ({ erro: error.message });
+        }
+    }
+
+    async enviaMensagens(req, res) {
+        try {
+            const bilhetes = await bilheteServices.getBilhetes({
+                where: { alert: null },
+                order: [['id', 'DESC']]
+            }, {
+                where: { chat_id: { [Op.ne]: null } }
+            });
+
+            if (bilhetes.length === 0) {
+                return res.status(200).json({ mensagem: 'Nenhum bilhete para enviar mensagem' });
+            }
+
+            // Agrupa os bilhetes pelo bilhete_id
+            const bilhetesAgrupados = bilhetes.reduce((acc, bilhete) => {
+                if (!acc[bilhete.bilhete_id]) {
+                    acc[bilhete.bilhete_id] = [];
+                }
+                acc[bilhete.bilhete_id].push(bilhete);
+                return acc;
+            }, {});
+
+            for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
+                const estrategia = bilhetes[0].Estrategium;
+                const chatId = estrategia.chat_id;
+
+                if (!chatId) {
+                    logTo(`Estratégia ${estrategia.nome} não possui chat_id`);
+                    continue;
+                }
+
+                let mensagem = `Bilhete: ${bilheteId}\n\n`;
+                for (const bilhete of bilhetes) {
+                    const jogo = await bilhete.getJogo();
+                    const casa = await jogo.getCasa();
+                    const fora = await jogo.getFora();
+                    mensagem += `${casa.nome} - ${fora.nome}\nOdd: ${bilhete.Odd.odd.toFixed(2)}\n`;
+                    mensagem += `${jogo.datahora.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}h`;
+                }
+                mensagem += '\n\n\nCassa de aposta:\nhttps://www.bet365.com';
+
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: mensagem
+                    })
+                });
+
+                const data = await response.json();
+                if (data.ok) {
+                    await Bilhete.update(
+                        { alert: true },
+                        { where: { bilhete_id: bilheteId } }
+                    );
+                } else {
+                    logTo(`Erro ao enviar mensagem para o grupo ${chatId}: ${data.description}`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda 300ms entre cada mensagem
+
+                if ((Object.keys(bilhetesAgrupados).indexOf(bilheteId) + 1) % 5 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundo a cada 5 mensagens
+                }
+            }
+
+            return ({ mensagem: 'Mensagens enviadas' });
+        } catch (error) {
+            console.error('Erro ao enviar mensagens:', error.message);
+            //logTo('Erro ao enviar mensagens:', error.message);
+            //return ({ erro: error.message });
         }
     }
 }
+
 function updateDadosJson(dadosJson, chaves) {
     const json = { ...dadosJson }; // Garante que não mutamos o objeto original
     if (Array.isArray(chaves)) {

@@ -47,6 +47,24 @@ const tarefas = {
             console.error('Erro na tarefa agendada a cada 3 horas:', error.message);
         }
     },
+
+    async tarefa5Minutos() {
+        try {
+            await serviceBase.verificaGrupoBot();
+        } catch (error) {
+            console.error('Erro na tarefa agendada a cada 5 minutos:', error.message);
+        }
+    },
+
+    async tarefaTeste() {
+        try {
+            await serviceBase.verificaGrupoBot();
+            //await serviceBase.enviaMensagens();
+        }
+        catch (error) {
+            console.error('Erro na tarefa de teste:', error.message);
+        }
+    }
 };
 
 // Agendamento automático com `node-cron`
@@ -55,6 +73,7 @@ const agendarTarefas = () => {
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */3 * * *', tarefas.tarefa3Horas);
+    cron.schedule('*/5 * * * *', tarefas.tarefa5Minutos);
 };
 
 module.exports = { agendarTarefas, tarefas };

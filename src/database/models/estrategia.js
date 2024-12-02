@@ -33,7 +33,13 @@ module.exports = (sequelize, DataTypes) => {
     maior_derrotas_semana: DataTypes.INTEGER,
     maior_vitorias_dia: DataTypes.INTEGER,
     maior_vitorias_semana: DataTypes.INTEGER,
-    grafico_json: DataTypes.JSON
+    grafico_json: DataTypes.JSON,
+    chat_id: DataTypes.STRING, // Novo campo
+    link_grupo: DataTypes.STRING,
+    chave_grupo: {
+      type: DataTypes.STRING,
+      defaultValue: () => Math.random().toString(36).substr(2, 4) // Gera uma chave única de 4 dígitos
+    } // Novo campo
   }, {
     sequelize,
     modelName: 'Estrategia',

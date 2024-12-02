@@ -1,5 +1,5 @@
 const Services = require('./Services.js');
-const { Estrategia, Bilhete, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, Odd, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
@@ -116,7 +116,7 @@ class BilheteServices extends Services {
             const bilhetesCriar = [];
             let i = await Bilhete.max('bilhete_id') || 1;
             i++;
-            
+
             const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
 
             for (const jogo of jogosArray) {
@@ -159,7 +159,29 @@ class BilheteServices extends Services {
         }
     }
 
+    async getBilhetes(options = {}, estrategiaOptions = {}) {
+        try {
+            const bilhetes = await Bilhete.findAll({
+                ...options,
+                include: [
+                    {
+                        model: Estrategia,
+                        required: true,
+                        ...estrategiaOptions
+                    },
+                    {
+                        model: Odd,
+                        required: true,
+                    }
+                ],
+            });
 
+            return bilhetes;
+        } catch (error) {
+            console.error('BilheteServices:', error.message);
+            throw new Error('Erro ao buscar bilhetes!');
+        }
+    }
 }
 
 module.exports = BilheteServices;
