@@ -288,19 +288,20 @@ class ServicesBaseController extends Controller {
 
                             await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result });
                             logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
+                            
+                            // Atualiza o offset para evitar processar as mesmas atualizações novamente
+                            const lastUpdateId = updates[updates.length - 1].update_id;
+                            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ offset: lastUpdateId + 1 })
+                            });
                         }
                     }
                 }
             }
+            
 
-            // Atualiza o offset para evitar processar as mesmas atualizações novamente
-            /*
-            const lastUpdateId = updates[updates.length - 1].update_id;
-            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ offset: lastUpdateId + 1 })
-            });*/
             return ({ mensagem: 'Verificação de grupos concluída' });
         } catch (error) {
             console.error('Erro ao verificar grupos do bot:', error.message);
