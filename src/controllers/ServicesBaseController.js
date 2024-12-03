@@ -262,7 +262,7 @@ class ServicesBaseController extends Controller {
             if (!data.ok) {
                 throw new Error('Erro ao buscar atualizações do Telegram');
             }
-            
+
             const updates = data.result;
             for (const update of updates) {
                 if (update.message && update.message.chat && update.message.chat.type === 'supergroup') {
@@ -282,13 +282,13 @@ class ServicesBaseController extends Controller {
                             const groupLinkData = await groupLinkResponse.json();
 
                             if (!groupLinkData.ok) {
-                                logTo(`Erro ao buscar link do grupo ${grupo.id}: ${groupLinkData.description}`);
+                                await estrategia.update({ chat_id: grupo.id });
                                 continue; // Não continua com o restante do código se não encontrar o link do grupo
                             }
 
                             await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result });
                             logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
-                            
+
                             // Atualiza o offset para evitar processar as mesmas atualizações novamente
                             const lastUpdateId = updates[updates.length - 1].update_id;
                             await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
@@ -300,7 +300,7 @@ class ServicesBaseController extends Controller {
                     }
                 }
             }
-            
+
 
             return ({ mensagem: 'Verificação de grupos concluída' });
         } catch (error) {
