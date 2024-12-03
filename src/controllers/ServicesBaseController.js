@@ -354,7 +354,7 @@ class ServicesBaseController extends Controller {
                     const casa = await jogo.getCasa();
                     const fora = await jogo.getFora();
                     mensagem += `${casa.nome} - ${fora.nome}\nOdd: ${bilhete.Odd.odd.toFixed(2)}\n`;
-                    mensagem += `${jogo.datahora.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}h`;
+                    mensagem += `${jogo.datahora.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}h\n`;
                 }
                 mensagem += '\n\n\nCassa de aposta:\nhttps://www.bet365.com';
 
