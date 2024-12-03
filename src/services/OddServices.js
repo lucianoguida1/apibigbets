@@ -16,10 +16,10 @@ class OddServices extends Services {
         for (const odd of odds) {
             const tipoAposta = tipoApostas.find(e => e.id_sports === odd.id);
             for (const value of odd.values) {
-                let regra = regras.find(e => e.nome == value.value && e.tipoaposta_id == tipoAposta.id);
+                let regra = regras.find(e => e.name == value.value && e.tipoaposta_id == tipoAposta.id);
                 if (!regra) {
                     regra = regraServices.criaRegistro({
-                        nome: value.value,
+                        name: value.value,
                         tipoaposta_id: tipoAposta.id
                     });
                 }

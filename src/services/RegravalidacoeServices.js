@@ -38,9 +38,9 @@ class RegravalidacoeServices extends Services {
 
     async pegaRegra(nome, tipoAposta) {
         try {
-            let regra = await super.pegaUmRegistro({ where: { 'nome': nome, 'tipoaposta_id': tipoAposta.id } });
+            let regra = await super.pegaUmRegistro({ where: { 'name': nome, 'tipoaposta_id': tipoAposta.id } });
             if (!regra) {
-                regra = await super.criaRegistro({ 'nome': nome, 'tipoaposta_id': tipoAposta.id });
+                regra = await super.criaRegistro({ 'name': nome, 'tipoaposta_id': tipoAposta.id });
             }
             return regra;
         } catch (error) {

@@ -106,6 +106,7 @@ class RequestController extends Controller {
                         if ((++page) <= totalPaginas) {
                             reqPendente.save();
                             params.page = page;
+                            await new Promise(resolve => setTimeout(resolve, 5000));
                             response = await axios.get(URL + 'odds', { headers, params });
                             salvaJson('odds', page, response.data);
                             if (response.status !== 200) {

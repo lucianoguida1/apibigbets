@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Regravalidacoe.init({
     nome: DataTypes.STRING,
+    name: DataTypes.STRING,
     regra: DataTypes.STRING,
     descricao: DataTypes.STRING,
     tipoaposta_id: DataTypes.INTEGER

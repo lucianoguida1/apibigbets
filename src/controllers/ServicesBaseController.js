@@ -262,7 +262,7 @@ class ServicesBaseController extends Controller {
             if (!data.ok) {
                 throw new Error('Erro ao buscar atualizações do Telegram');
             }
-
+            
             const updates = data.result;
             for (const update of updates) {
                 if (update.message && update.message.chat && update.message.chat.type === 'supergroup') {
@@ -286,22 +286,25 @@ class ServicesBaseController extends Controller {
                                 continue; // Não continua com o restante do código se não encontrar o link do grupo
                             }
 
-                            await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result});
+                            await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result });
                             logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
                         }
                     }
                 }
             }
-            
+
+            // Atualiza o offset para evitar processar as mesmas atualizações novamente
+            /*
+            const lastUpdateId = updates[updates.length - 1].update_id;
             await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ offset: data.result[data.result.length - 1].update_id + 1 })
-            });
+                body: JSON.stringify({ offset: lastUpdateId + 1 })
+            });*/
             return ({ mensagem: 'Verificação de grupos concluída' });
         } catch (error) {
+            console.error('Erro ao verificar grupos do bot:', error.message);
             if (error.message) {
-                console.error('Erro ao verificar grupos do bot:', error.message);
                 logTo('Erro ao verificar grupos do bot:', error.message);
             }
             return ({ erro: error.message });
@@ -323,7 +326,7 @@ class ServicesBaseController extends Controller {
             });
 
             if (bilhetes.length === 0) {
-                return res.status(200).json({ mensagem: 'Nenhum bilhete para enviar mensagem' });
+                return ({ mensagem: 'Nenhum bilhete para enviar mensagem' });
             }
 
             // Agrupa os bilhetes pelo bilhete_id
