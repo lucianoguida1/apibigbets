@@ -308,10 +308,15 @@ class ServicesBaseController extends Controller {
         }
     }
 
-    async enviaMensagens(req, res) {
+    async enviaMensagensTelegram(req, res) {
         try {
             const bilhetes = await bilheteServices.getBilhetes({
-                where: { alert: null },
+                where: {
+                    alert: null,
+                    data: {
+                        [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]
+                    }
+                },
                 order: [['id', 'DESC']]
             }, {
                 where: { chat_id: { [Op.ne]: null } }

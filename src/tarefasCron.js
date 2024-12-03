@@ -51,6 +51,7 @@ const tarefas = {
     async tarefa5Minutos() {
         try {
             await serviceBase.verificaGrupoBot();
+            await serviceBase.enviaMensagens();
         } catch (error) {
             console.error('Erro na tarefa agendada a cada 5 minutos:', error.message);
         }
@@ -58,8 +59,8 @@ const tarefas = {
 
     async tarefaTeste() {
         try {
+            await serviceBase.enviaMensagensTelegram();
             await serviceBase.verificaGrupoBot();
-            //await serviceBase.enviaMensagens();
         }
         catch (error) {
             console.error('Erro na tarefa de teste:', error.message);
