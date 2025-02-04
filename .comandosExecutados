@@ -1,4 +1,4 @@
-// dependencias
+## dependencias
 npm i nodemon
 npm install sequelize
 npm install sequelize-cli
@@ -6,7 +6,7 @@ npm install sqlite3
 
 
 
-//Comandos de Configuração
+### Comandos de Configuração ###
 
 ## Cria estrutura de aquivos do sequelize
 npx sequelize-cli ini
@@ -23,7 +23,10 @@ npx sequelize db:migrate:undo --step 3
 ## Gera uma nova migração
 npx sequelize-cli migration:generate --name add_cols_jogos
 
-## Restaura bancolocal no postgress
+## Cria um Backup do banco Postgress 
+sudo pg_dump -U postgres -h localhost -p 5432 -F c -b -v -f ./bigbets.backup bigbets
+
+## Restaura banco local no postgress
 pg_restore -U postgres -h localhost -p 5432 -d bigbets -v "C:\tmp\bigbets.backup"
 
 
