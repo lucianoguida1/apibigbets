@@ -13,8 +13,8 @@ npx sequelize-cli model:generate --name requisicaopendentes  --attributes modulo
 npx sequelize-cli model:generate --name regravalidacoes  --attributes nome:string,regra:string,descricao:string,tipoaposta_id:integer
 npx sequelize-cli model:generate --name estrategias --attributes nome:string,descricao:text,taxaacerto:float,totalacerto:number,totalerro:number
 npx sequelize-cli model:generate --name regras --attributes tabela:string,campo1:string,condicao1:string,valor1:string,campo2:string,condicao2:string,valor2:string,estrategia_id:number
-npx sequelize-cli model:generate --name Bilhetes --attributes jogo_id:number,estrategia_id:number,alert:boolean,odd_id:number
-npx sequelize-cli model:generate --name --attributes
+npx sequelize-cli model:generate --name bilhetes --attributes estrategia_id:number,alert:boolean
+npx sequelize-cli model:generate --name bilhetesjogos --attributes jogo_id:number,bilhete_id:number,odd_id:number
 npx sequelize-cli model:generate --name --attributes
 npx sequelize-cli model:generate --name --attributes
 npx sequelize-cli model:generate --name --attributes

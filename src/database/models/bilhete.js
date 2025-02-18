@@ -12,9 +12,11 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
 
       //Tem o ID
-      Bilhete.belongsTo(models.Jogo, { foreignKey: 'jogo_id' });
       Bilhete.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id' });
-      Bilhete.belongsTo(models.Odd, { foreignKey: 'odd_id' });
+      
+      Bet.hasMany(models.Bilhetesjogos,{
+        foreignKey: 'bilhetesjogos_id'
+      });
     }
   }
   Bilhete.init({
@@ -22,9 +24,6 @@ module.exports = (sequelize, DataTypes) => {
     jogo_id: DataTypes.NUMBER,
     estrategia_id: DataTypes.NUMBER,
     alert: DataTypes.BOOLEAN,
-    odd_id: DataTypes.NUMBER,
-    status_jogo: DataTypes.BOOLEAN,
-    status_bilhete: DataTypes.BOOLEAN,
     odd: DataTypes.NUMBER,
     data: DataTypes.DATE,
   }, {

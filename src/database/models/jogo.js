@@ -13,7 +13,6 @@ module.exports = (sequelize, DataTypes) => {
       //Não tem o ID
       Jogo.hasMany(models.Gol, {foreignKey: 'jogo_id'});
       Jogo.hasMany(models.Odd, {foreignKey: 'jogo_id'});
-      Jogo.hasMany(models.Bilhete, {foreignKey: 'jogo_id'});
 
       //Tem o ID
       Jogo.belongsTo(models.Time, {foreignKey: 'casa_id',as: 'casa'});

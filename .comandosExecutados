@@ -57,3 +57,6 @@ sequelize seed:generate	Gera um novo arquivo de seed
 node src/runTask.js tarefa20hrs
 node src/runTask.js tarefa19hrs
 node src/runTask.js tarefa10hrs
+
+## Executar SQL no banco de dados online
+psql -U postgres -d bigbets
