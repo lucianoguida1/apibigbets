@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // não tem o ID na tabela
-      Odd.hasMany(models.Bilhetesjogos, { foreignKey: 'odd_id' });
+      Odd.hasMany(models.Bilhetesodd, { foreignKey: 'odd_id' });
 
       //Tem o ID
       Odd.belongsTo(models.Jogo, { foreignKey: 'jogo_id' });

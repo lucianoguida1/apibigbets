@@ -219,27 +219,7 @@ class EstrategiaServices extends Services {
                 }
             });
         } else {
-            bilhetes = estrategia.bilhetes.reduce((acc, bilhete) => {
-                // Verifica se já existe um registro para este bilhete_id com os mesmos valores
-                const exists = acc.some(item =>
-                    item.bilhete_id === bilhete.bilhete_id &&
-                    item.status_bilhete === bilhete.status_bilhete &&
-                    item.odd === bilhete.odd &&
-                    item.data === bilhete.data
-                );
-
-                // Se não existir, adiciona ao acumulador
-                if (!exists && bilhete.status_bilhete != null) {
-                    acc.push({
-                        bilhete_id: bilhete.bilhete_id,
-                        status_bilhete: bilhete.status_bilhete,
-                        odd: bilhete.odd,
-                        data: bilhete.data
-                    });
-                }
-
-                return acc;
-            }, []);
+            bilhetes = estrategia.bilhetes;
         }
 
         if (bilhetes.length === 0) {

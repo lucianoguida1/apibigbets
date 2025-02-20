@@ -101,59 +101,66 @@ class BilheteServices extends Services {
         } else {
             regras = estrategia.regras;
         }
+
         if (!regras || regras.length === 0) {
             throw new Error('Estratégia não contém regras!');
         }
+
         const jogosUnicos = await jogoServices.filtrarJogosUnicos(regras, novosJogos);
+
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
         }
+
         if (jogosUnicos.length < regras.length) {
             throw new Error('Quantidade de jogos insuficiente!');
         }
         try {
-            let apostas = {};
-            const bilhetesCriar = [];
-            let i = await Bilhete.max('bilhete_id') || 1;
-            i++;
-
-            const jogosArray = Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
-
-            for (const jogo of jogosArray) {
-                if (!apostas[i]) {
-                    apostas[i] = { odd: 1, status: true, jogos: [] };
-                }
-                bilhetesCriar.push({
-                    bilhete_id: i,
-                    jogo_id: jogo.id,
+            let i = 0;
+            let bilhetesCriar = [];
+            for (const jogo of jogosUnicos) {
+                bilhetesCriar[i] = {
                     estrategia_id: estrategia.id,
-                    odd_id: jogo.odd_id,
-                    status_jogo: jogo.statusodd,
-                });
-
-                apostas[i].jogos.push(jogo);
-                apostas[i].odd *= jogo.odd;
-
-                if (apostas[i].jogos.length >= regras.length || jogo === jogosArray.at(-1)) {
-                    const algumStatusNulo = apostas[i].jogos.some((j) => j.statusodd === null);
-                    apostas[i].status = algumStatusNulo ? null : apostas[i].jogos.every((j) => j.statusodd === true);
-                    bilhetesCriar.forEach(bilhete => {
-                        if (bilhete.bilhete_id === i) {
-                            bilhete.status_bilhete = apostas[i].status;
-                            bilhete.odd = apostas[i].odd.toFixed(2);
-                            bilhete.data = jogo.data;
-                        }
-                    });
-                    i++;
+                    odd: jogo.odd,
+                    data: jogo.data,
+                    status_bilhete: jogo.statusodd,
+                    bilhetesodd: [{
+                        odd_id: jogo.odd_id,
+                        bilhete_id: null,
+                        status_odd: jogo.statusodd,
+                        regra_id: jogo.regra_id,
+                    }]
                 }
+                if (estrategia.regras.length > 1) {
+                    const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
+                    for (const jogoMesmoDia of jogosMesmoDia) {
+                        if (jogoMesmoDia.regra_id && !bilhetesCriar[i].bilhetesodd.some(b => b.regra_id === jogoMesmoDia.regra_id)) {
+                            bilhetesCriar[i].bilhetesodd.push({
+                                odd_id: jogoMesmoDia.odd_id,
+                                bilhete_id: null,
+                                status_odd: jogoMesmoDia.statusodd,
+                                regra_id: jogoMesmoDia.regra_id,
+                            });
+                            bilhetesCriar[i].odd *= jogoMesmoDia.odd;
+                        }
+                        const statusBilhete = bilhetesCriar[i].bilhetesodd.reduce((status, item) => {
+                            if (item.status_odd === false) return false;
+                            if (item.status_odd === null && status !== false) return null;
+                            return status;
+                        }, true);
+                        bilhetesCriar[i].status_bilhete = statusBilhete;
+                    }
+                }
+                i++;
             }
 
             if (salvaNoBanco) {
-                const bilhetes = await this.criaVariosRegistros(bilhetesCriar);
+                //salvar no banco de forma lenta
+                const bilhetes = await this.criaRegistro(bilhetesCriar);
                 return bilhetes;
             }
 
-            return { bilhetes: bilhetesCriar, jogos: jogosArray };
+            return { bilhetes: bilhetesCriar, jogos: jogosUnicos };
         } catch (error) {
             console.error('BilhetesServices:', error.message);
         }

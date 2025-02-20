@@ -14,17 +14,14 @@ module.exports = (sequelize, DataTypes) => {
       //Tem o ID
       Bilhete.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id' });
       
-      Bet.hasMany(models.Bilhetesjogos,{
-        foreignKey: 'bilhetesjogos_id'
-      });
     }
   }
   Bilhete.init({
     bilhete_id: DataTypes.NUMBER,
-    jogo_id: DataTypes.NUMBER,
     estrategia_id: DataTypes.NUMBER,
     alert: DataTypes.BOOLEAN,
     odd: DataTypes.NUMBER,
+    status_bilhete: DataTypes.BOOLEAN,
     data: DataTypes.DATE,
   }, {
     sequelize,

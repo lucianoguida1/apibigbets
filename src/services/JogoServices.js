@@ -24,6 +24,13 @@ class JogoServices extends Services {
 
     async filtrarJogosUnicos(regras, jogosPendente = false) {
         const jogosUnicos = {};
+        regras.map((regra, index) => {
+            if (!regra.id) {
+                regra.id = `${index+1}${Date.now()}`;
+            }
+            return regra;
+        });
+        
         const jogosPorRegra = await Promise.all(
             regras.map((regra) => this.filtrarJogosPorRegra(regra, jogosPendente))
         );
@@ -34,17 +41,18 @@ class JogoServices extends Services {
             }
         });
 
-        return Object.values(jogosUnicos).sort((a, b) => new Date(b.datahora) - new Date(a.datahora));
+        return Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
     }
 
     async filtrarJogosPorRegra(regra, jogosPendente = false) {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
+
         const sql = `
         select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
-        o.nome,o.id as odd_id,o.odd,o.status as statusodd
+        o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
         from jogos j
         inner join times casa on j.casa_id = casa.id
         inner join times fora on j.fora_id = fora.id
@@ -64,7 +72,7 @@ class JogoServices extends Services {
         ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
         ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
         ORDER BY j.id ASC;`;
-        
+
         const results = await sequelize.query(sql, {
             type: sequelize.QueryTypes.SELECT,
         });
