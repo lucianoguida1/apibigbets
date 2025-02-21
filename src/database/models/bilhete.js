@@ -17,7 +17,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Bilhete.init({
-    bilhete_id: DataTypes.NUMBER,
     estrategia_id: DataTypes.NUMBER,
     alert: DataTypes.BOOLEAN,
     odd: DataTypes.NUMBER,

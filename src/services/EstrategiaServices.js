@@ -206,12 +206,11 @@ class EstrategiaServices extends Services {
         if (estrategia instanceof Estrategia) {
             bilhetes = await estrategia.getBilhetes({
                 attributes: [
-                    'bilhete_id',
                     'status_bilhete',
                     'odd',
                     'data'
                 ],
-                group: ['bilhete_id', 'status_bilhete', 'odd', 'data'],
+                group: [ 'status_bilhete', 'odd', 'data'],
                 where: {
                     status_bilhete: {
                         [Op.not]: null

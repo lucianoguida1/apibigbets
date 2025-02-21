@@ -1,5 +1,5 @@
 const Services = require('./Services.js');
-const { Estrategia, Bilhete, Odd, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, Odd, Bilhetesodd, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
@@ -115,6 +115,7 @@ class BilheteServices extends Services {
         if (jogosUnicos.length < regras.length) {
             throw new Error('Quantidade de jogos insuficiente!');
         }
+        
         try {
             let i = 0;
             let bilhetesCriar = [];
@@ -131,7 +132,7 @@ class BilheteServices extends Services {
                         regra_id: jogo.regra_id,
                     }]
                 }
-                if (estrategia.regras.length > 1) {
+                if (regras.length > 1) {
                     const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
                     for (const jogoMesmoDia of jogosMesmoDia) {
                         if (jogoMesmoDia.regra_id && !bilhetesCriar[i].bilhetesodd.some(b => b.regra_id === jogoMesmoDia.regra_id)) {
@@ -156,10 +157,18 @@ class BilheteServices extends Services {
 
             if (salvaNoBanco) {
                 //salvar no banco de forma lenta
-                const bilhetes = await this.criaRegistro(bilhetesCriar);
+                const bilhetes = [];
+                for(const bilhete of bilhetesCriar){
+                    const bilheteSalvo = await this.criaRegistro(bilhete);
+                    bilhetes.push(bilheteSalvo);
+                    for (const bilheteOdd of bilhete.bilhetesodd) {
+                        bilheteOdd.bilhete_id = bilheteSalvo.id;
+                        await Bilhetesodd.create(bilheteOdd);
+                    }
+                }
                 return bilhetes;
             }
-
+            
             return { bilhetes: bilhetesCriar, jogos: jogosUnicos };
         } catch (error) {
             console.error('BilhetesServices:', error.message);

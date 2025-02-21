@@ -250,27 +250,27 @@ class EstrategiaController extends Controller {
 
     async criarEstrategia(req, res) {
         try {
-
+            
             const estrategiaValida = await this.#validaEstrategia(req, res);
-
+            
             // Cria a estratégia
             const novaEstrategia = await estrategiaServices.criaRegistro({
                 nome: estrategiaValida.nome,
                 descricao: estrategiaValida.descricao
             });
-
+            
             if (!novaEstrategia || !novaEstrategia.id) return res.status(500).json({ error: 'Erro ao criar estratégia: Tente novamente!' });
-
+            
             // Cria as regras associadas à estratégia
             const regrasAtualizadas = estrategiaValida.regras.map(regra => ({
                 ...regra,
                 estrategia_id: novaEstrategia.id
             }));
-
+            
             await regraServices.criaVariosRegistros(regrasAtualizadas);
-
+            
             await bilheteServices.montaBilhetes(novaEstrategia);
-
+            
             // Calcula as estatiscica da estrategia
             const estrategiaComRegras = await estrategiaServices.geraEstistica(novaEstrategia);
 
