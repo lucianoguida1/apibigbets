@@ -328,6 +328,7 @@ class EstrategiaServices extends Services {
             if (salvaNoBanco) {
                 estrategia.save();
             }
+
             return estrategia;
         } catch (error) {
             console.log(error)

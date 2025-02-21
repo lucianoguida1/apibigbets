@@ -6,6 +6,7 @@ const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
 const RegraServices = require('../services/RegraServices.js');
 const { Op } = require('sequelize');
+const bilhetesToGrafico = require('../utils/bilhetesToGrafico.js');
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
@@ -114,6 +115,10 @@ class EstrategiaController extends Controller {
             estrategiaValida.jogos = jogos;
 
             estrategiaValida = await estrategiaServices.geraEstistica(estrategiaValida, false);
+
+            estrategiaValida.grafico = bilhetesToGrafico(bilhetes);
+            delete estrategiaValida.bilhetes;
+            delete estrategiaValida.jogos;
 
             return res.status(201).json({ message: 'Teste realizado com sucesso!', estrategia: estrategiaValida });
         } catch (error) {
