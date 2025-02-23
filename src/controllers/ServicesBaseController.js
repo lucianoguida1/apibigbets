@@ -217,7 +217,6 @@ class ServicesBaseController extends Controller {
 
             logTo(`Total de pais processados: ${pais.length}`);
         } catch (error) {
-            logTo('✌️error --->', error);
             throw new Error('Erro ao gerar estatísticas gerais: ' + error.message);
         }
     }
@@ -352,8 +351,6 @@ class ServicesBaseController extends Controller {
             return ({ mensagem: 'Mensagens enviadas' });
         } catch (error) {
             console.error('Erro ao enviar mensagens:', error.message);
-            //logTo('Erro ao enviar mensagens:', error.message);
-            //return ({ erro: error.message });
         }
     }
 }
