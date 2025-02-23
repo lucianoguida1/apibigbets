@@ -23,26 +23,45 @@ class LigasController extends Controller {
             }
 
             // Buscar registros com filtros aplicados e limite
-            const ligas = await ligaServices.pegaTodosOsRegistros({
-                where: {...filters, dados_json: { [Op.ne]: null }},
+            const { count, rows: ligas } = await ligaServices.pegaEContaRegistros({
+                where: { ...filters, dados_json: { [Op.ne]: null } },
                 order: [[Sequelize.literal("(dados_json->>'num_jogos')::int"), 'DESC']],
                 limit: parseInt(pageSize, 10),
                 offset: parseInt((page - 1) * pageSize),
             });
             if (ligas.length == 0) {
-                return res.status(404).json({
-                    error: 'Nenhuma liga nessa pagina!',
-                    pagina: { pagina: parseInt(page), total_registro: ligas.length },
+                return res.status(400).json({
+                    "status": "success",
+                    "message": "Ligas buscadas com sucesso!",
+                    "statusCode": 400,
+                    "pagination": {
+                        "page": parseInt(page, 10),
+                        "totalPages": 0,
+                        "totalItems": 0,
+                        "totalRegistro": 0
+                    },
+                    data: []
                 });
             }
+
             return res.status(200).json({
-                message: 'Ligas buscadas com sucesso!',
-                pagina: { pagina: parseInt(page), total_registro: ligas.length },
-                data: ligas,
+                "status": "success",
+                "message": "Ligas buscadas com sucesso!",
+                "statusCode": 200,
+                "pagination": {
+                    "page": parseInt(page, 10),
+                    "totalPages": Math.ceil(count / pageSize),
+                    "totalItems": ligas.length,
+                    "totalRegistro": count
+                },
+                data: ligas
             });
         } catch (error) {
             return res.status(500).json({
-                error: `Erro ao buscar as ligas: ${error.message}`,
+                "status": "error",
+                "message": "Erro interno ao buscar ligas",
+                "errorCode": 500,
+                "details": error.message
             });
         }
     }
