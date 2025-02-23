@@ -56,7 +56,7 @@ class ServicesBaseController extends Controller {
             for (const est of estrategias) {
                 try {
                     await bilheteServices.montaBilhetes(est, true);
-                    await estrategiaServices.geraEstistica(est)
+                    await estrategiaServices.geraEstistica(est);
                 } catch (error) {
                     // não faz nada só para n parar o loop
                 }
@@ -79,7 +79,9 @@ class ServicesBaseController extends Controller {
             for (const regra of regras) {
                 const odds = await regra.getOdds({
                     where: {
-                        status: null
+                        createdAt: {
+                            [Op.between]: [toDay(-1), toDay()]
+                        }
                     }
                 });
                 const jogoIds = odds.map(odd => odd.jogo_id);
@@ -121,7 +123,11 @@ class ServicesBaseController extends Controller {
             logTo('Iniciando validação bilhetes');
             let totalAtualizado = 0;
             const bilhetes = await bilheteServices.pegaTodosOsRegistros({
-                where: { status_jogo: null },
+                where: {
+                    createdAt: {
+                        [Op.gte]: toDay(-1)
+                    }
+                },
                 include: [
                     {
                         model: Odd,
@@ -133,62 +139,23 @@ class ServicesBaseController extends Controller {
                 ]
             });
 
-            if (bilhetes.length > 0) {
-                const bilhetesToUpdate = [];
-                for (const bilhete of bilhetes) {
-                    bilhetesToUpdate.push({
-                        id: bilhete.id,
-                        bilhete_id: bilhete.bilhete_id,
-                        status_jogo: bilhete.Odd.status,
-                        jogo_id: bilhete.jogo_id,
-                        estrategia_id: bilhete.estrategia_id,
-                        odd_id: bilhete.odd_id,
-                    });
+            for (const bilhete of bilhetes) {
+                let status = null;
+                for (const odd of bilhete.Odds) {
+                    if (odd.status === null) {
+                        status = null;
+                        break;
+                    } else if (odd.status === false) {
+                        status = false;
+                        break;
+                    } else {
+                        status = true;
+                    }
                 }
-                const result = await Bilhete.bulkCreate(bilhetesToUpdate, {
-                    updateOnDuplicate: ['status_jogo']
-                });
-                totalAtualizado += result.length;
+                await bilhete.update({ status_bilhete: status });
+                totalAtualizado++;
             }
 
-            const bilhetesA = await bilheteServices.pegaTodosOsRegistros({
-                where: {
-                    //status_jogo: { [Op.ne]: null },
-                    status_bilhete: null
-                }
-            })
-            if (bilhetesA.length > 0) {
-                // Agrupa os bilhetes pelo bilhete_id
-                const bilhetesAgrupados = bilhetesA.reduce((acc, bilhete) => {
-                    if (!acc[bilhete.bilhete_id]) {
-                        acc[bilhete.bilhete_id] = [];
-                    }
-                    acc[bilhete.bilhete_id].push(bilhete);
-                    return acc;
-                }, {});
-                // Processa cada grupo
-                for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
-                    let statusBilhete = true;
-
-                    for (const bilhete of bilhetes) {
-                        if (bilhete.status_jogo === false) {
-                            statusBilhete = false;
-                            break;
-                        } else if (bilhete.status_jogo === null) {
-                            statusBilhete = null;
-                            break;
-                        }
-                    }
-
-                    // Atualiza o campo status_bilhete no banco de dados
-                    await Bilhete.update(
-                        { status_bilhete: statusBilhete },
-                        { where: { bilhete_id: bilheteId } }
-                    );
-
-                    totalAtualizado++
-                }
-            }
             const endTime = new Date();
             const executionTime = formatMilliseconds(endTime - startTime);
             logTo(`Finalizado a validação de bilhetes. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
@@ -314,49 +281,51 @@ class ServicesBaseController extends Controller {
 
     async enviaMensagensTelegram(req, res) {
         try {
-            const bilhetes = await bilheteServices.getBilhetes({
+            const { count, bilhetes } = await bilheteServices.getBilhetes({
                 where: {
-                    alert: null,
-                    data: {
-                        [Op.gte]: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0]
-                    }
+                    alert: null
                 },
                 order: [['id', 'DESC']]
             }, {
                 where: { chat_id: { [Op.ne]: null } }
             });
 
+
             if (bilhetes.length === 0) {
                 return ({ mensagem: 'Nenhum bilhete para enviar mensagem' });
             }
-
-            // Agrupa os bilhetes pelo bilhete_id
-            const bilhetesAgrupados = bilhetes.reduce((acc, bilhete) => {
-                if (!acc[bilhete.bilhete_id]) {
-                    acc[bilhete.bilhete_id] = [];
+            const mensagems = [];
+            for (const bilhete of bilhetes) {
+                if (mensagems[bilhete.Estrategium.chat_id] === undefined) {
+                    mensagems[bilhete.Estrategium.chat_id] = {
+                        msg: `Temos ${count} bilhetes para você conferir:\n Estratégia: ${bilhete.Estrategium.nome} \n\n`,
+                        bilehtes: []
+                    }
+                    mensagems[bilhete.Estrategium.chat_id].bilehtes = bilhete.id;
+                } else {
+                    if (mensagems[bilhete.Estrategium.chat_id].msg.length > 3000) {
+                        break;
+                    }
+                    mensagems[bilhete.Estrategium.chat_id].bilehtes += `, ${bilhete.id}`;
                 }
-                acc[bilhete.bilhete_id].push(bilhete);
-                return acc;
-            }, {});
-
-            for (const [bilheteId, bilhetes] of Object.entries(bilhetesAgrupados)) {
-                const estrategia = bilhetes[0].Estrategium;
-                const chatId = estrategia.chat_id;
-
-                if (!chatId) {
-                    logTo(`Estratégia ${estrategia.nome} não possui chat_id`);
-                    continue;
+                mensagems[bilhete.Estrategium.chat_id].msg += `Bilhete: ${bilhete.id}\n`;
+                mensagems[bilhete.Estrategium.chat_id].msg += `Odd do bilhete: ${parseFloat(bilhete.odd).toFixed(2)} \n \n`;
+                mensagems[bilhete.Estrategium.chat_id].msg += `Jogo(s): \n`;
+                for (const odd of bilhete.Odds) {
+                    mensagems[bilhete.Estrategium.chat_id].msg += ` - ${odd.Jogo.casa.nome} x ${odd.Jogo.fora.nome} \n`;
+                    const dataHora = new Date(odd.Jogo.datahora);
+                    const dataFormatada = dataHora.toLocaleString('pt-BR');
+                    mensagems[bilhete.Estrategium.chat_id].msg += ` - Data: ${dataFormatada} \n`;
+                    mensagems[bilhete.Estrategium.chat_id].msg += ` - Odd: ${parseFloat(odd.odd).toFixed(2)} \n \n`;
                 }
+                mensagems[bilhete.Estrategium.chat_id].msg += `-----------------------\n\n`;
+            }
 
-                let mensagem = `Bilhete: ${bilheteId}\n\n`;
-                for (const bilhete of bilhetes) {
-                    const jogo = await bilhete.getJogo();
-                    const casa = await jogo.getCasa();
-                    const fora = await jogo.getFora();
-                    mensagem += `${casa.nome} - ${fora.nome}\nOdd: ${bilhete.Odd.odd.toFixed(2)}\n`;
-                    mensagem += `${jogo.datahora.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })}h\n`;
-                }
-                mensagem += '\n\n\nCassa de aposta:\nhttps://www.bet365.com';
+            for (const chatId in mensagems) {
+                let mensagem = mensagems[chatId].msg;
+                const bilhetesId = mensagems[chatId].bilehtes;
+                mensagem += `Todas as odds são com base na casa de apota BET365. \n\n`;
+                mensagem += `Clique no link: https://www.bet365.com/pt/ \n\n`;
 
                 const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -369,18 +338,15 @@ class ServicesBaseController extends Controller {
 
                 const data = await response.json();
                 if (data.ok) {
-                    await Bilhete.update(
-                        { alert: true },
-                        { where: { bilhete_id: bilheteId } }
-                    );
+                    await bilheteServices.atualizaRegistro({ alert: true }, {
+                        id: {
+                            [Op.in]: bilhetesId.split(', ')
+                        }
+                    });
                 } else {
                     logTo(`Erro ao enviar mensagem para o grupo ${chatId}: ${data.description}`);
                 }
                 await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda 300ms entre cada mensagem
-
-                if ((Object.keys(bilhetesAgrupados).indexOf(bilheteId) + 1) % 5 === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Aguarda 2 segundo a cada 5 mensagens
-                }
             }
 
             return ({ mensagem: 'Mensagens enviadas' });

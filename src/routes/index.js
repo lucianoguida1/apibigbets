@@ -443,6 +443,75 @@ module.exports = app => {
         }
     });
 
+    /**
+    * @swagger
+    * /validabilhetes:
+    *   get:
+    *     summary: Valida os bilhetes
+    *     tags: [Services Base]
+    *     responses:
+    *       200:
+    *         description: Bilhetes validados com sucesso
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 status:
+    *                   type: string
+    *                   example: success
+    *                 message:
+    *                   type: string
+    *                   example: Bilhetes validados com sucesso.
+    *                 statusCode:
+    *                   type: integer
+    *                   example: 200
+    *                 pagination:
+    *                   type: object
+    *                   example: {}
+    *                 data:
+    *                   type: string
+    *                   example: Bilhetes validados com sucesso.
+    *       500:
+    *         description: Erro interno ao validar os bilhetes
+    *         content:
+    *           application/json:
+    *             schema:
+    *               type: object
+    *               properties:
+    *                 status:
+    *                   type: string
+    *                   example: error
+    *                 message:
+    *                   type: string
+    *                   example: Erro interno ao validar os bilhetes!
+    *                 errorCode:
+    *                   type: integer
+    *                   example: 500
+    *                 details:
+    *                   type: string
+    *                   example: Error message details
+    */
+    app.get('/validabilhetes', async (req, res) => {
+        try {
+            serviceBase.validaBilhetes();
+            return res.status(200).json({
+                "status": "success",
+                "message": "Bilhetes validados com sucesso.",
+                "statusCode": 200,
+                "pagination": {},
+                data: "Bilhetes validados com sucesso."
+            });
+        } catch (error) {
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao validar os bilhetes!",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    });
+
     app.get('/', async (req, res) => {
         return res.status(200).json({
             "status": "success",

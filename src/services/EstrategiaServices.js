@@ -118,7 +118,6 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
-
     async getTopEstrategia() {
         const estrategia = await super.pegaUmRegistro({
             where: { taxaacerto: { [Op.ne]: null }, lucro_total: { [Op.gte]: 0 } },

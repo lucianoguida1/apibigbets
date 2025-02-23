@@ -19,7 +19,7 @@ const tarefas = {
     async tarefa19hrs() {
         try {
             await request.dadosSport();
-            await serviceBase.deletaJogosAntigos();
+            //await serviceBase.deletaJogosAntigos();
             await serviceBase.executarEstrategias();
             await serviceBase.validaRegras();
         } catch (error) {
@@ -30,7 +30,7 @@ const tarefas = {
     async tarefa10hrs() {
         try {
             await request.dadosSport(toDay());
-            await serviceBase.deletaJogosAntigos();
+            //await serviceBase.deletaJogosAntigos();
             await serviceBase.executarEstrategias();
             await serviceBase.validaRegras();
         } catch (error) {
@@ -74,7 +74,7 @@ const agendarTarefas = () => {
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */3 * * *', tarefas.tarefa3Horas);
-    cron.schedule('*/1 * * * *', tarefas.tarefa5Minutos);
+    cron.schedule('*/5 * * * *', tarefas.tarefa5Minutos);
 };
 
 module.exports = { agendarTarefas, tarefas };
