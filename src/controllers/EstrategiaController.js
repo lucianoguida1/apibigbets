@@ -7,6 +7,7 @@ const LigaServices = require('../services/LigaServices.js');
 const RegraServices = require('../services/RegraServices.js');
 const { Op } = require('sequelize');
 const bilhetesToGrafico = require('../utils/bilhetesToGrafico.js');
+const toDay = require('../utils/toDay.js');
 
 const estrategiaServices = new EstrategiaServices();
 const bilheteServices = new BilheteServices();
@@ -120,19 +121,20 @@ class EstrategiaController extends Controller {
             delete estrategiaValida.bilhetes;
             delete estrategiaValida.jogos;
 
-            return res.status(201).json({ message: 'Teste realizado com sucesso!', estrategia: estrategiaValida });
+            return res.status(200).json({
+                "status": "success",
+                "message": "Teste realizado com sucesso!",
+                "statusCode": 200,
+                "pagination": {},
+                data: estrategiaValida
+            });
         } catch (error) {
-            return res.status(500).json({ error: 'Erro ao testar estratégia: ' + error.message });
-        }
-    }
-
-    async getCamposFormulario(req, res) {
-        try {
-            const apostas = await regravalidacoeServices.getRegrasValidacao();
-
-            return res.status(200).json({ apostas })
-        } catch (error) {
-            return res.status(500).json({ erro: error.message });
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro ao testar estratégia",
+                "errorCode": 500,
+                "details": error.message
+            });
         }
     }
 
@@ -142,43 +144,54 @@ class EstrategiaController extends Controller {
             const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
 
             if (!estrategia) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": "Nenhuma estrategia foi encontrada!"
+                });
             }
 
-            /*
+            //Retorna o gráfico se ele foi gerado no dia
             if (estrategia.updatedAt.toISOString().split('T')[0] == toDay() && estrategia.grafico_json != null) {
-                return res.status(200).json(estrategia.grafico_json);
+                return res.status(200).json({
+                    "status": "success",
+                    "message": "Gráfico da Estratégia retornado com sucesso",
+                    "statusCode": 200,
+                    "pagination": {},
+                    data: estrategia.grafico_json
+                });
             }
-                */
 
-            const bilhetes = await bilheteServices.getBilhetesGrafico(estrategia);
+            const bilhetes = await estrategia.getBilhetes();
 
             if (!bilhetes) {
-                return res.status(404).json({ error: 'Bilhetes não encontrada!' });
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Nenhum bilhete encontrado para essa estratégia",
+                    "errorCode": 404,
+                    "details": `Nenhum bilhete foi encontrado para a estratégia com id: ${id}. Verifique se a estratégia possui bilhetes associados ou se houve algum erro no processamento dos bilhetes.`
+                });
             }
 
-            let saldo = 0; // Saldo inicial
-
-            const bilhetesComSaldo = bilhetes.map(bilhete => {
-                saldo += parseFloat(bilhete.saldo_dia); // Somando saldo_dia ao saldo acumulado
-                return {
-                    ...bilhete,
-                    saldo: parseFloat(saldo.toFixed(2)) // Adicionando saldo acumulado no objeto
-                };
-            });
-
-            const dadosGrafico = {
-                "nome": estrategia.nome,
-                "descricao": estrategia.descricao,
-                "dados": bilhetesComSaldo
-            };
+            const dadosGrafico = bilhetesToGrafico(bilhetes);
 
             await estrategiaServices.atualizaRegistro({ grafico_json: dadosGrafico }, { id: Number(id) });
 
-
-            return res.status(200).json(dadosGrafico);
+            return res.status(200).json({
+                "status": "success",
+                "message": "Gráfico da Estratégia retornado com sucesso",
+                "statusCode": 200,
+                "pagination": {},
+                data: dadosGrafico
+            });
         } catch (erro) {
-            return res.status(500).json({ erro: erro.message });
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar gráfrico estrategias",
+                "errorCode": 500,
+                "details": erro.message
+            });
         }
     }
 
@@ -189,12 +202,33 @@ class EstrategiaController extends Controller {
             const estrategias = await estrategiaServices.getEstrategias(Number(page), Number(pageSize));
 
             if (!estrategias) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategias não encontradas",
+                    "errorCode": 404,
+                    "details": "Nenhuma estrategia foi encontrada!"
+                });
             }
 
-            return res.status(200).json({ rows: estrategias });
+            return res.status(200).json({
+                "status": "success",
+                "message": "Estrategias encontradas",
+                "statusCode": 200,
+                "pagination": {
+                    "Page": parseInt(page, 10),
+                    "totalPages": Math.ceil(estrategias.count / pageSize),
+                    "totalItems": parseInt(pageSize, 10)
+                },
+                data: estrategias
+            });
         } catch (erro) {
-            return res.status(500).json({ erro: erro.message });
+            return res.status(500).json(
+                {
+                    "status": "error",
+                    "message": "Erro interno ao buscar estrategias",
+                    "errorCode": 500,
+                    "details": erro.message
+                });
         }
     }
 
@@ -206,30 +240,84 @@ class EstrategiaController extends Controller {
             const umRegistro = await estrategiaServices.getEstrategia(Number(id), Number(page), Number(pageSize));
 
             if (!umRegistro) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": `Nenhuma estrategia foi encontrada com esse id: ${id}!`
+                });
             }
 
-            return res.status(200).json(umRegistro);
+            return res.status(200).json({
+                "status": "success",
+                "message": "Estrategias encontradas",
+                "statusCode": 200,
+                "pagination": {},
+                data: umRegistro
+            });
         } catch (erro) {
-            return res.status(500).json({ erro: erro.message });
+            return res.status(500).json(
+                {
+                    "status": "error",
+                    "message": "Erro interno ao buscar estrategia",
+                    "errorCode": 500,
+                    "details": erro.message
+                });
         }
     }
 
     async getBilhetes(req, res) {
         const { id } = req.params;
-        const { page = 1, pageSize = 10 } = req.query; // Obtenha `page` e `pageSize` dos parâmetros de consulta
+        const { page = 1, pageSize = 100 } = req.query;
 
         try {
-            // Chama o serviço com paginação
-            const umRegistro = await estrategiaServices.getBilhetes(Number(id), Number(page), Number(pageSize), "DESC");
 
-            if (!umRegistro) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+            const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+
+            if (!estrategia) {
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": "Nenhuma estrategia foi encontrada!"
+                });
             }
 
-            return res.status(200).json(umRegistro);
+            const { count, bilhetes } = await bilheteServices.getBilhetes({
+                limit: pageSize,
+                offset: (page - 1) * pageSize,
+                where: { estrategia_id: id },
+                order: [['data', 'DESC']],
+            });
+
+            if (!bilhetes || bilhetes.length === 0) {
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Nenhum bilhete encontrado para essa estratégia",
+                    "errorCode": 404,
+                    "details": `Nenhum bilhete foi encontrado para a estratégia com id: ${id}. Verifique se a estratégia possui bilhetes associados ou se houve algum erro no processamento dos bilhetes.`
+                });
+            }
+
+            return res.status(200).json({
+                "status": "success",
+                "message": "Estrategias encontradas",
+                "statusCode": 200,
+                "pagination": {
+                    "page": parseInt(page, 10),
+                    "totalPages": Math.ceil(count / pageSize),
+                    "totalItems": bilhetes.length,
+                    "totalRegistro": count
+                },
+                data: bilhetes
+            });
         } catch (erro) {
-            return res.status(500).json({ erro: erro.message });
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar bilehtes da estrategia",
+                "errorCode": 500,
+                "details": erro.message
+            });
         }
     }
 
@@ -238,46 +326,78 @@ class EstrategiaController extends Controller {
             const estrategia = await estrategiaServices.getTopEstrategia();
 
             if (!estrategia) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": "Nenhuma estratégia foi encontrada no sistema. Verifique se há estratégias cadastradas ou se houve algum erro no processamento."
+                });
             }
 
-            return res.status(200).json(estrategia);
+            return res.status(200).json({
+                "status": "success",
+                "message": "Estrategia encontrada",
+                "statusCode": 200,
+                "pagination": {},
+                data: estrategia
+            });
         } catch (error) {
-            console.error('Erro ao buscar estratégia:', error);
-            return res.status(500).json({ error: 'Erro ao buscar estratégia: ' + error.message });
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar estrategia",
+                "errorCode": 500,
+                "details": error.message
+            });
         }
     }
 
     async criarEstrategia(req, res) {
         try {
-            
+
             const estrategiaValida = await this.#validaEstrategia(req, res);
-            
+
             // Cria a estratégia
             const novaEstrategia = await estrategiaServices.criaRegistro({
                 nome: estrategiaValida.nome,
                 descricao: estrategiaValida.descricao
             });
-            
-            if (!novaEstrategia || !novaEstrategia.id) return res.status(500).json({ error: 'Erro ao criar estratégia: Tente novamente!' });
-            
+
+            if (!novaEstrategia || !novaEstrategia.id) {
+                return res.status(500).json({
+                    "status": "error",
+                    "message": "Erro interno ao criar estrategia",
+                    "errorCode": 500,
+                    "details": erro.message
+                });
+            }
+
             // Cria as regras associadas à estratégia
             const regrasAtualizadas = estrategiaValida.regras.map(regra => ({
                 ...regra,
                 estrategia_id: novaEstrategia.id
             }));
-            
+
             await regraServices.criaVariosRegistros(regrasAtualizadas);
-            
+
             await bilheteServices.montaBilhetes(novaEstrategia);
-            
+
             // Calcula as estatiscica da estrategia
             const estrategiaComRegras = await estrategiaServices.geraEstistica(novaEstrategia);
 
-            return res.status(201).json({ message: 'Estratégia criada com sucesso!', estrategia: estrategiaComRegras });
+            return res.status(201).json({
+                "status": "success",
+                "message": "Estratégia criada com sucesso!'",
+                "statusCode": 201,
+                "pagination": {},
+                data: estrategiaComRegras
+            });
         } catch (error) {
-            console.error('Erro ao criar estratégia:', error);
-            return res.status(500).json({ error: 'Erro ao criar estratégia: ' + error.message });
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao criar estrategia",
+                "errorCode": 500,
+                "details": error.message
+            });
         }
     }
 
@@ -378,24 +498,6 @@ class EstrategiaController extends Controller {
     }
     */
 
-    async executarEstrategia(req, res) {
-        try {
-
-            const { id } = req.params;
-            // Verifica se a estratégia existe
-            const estrategia = await estrategiaServices.pegaUmRegistroPorId(id);
-            if (!estrategia) {
-                return res.status(404).json({ error: 'Estratégia não encontrada!' });
-            }
-            await bilheteServices.montaBilhetes(estrategia);
-            //await bilheteServices.montaBilhetes(estrategia, true);
-            await estrategiaServices.geraEstistica(estrategia);
-            const estrategiaA = await estrategiaServices.pegaUmRegistroPorId(id);
-            return res.status(200).json({ message: 'Estratégia atualizada com sucesso!', estrategia: estrategiaA });
-        } catch (error) {
-            return res.status(500).json({ error: 'Erro ao executar estratégia: ' + error.message });
-        }
-    }
 }
 
 module.exports = EstrategiaController;

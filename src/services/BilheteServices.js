@@ -1,8 +1,9 @@
 const Services = require('./Services.js');
-const { Estrategia, Bilhete, Odd, Bilhetesodd, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
+const e = require('express');
 const jogoServices = new JogoServices();
 
 
@@ -115,7 +116,7 @@ class BilheteServices extends Services {
         if (jogosUnicos.length < regras.length) {
             throw new Error('Quantidade de jogos insuficiente!');
         }
-        
+
         try {
             let i = 0;
             let bilhetesCriar = [];
@@ -158,7 +159,7 @@ class BilheteServices extends Services {
             if (salvaNoBanco) {
                 //salvar no banco de forma lenta
                 const bilhetes = [];
-                for(const bilhete of bilhetesCriar){
+                for (const bilhete of bilhetesCriar) {
                     const bilheteSalvo = await this.criaRegistro(bilhete);
                     bilhetes.push(bilheteSalvo);
                     for (const bilheteOdd of bilhete.bilhetesodd) {
@@ -168,7 +169,7 @@ class BilheteServices extends Services {
                 }
                 return bilhetes;
             }
-            
+
             return { bilhetes: bilhetesCriar, jogos: jogosUnicos };
         } catch (error) {
             console.error('BilhetesServices:', error.message);
@@ -177,22 +178,43 @@ class BilheteServices extends Services {
 
     async getBilhetes(options = {}, estrategiaOptions = {}) {
         try {
-            const bilhetes = await Bilhete.findAll({
+            const { count, rows } = await Bilhete.findAndCountAll({
                 ...options,
+                attributes: { exclude: ['createdAt', 'updatedAt'] },
                 include: [
                     {
                         model: Estrategia,
                         required: true,
-                        ...estrategiaOptions
+                        attributes: { exclude: ['createdAt', 'updatedAt'] },
+                        ...estrategiaOptions,
                     },
                     {
                         model: Odd,
                         required: true,
+                        attributes: ['id', 'odd', 'status', 'nome'],
+                        include: [
+                            {
+                                model: Jogo,
+                                attributes: ['id', 'datahora', 'gols_casa', 'gols_fora'],
+                                include: [
+                                    {
+                                        model: Time,
+                                        as: 'casa',
+                                        attributes: ['id', 'nome', 'logo']
+                                    },
+                                    {
+                                        model: Time,
+                                        as: 'fora',
+                                        attributes: ['id', 'nome', 'logo']
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ],
             });
 
-            return bilhetes;
+            return { count, bilhetes: rows }
         } catch (error) {
             console.error('BilheteServices:', error.message);
             throw new Error('Erro ao buscar bilhetes!');

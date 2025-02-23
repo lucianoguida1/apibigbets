@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       Odd.belongsTo(models.Bet, { foreignKey: 'bet_id' });
       Odd.belongsTo(models.Tipoaposta, { foreignKey: 'tipoaposta_id' });
       Odd.belongsTo(models.Regravalidacoe, { foreignKey: 'regra_id', as: 'regra' });
+      Odd.belongsToMany(models.Bilhete, { through: 'bilhetesodds', foreignKey: 'odd_id' });
     }
   }
   Odd.init({

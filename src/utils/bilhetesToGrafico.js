@@ -12,7 +12,11 @@ module.exports = (bilhetes) => {
         // Atualiza a aposta reaplicada para o próximo bilhete
         apostaReaplicada = saldoReaplicado / 10;
         saldoFixoAcumulado += bilhete.status_bilhete ? 1 * (odd - 1) : -1;
-        const data = bilhetes.length > 90 ? bilhete.data.slice(0, 7) : bilhete.data;
+        
+        const dataFormatada = new Date(bilhete.data).toISOString().slice(0, 10).replace(/-/g, '/');
+        
+        const data = bilhetes.length > 90 ? dataFormatada.slice(0, 7) : dataFormatada;
+        
         if (meuGrafico[data]) {
             meuGrafico[data].saldoFixo += bilhete.status_bilhete ? 1 * (odd - 1) : -1;
             meuGrafico[data].saldoReaplicado += bilhete.status_bilhete ? apostaReaplicada * (odd - 1) : -apostaReaplicada;
@@ -28,7 +32,6 @@ module.exports = (bilhetes) => {
         }
     };
 
-    console.log(meuGrafico);
 
     // Transformação dos dados para o gráfico
     const labels = Object.keys(meuGrafico); // Datas no eixo X

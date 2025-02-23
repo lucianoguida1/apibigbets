@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
 
       //Tem o ID
       Bilhete.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id' });
+      Bilhete.belongsToMany(models.Odd, { through: 'bilhetesodds', foreignKey: 'bilhete_id' });
       
     }
   }

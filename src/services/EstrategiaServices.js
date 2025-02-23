@@ -9,7 +9,7 @@ class EstrategiaServices extends Services {
     }
     async getEstrategias(page = 1, pageSize = 5) {
         try {
-            const estrategiaSequelize = await Estrategia.findAll({
+            const { count, rows } = await Estrategia.findAndCountAll({
                 limit: pageSize,
                 offset: (page - 1) * pageSize,
                 order: [['lucro_total', 'DESC']],
@@ -25,7 +25,8 @@ class EstrategiaServices extends Services {
                 }
             });
 
-            return estrategiaSequelize;
+            return { count, rows };
+
         } catch (error) {
             console.log(error);
         }
@@ -86,7 +87,7 @@ class EstrategiaServices extends Services {
         const estrategia = estrategiaSequelize ? estrategiaSequelize.toJSON() : null;
 
         if (!estrategia) {
-            throw new Error('Estratégia não encontrada');
+            return null;
         }
 
         const regras = estrategia.Regras || [];
@@ -117,61 +118,10 @@ class EstrategiaServices extends Services {
         return estrategia;
     }
 
-    async getBilhetes(EstrategiaID, page = 1, pageSize = null, order = "DESC") {
-        const options = {
-            where: { id: EstrategiaID },
-            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "grafico_json"] },
-            include: {
-                model: Bilhete,
-                required: false,
-                order: [['id', order]],
-                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "jogo_id", "estrategia_id", "odd_id", "data",] },
-                include: [
-                    {
-                        model: Jogo,
-                        required: true,
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "bilhete_id", "casa_id", "fora_id", "temporada_id", "id_sports", "halftime", "fulltime", "extratime", "penalty"] },
-                        where: {
-                            //gols_casa: { [Op.ne]: null }
-                        },
-                        include: [
-                            {
-                                model: Time,
-                                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] },
-                                as: 'casa',
-                                required: true,
-                            },
-                            {
-                                model: Time,
-                                attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "id_sports"] },
-                                as: 'fora',
-                                required: true,
-                            }
-                        ]
-                    },
-                    {
-                        model: Odd,
-                        required: false,
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "jogo_id", "bet_id", "regra_id"] },
-                        include: { model: Tipoaposta, required: true, attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] } }
-                    },
-                ]
-            }
-        };
-
-        // Aplica paginação somente se `pageSize` for definido
-        if (pageSize) {
-            options.include.limit = pageSize;
-            options.include.offset = (page - 1) * pageSize;
-        }
-
-        const estrategia = await super.pegaUmRegistro(options);
-        return estrategia;
-    }
 
     async getTopEstrategia() {
         const estrategia = await super.pegaUmRegistro({
-            where: { taxaacerto: { [Op.ne]: null } },
+            where: { taxaacerto: { [Op.ne]: null }, lucro_total: { [Op.gte]: 0 } },
             order: [['taxaacerto', 'DESC'], ['lucro_total', 'DESC']],
             attributes: {
                 exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
@@ -181,21 +131,7 @@ class EstrategiaServices extends Services {
                 require: true,
                 attributes: {
                     exclude: ["updatedAt", "createdAt", "deletedAt", "pai_id", "liga_id", "temporada_id", "time_id", "regravalidacoe_id", "estrategia_id"]
-                },
-                /*
-                include: [
-                    {
-                        model: Regravalidacoe,
-                        require: true,
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
-                        include: {
-                            model: Tipoaposta,
-                            require: true,
-                            attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
-                        }
-                    }
-                ]
-                */
+                }
             }
         });
         return estrategia;
@@ -210,7 +146,7 @@ class EstrategiaServices extends Services {
                     'odd',
                     'data'
                 ],
-                group: [ 'status_bilhete', 'odd', 'data'],
+                group: ['status_bilhete', 'odd', 'data'],
                 where: {
                     status_bilhete: {
                         [Op.not]: null
