@@ -6,11 +6,7 @@ const RequestController = require('../controllers/RequestController.js');
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 
 const regraValidacao = require('./regraValidacao.js');
-const odd = require('./odd.js');
-const servicesBase = require('./services.js');
-const requestRouter = require('./request.js');
 const estrategia = require('./estrategia.js');
-const regra = require('./regra.js');
 const pais = require('./pais.js');
 const liga = require('./liga.js');
 
@@ -21,11 +17,7 @@ module.exports = app => {
     app.use(
         express.json(),
         regraValidacao,
-        odd,
-        servicesBase,
-        requestRouter,
         estrategia,
-        regra,
         pais,
         liga,
     );

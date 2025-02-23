@@ -19,19 +19,46 @@ class RegraValidacaoController extends Controller {
             }
 
             // Buscar registros com filtros aplicados e limites definidos
-            const regras = await regrasServices.getRegrasValidacao();
+            const { count, rows: regras } = await regrasServices.getRegrasValidacao();
+            
+            if (regras.length == 0) {
+                return res.status(400).json({
+                    "status": "error",
+                    "message": "Não foi encontrada nenhuma regra de validação",
+                    "errorCode": 400,
+                    "pagination": {
+                        "page": parseInt(offset / limit) + 1,
+                        "totalPages": 0,
+                        "totalItems": 0,
+                        "totalRegistro": 0
+                    },
+                    data: []
+                });
+            }
 
             const formatado = regras.map(regra => ({
                 id: regra.id,
                 nome: `${regra.Tipoapostum.nome || regra.Tipoapostum.name} - ${regra.nome}`
-            }))
+            }));
+
             return res.status(200).json({
-                message: 'Regras buscados com sucesso!',
-                data: formatado,
+                "status": "success",
+                "message": "Regras buscadas com sucesso!",
+                "statusCode": 200,
+                "pagination": {
+                    "page": parseInt(offset / limit) + 1,
+                    "totalPages": Math.ceil(regras.length / limit),
+                    "totalItems": formatado.length,
+                    "totalRegistro": count
+                },
+                data: formatado
             });
         } catch (error) {
             return res.status(500).json({
-                error: `Erro ao buscar os Regras: ${error.message}`,
+                "status": "error",
+                "message": "Erro interno ao buscar regras de validação",
+                "errorCode": 500,
+                "details": error.message
             });
         }
     }

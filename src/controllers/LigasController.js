@@ -31,9 +31,9 @@ class LigasController extends Controller {
             });
             if (ligas.length == 0) {
                 return res.status(400).json({
-                    "status": "success",
-                    "message": "Ligas buscadas com sucesso!",
-                    "statusCode": 400,
+                    "status": "error",
+                    "message": "Não foi encontrado nenhuma liga",
+                    "errorCode": 400,
                     "pagination": {
                         "page": parseInt(page, 10),
                         "totalPages": 0,

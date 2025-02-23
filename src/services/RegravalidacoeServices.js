@@ -23,7 +23,7 @@ class RegravalidacoeServices extends Services {
     }
 
     async getRegrasValidacao() {
-        return await Regravalidacoe.findAll({
+        return await Regravalidacoe.findAndCountAll({
             where: {
                 regra: { [Op.ne]: null }
             },
