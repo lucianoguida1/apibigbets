@@ -79,9 +79,10 @@ class ServicesBaseController extends Controller {
             for (const regra of regras) {
                 const odds = await regra.getOdds({
                     where: {
-                        createdAt: {
-                            [Op.between]: [toDay(-1), toDay()]
-                        }
+                        [Op.or]: [
+                            { [Op.between]: [toDay(-1), toDay()] },
+                            { status: { [Op.ne]: null } }
+                        ]
                     }
                 });
                 const jogoIds = odds.map(odd => odd.jogo_id);

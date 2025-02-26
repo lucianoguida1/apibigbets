@@ -199,7 +199,7 @@ class EstrategiaController extends Controller {
         const { page = 1, pageSize = 10 } = req.query;
 
         try {
-            const estrategias = await estrategiaServices.getEstrategias(Number(page), Number(pageSize));
+            const { count, rows: estrategias } = await estrategiaServices.getEstrategias(Number(page), Number(pageSize));
 
             if (!estrategias) {
                 return res.status(404).json({
@@ -216,8 +216,8 @@ class EstrategiaController extends Controller {
                 "statusCode": 200,
                 "pagination": {
                     "Page": parseInt(page, 10),
-                    "totalPages": Math.ceil(estrategias.count / pageSize),
-                    "totalItems": parseInt(pageSize, 10)
+                    "totalPages": Math.ceil(count/ pageSize),
+                    "totalItems": parseInt(count, 10)
                 },
                 data: estrategias
             });
@@ -274,7 +274,7 @@ class EstrategiaController extends Controller {
 
             const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
 
-            if(estrategia.grafico_json == null){
+            if (estrategia.grafico_json == null) {
                 estrategia.grafico_json = bilhetesToGrafico(await estrategia.getBilhetes());
                 await estrategia.save();
             }
@@ -328,6 +328,11 @@ class EstrategiaController extends Controller {
     async getTopEstrategia(req, res) {
         try {
             const estrategia = await estrategiaServices.getTopEstrategia();
+
+            if (estrategia.grafico_json == null) {
+                estrategia.grafico_json = bilhetesToGrafico(await estrategia.getBilhetes());
+                await estrategia.save();
+            }
 
             if (!estrategia) {
                 return res.status(404).json({
