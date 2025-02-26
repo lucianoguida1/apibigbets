@@ -268,11 +268,16 @@ class EstrategiaController extends Controller {
 
     async getBilhetes(req, res) {
         const { id } = req.params;
-        const { page = 1, pageSize = 100 } = req.query;
+        const { page = 1, pageSize = 20 } = req.query;
 
         try {
 
             const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+
+            if(estrategia.grafico_json == null){
+                estrategia.grafico_json = bilhetesToGrafico(await estrategia.getBilhetes());
+                await estrategia.save();
+            }
 
             if (!estrategia) {
                 return res.status(404).json({
@@ -286,8 +291,7 @@ class EstrategiaController extends Controller {
             const { count, bilhetes } = await bilheteServices.getBilhetes({
                 limit: pageSize,
                 offset: (page - 1) * pageSize,
-                where: { estrategia_id: id },
-                order: [['data', 'DESC']],
+                where: { id }
             });
 
             if (!bilhetes || bilhetes.length === 0) {

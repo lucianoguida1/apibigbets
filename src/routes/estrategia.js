@@ -1311,7 +1311,6 @@ router.post('/estrategia', (req, res) => estrategiaController.criarEstrategia(re
  */
 router.post('/estrategia/teste/', (req, res) => estrategiaController.estrategiaTeste(req, res));
 
-
 /**
  * @swagger
  * /topestrategia:

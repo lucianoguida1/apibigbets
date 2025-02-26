@@ -280,7 +280,7 @@ class ServicesBaseController extends Controller {
 
     async enviaMensagensTelegram(req, res) {
         try {
-            const { count, bilhetes } = await bilheteServices.getBilhetes({
+            const { count, bilhetes } = await bilheteServices.getBilhetesFromMsg({
                 where: {
                     alert: null
                 },

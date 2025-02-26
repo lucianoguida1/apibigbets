@@ -1,5 +1,5 @@
 const Services = require('./Services.js');
-const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, Tipoaposta, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
@@ -121,6 +121,10 @@ class BilheteServices extends Services {
             let i = 0;
             let bilhetesCriar = [];
             for (const jogo of jogosUnicos) {
+                if (bilhetesCriar.some(b => b.bilhetesodd.some(o => o.odd_id === jogo.odd_id))) {
+                    jogosUnicos.splice(jogosUnicos.indexOf(jogo), 1);
+                    continue;
+                }
                 bilhetesCriar[i] = {
                     estrategia_id: estrategia.id,
                     odd: jogo.odd,
@@ -133,10 +137,16 @@ class BilheteServices extends Services {
                         regra_id: jogo.regra_id,
                     }]
                 }
+
                 if (regras.length > 1) {
                     const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
                     for (const jogoMesmoDia of jogosMesmoDia) {
-                        if (jogoMesmoDia.regra_id && !bilhetesCriar[i].bilhetesodd.some(b => b.regra_id === jogoMesmoDia.regra_id)) {
+                        if (bilhetesCriar.some(b => b.bilhetesodd.some(o => o.odd_id === jogoMesmoDia.odd_id))) {
+                            continue;
+                        }
+                        if (jogoMesmoDia.regra_id &&
+                            regras.length > bilhetesCriar[i].bilhetesodd.length &&
+                            !bilhetesCriar[i].bilhetesodd.some(b => b.regra_id === jogoMesmoDia.regra_id || b.odd_id === jogoMesmoDia.odd_id)) {
                             bilhetesCriar[i].bilhetesodd.push({
                                 odd_id: jogoMesmoDia.odd_id,
                                 bilhete_id: null,
@@ -151,11 +161,11 @@ class BilheteServices extends Services {
                             return status;
                         }, true);
                         bilhetesCriar[i].status_bilhete = statusBilhete;
+                        if(regras.length == bilhetesCriar[i].bilhetesodd.length) break;
                     }
                 }
                 i++;
             }
-
             if (salvaNoBanco) {
                 //salvar no banco de forma lenta
                 const bilhetes = [];
@@ -176,7 +186,59 @@ class BilheteServices extends Services {
         }
     }
 
-    async getBilhetes(options = {}, estrategiaOptions = {}) {
+    async getBilhetes(options = {}) {
+        try {
+            const { count, rows } = await Estrategia.findAndCountAll({
+                attributes: { exclude: ['createdAt', 'updatedAt'] },
+                where: options.where,
+                include: [
+                    {
+                        model: Bilhete,
+                        required: true,
+                        attributes: { exclude: ['createdAt', 'updatedAt'] },
+                        offset: options.offset,
+                        limit: options.limit,
+                        order: [['id', 'DESC']], // Ordena pelo campo id em ordem ascendente
+                        include: [
+                            {
+                                model: Odd,
+                                required: true,
+                                attributes: ['id', 'odd', 'status', 'nome'],
+                                include: [
+                                    {
+                                        model: Jogo,
+                                        attributes: ['id', 'datahora', 'gols_casa', 'gols_fora'],
+                                        include: [
+                                            {
+                                                model: Time,
+                                                as: 'casa',
+                                                attributes: ['id', 'nome', 'logo']
+                                            },
+                                            {
+                                                model: Time,
+                                                as: 'fora',
+                                                attributes: ['id', 'nome', 'logo']
+                                            }
+                                        ]
+                                    }, {
+                                        model: Tipoaposta,
+                                        required: true,
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            return { count, bilhetes: rows[0] }
+        } catch (error) {
+            console.error('BilheteServices:', error);
+            throw new Error('Erro ao buscar bilhetes!:' + error.message);
+        }
+    }
+
+    async getBilhetesFromMsg(options = {}, estrategiaOptions = {}) {
         try {
             const { count, rows } = await Bilhete.findAndCountAll({
                 ...options,
@@ -213,11 +275,10 @@ class BilheteServices extends Services {
                     }
                 ],
             });
-
             return { count, bilhetes: rows }
         } catch (error) {
-            console.error('BilheteServices:', error.message);
-            throw new Error('Erro ao buscar bilhetes!');
+            console.error('BilheteServices:', error);
+            throw new Error('Erro ao buscar bilhetes!:' + error.message);
         }
     }
 }

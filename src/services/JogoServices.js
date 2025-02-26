@@ -26,29 +26,25 @@ class JogoServices extends Services {
         const jogosUnicos = {};
         regras.map((regra, index) => {
             if (!regra.id) {
-                regra.id = `${index+1}${Date.now()}`;
+                regra.id = `${index+1}`;
             }
             return regra;
         });
         
-        const jogosPorRegra = await Promise.all(
-            regras.map((regra) => this.filtrarJogosPorRegra(regra, jogosPendente))
-        );
+        const jogosPorRegra = [];
+        for(const regra of regras) {
+            const jogos = await this.filtrarJogosPorRegra(regra, jogosPendente);
+            jogosPorRegra.push(...jogos);
+        }
 
-        jogosPorRegra.flat().forEach((jogo) => {
-            if (!jogosUnicos[jogo.id]) {
-                jogosUnicos[jogo.id] = jogo;
-            }
-        });
-
-        return Object.values(jogosUnicos).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
+        return Object.values(jogosPorRegra).sort((a, b) => new Date(a.datahora) - new Date(b.datahora));
     }
 
     async filtrarJogosPorRegra(regra, jogosPendente = false) {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
-
+        
         const sql = `
         select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,

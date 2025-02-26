@@ -40,7 +40,7 @@ class EstrategiaServices extends Services {
         const estrategiaSequelize = await super.pegaUmRegistro({
             where: { id: estrategiaID },
             attributes: {
-                exclude: ["grafico_json", "updatedAt", "createdAt", "deletedAt"]
+                exclude: ["updatedAt", "createdAt", "deletedAt"]
             },
             include: {
                 model: Regra,
