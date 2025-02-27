@@ -111,6 +111,8 @@ class BilheteServices extends Services {
 
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
+        }else if(jogosUnicos.length > 500){
+            jogosUnicos.splice(0, jogosUnicos.length - 3500);
         }
 
         if (jogosUnicos.length < regras.length) {
@@ -138,6 +140,7 @@ class BilheteServices extends Services {
                     }]
                 }
 
+            
                 if (regras.length > 1) {
                     const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
                     for (const jogoMesmoDia of jogosMesmoDia) {
@@ -166,6 +169,7 @@ class BilheteServices extends Services {
                 }
                 i++;
             }
+            
             if (salvaNoBanco) {
                 //salvar no banco de forma lenta
                 const bilhetes = [];

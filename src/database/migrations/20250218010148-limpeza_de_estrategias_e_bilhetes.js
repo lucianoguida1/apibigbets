@@ -5,6 +5,6 @@ module.exports = {
   async up (queryInterface, Sequelize) {
     await queryInterface.bulkDelete('bilhetes', null, {});
     await queryInterface.bulkDelete('estrategias', null, {});
-    await queryInterface.bulkUpdate('odds', { status: null }, {});
+    await queryInterface.bulkUpdate('odds', { status: null }, { status: { [Sequelize.Op.ne]: null } });
   }
 };

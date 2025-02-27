@@ -80,8 +80,8 @@ class ServicesBaseController extends Controller {
                 const odds = await regra.getOdds({
                     where: {
                         [Op.or]: [
-                            { [Op.between]: [toDay(-1), toDay()] },
-                            { status: { [Op.ne]: null } }
+                            { createdAt: { [Op.between]: [toDay(-1), toDay()] } },
+                            { status: null }
                         ]
                     }
                 });
@@ -114,7 +114,7 @@ class ServicesBaseController extends Controller {
             logTo(`Finalizado a validação de regras. Tempo de execução: ${executionTime}. Total de linhas atualizadas: ${totalAtualizado}.`);
         } catch (error) {
             logTo('Erro ao validar os regras:', error.message);
-            console.error('Erro ao validar os regras:', error.message);
+            console.error('Erro ao validar os regras:', error);
         }
     }
 
