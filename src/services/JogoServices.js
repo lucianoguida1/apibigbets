@@ -68,7 +68,6 @@ class JogoServices extends Services {
         ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
         ORDER BY j.id ASC;`;
 
-        console.log('sql', sql)
         const results = await sequelize.query(sql, {
             type: sequelize.QueryTypes.SELECT,
         });
