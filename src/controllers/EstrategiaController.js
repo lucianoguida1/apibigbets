@@ -5,6 +5,10 @@ const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const PaiServices = require('../services/PaiServices.js');
 const LigaServices = require('../services/LigaServices.js');
 const RegraServices = require('../services/RegraServices.js');
+const FiltrojogoServices = require('../services/FiltrojogoServices.js');
+const TimeServices = require('../services/TimeServices.js');
+
+const { z } = require('zod');
 const { Op } = require('sequelize');
 const bilhetesToGrafico = require('../utils/bilhetesToGrafico.js');
 const toDay = require('../utils/toDay.js');
@@ -15,6 +19,129 @@ const regravalidacoeServices = new RegravalidacoeServices();
 const paiServices = new PaiServices();
 const ligaServices = new LigaServices();
 const regraServices = new RegraServices();
+const filtro = new FiltrojogoServices();
+const timeServices = new TimeServices();
+
+const optionSchema = z.object({
+    label: z.string(),
+    value: z.string(),
+    disable: z.boolean().optional(),
+});
+
+const formSchema = z.object({
+    estrategia: z.string().min(5, {
+        message: "O nome da estratégia deve ter pelo menos 5 caracteres.",
+    }),
+    descricao: z.string()
+        .min(10, {
+            message: "A descrição deve ter pelo menos 10 caracteres.",
+        })
+        .max(160, {
+            message: "A descrição não deve ter mais de 160 caracteres.",
+        }),
+    liga: z.array(optionSchema),
+    pais: z.array(optionSchema),
+    filtroTime: z.string(), filtroTime2: z.string(), filtroTime3: z.string(),
+    times: z.array(optionSchema), times2: z.array(optionSchema), times3: z.array(optionSchema),
+    aposta: z.string({ required_error: "Selecione uma aposta." }).min(1, { message: "Selecione pelo menos uma aposta." }),
+    oddmin: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })),
+    oddmax: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })),
+    combase: z.string().optional(),
+    coddmin: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })).optional(),
+    coddmax: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })).optional(),
+
+    // Multipla 2
+    liga2: z.array(optionSchema),
+    pais2: z.array(optionSchema),
+    aposta2: z.string().optional(),
+    oddmin2: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })).optional(),
+    oddmax2: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })).optional(),
+    combase2: z.string().optional(),
+    coddmin2: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })).optional(),
+    coddmax2: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })).optional(),
+
+    // Multipla 3
+    liga3: z.array(optionSchema),
+    pais3: z.array(optionSchema),
+    aposta3: z.string().optional(),
+    oddmin3: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })).optional(),
+    oddmax3: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })).optional(),
+    combase3: z.string().optional(),
+    coddmin3: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1, {
+            message: "O valor mínimo deve ser pelo menos 1.",
+        })
+        .max(5, {
+            message: "O valor máximo não deve ser maior que 5.",
+        })).optional(),
+    coddmax3: z.preprocess((val) => Number(val), z.number().positive()
+        .min(1.1, {
+            message: "O valor mínimo deve ser pelo menos 1.1.",
+        })
+        .max(10, {
+            message: "O valor máximo não deve ser maior que 10.",
+        })).optional(),
+})
 
 class EstrategiaController extends Controller {
     constructor() {
@@ -22,25 +149,130 @@ class EstrategiaController extends Controller {
     }
 
     async #validaEstrategia(req, res) {
-        const { nome, descricao, regras } = req.body;
+        const { estrategia, descricao, aposta } = req.body;
 
         // Verificação de campos obrigatórios
-        if (!nome) {
-            throw new Error('Nome e descrição são obrigatórios!');
+        if (!estrategia) {
+            res.status(400).json({
+                "status": "error",
+                "message": "Formulário inválido",
+                "errorCode": 400,
+                "details": [{
+                    path: ['estrategia'],
+                    message: ['O nome da estratégia é obrigatório!'],
+                }]
+            });
+            return false;
         }
-        if (!regras || regras.length < 1) {
-            throw new Error('Pelo menos uma regra é necessária!');
+        if (!aposta || aposta.length < 1) {
+            res.status(400).json({
+                "status": "error",
+                "message": "Formulário inválido",
+                "errorCode": 400,
+                "details": [{
+                    path: ['estrategia'],
+                    message: ['O nome da estratégia é obrigatório!'],
+                }]
+            });
+            return false;
+        }
+
+        const regras = [];
+
+        for (let i = 1; i <= 3; i++) {
+            const aposta = i > 1 ? req.body[`aposta${i}`] : req.body[`aposta`];
+            const oddMin = i > 1 ? req.body[`oddmin${i}`] : req.body[`oddmin`];
+            const oddMax = i > 1 ? req.body[`oddmax${i}`] : req.body[`oddmax`];
+            const pais = i > 1 ? req.body[`pais${i}`] : req.body[`pais`];
+            const liga = i > 1 ? req.body[`liga${i}`] : req.body[`liga`];
+            const times = i > 1 ? req.body[`times${i}`] : req.body[`times`];
+            const filtroTime = i > 1 ? req.body[`filtroTime${i}`] : req.body[`filtroTime`];
+            const aposta2 = i > 1 ? req.body[`combase${i}`] : req.body[`combase`];
+            const oddMin2 = i > 1 ? req.body[`coddmin${i}`] : req.body[`coddmin`];
+            const oddMax2 = i > 1 ? req.body[`coddmax${i}`] : req.body[`coddmax`];
+
+            if (aposta) {
+                regras.push({
+                    aposta,
+                    oddMin,
+                    oddMax,
+                    pais,
+                    liga,
+                    times,
+                    filtroTime,
+                    aposta2,
+                    oddMin2,
+                    oddMax2
+                });
+            }
         }
 
         const novaRegras = [];
 
         for (const regra of regras) {
+            const timesIds = [];
             const paisesIds = [];
             const ligasIds = [];
 
             // Verifica se `aposta` está presente
             if (!regra.aposta) {
-                throw new Error('O campo aposta é obrigatório em cada regra!');
+                res.status(400).json({
+                    "status": "error",
+                    "message": "Formulário inválido",
+                    "errorCode": 400,
+                    "details": [{
+                        path: ['Aposta'],
+                        message: ['O campo *apostar em* é obrigatório em cada regra!'],
+                    }]
+                });
+                return false;
+            }
+
+            // Validação de `Filtro de Time`
+            if (regra.filtroTime != "" && regra.filtroTime != "Todos") {
+                const filtroTime = await filtro.pegaUmRegistro({
+                    where: { id: regra.filtroTime }
+                });
+
+                if (!filtroTime) {
+                    res.status(400).json({
+                        "status": "error",
+                        "message": "Formulário inválido",
+                        "errorCode": 400,
+                        "details": [{
+                            path: ['Aposta'],
+                            message: ['O *filtro de jogos* está com informação invalida!'],
+                        }]
+                    });
+                    return false;
+                }
+            }
+
+            // Validação de `Time`
+            if (regra.times && regra.times.length > 0) {
+                const ids = [];
+                regra.times.map((item) => {
+                    ids.push(item.value);
+                });
+
+                const timesValidos = await timeServices.pegaTodosOsRegistros({
+                    where: { id: { [Op.in]: ids } }
+                });
+
+                if (timesValidos.length !== regra.times.length) {
+                    res.status(400).json({
+                        "status": "error",
+                        "message": "Formulário inválido",
+                        "errorCode": 400,
+                        "details": [{
+                            path: ['Times'],
+                            message: ['Algum time não contem em nossos sistema!'],
+                        }]
+                    });
+                    return false;
+                }
+
+                timesIds.push(...ids); // Adiciona os valores ao array global
             }
 
             // Validação de `aposta`
@@ -49,35 +281,69 @@ class EstrategiaController extends Controller {
             });
 
             if (!regravalidacoeExists) {
-                throw new Error(`Aposta não existe.`);
+                res.status(400).json({
+                    "status": "error",
+                    "message": "Formulário inválido",
+                    "errorCode": 400,
+                    "details": [{
+                        path: ['Aposta'],
+                        message: ['O campo aposta é obrigatório em cada regra!'],
+                    }]
+                });
+                return false;
             }
 
             // Validação de `pais`
             if (regra.pais && regra.pais.length > 0) {
-                const ids = regra.pais.split(',').map(Number); // Sem `const` aqui
+                const ids = [];
+                regra.pais.map((item) => {
+                    ids.push(item.value);
+                });
                 const paisesValidos = await paiServices.pegaTodosOsRegistros({
                     where: { id: { [Op.in]: ids } }
                 });
 
-                if (paisesValidos.length !== ids.length) {
-                    throw new Error("Algum pais não contem em nossos sistema!");
+                if (paisesValidos.length !== regra.pais.length) {
+                    res.status(400).json({
+                        "status": "error",
+                        "message": "Formulário inválido",
+                        "errorCode": 400,
+                        "details": [{
+                            path: ['Paises'],
+                            message: ['Algum pais não contem em nossos sistema!'],
+                        }]
+                    });
+                    return false;
                 }
 
                 paisesIds.push(...ids); // Adiciona os valores ao array global
             }
 
+
             // Validação de `liga`
             if (regra.liga && regra.liga.length > 0) {
-                const ids = regra.liga.split(',').map(Number); // Sem `const` aqui
+                const ids = [];
+                regra.liga.map((item) => {
+                    ids.push(item.value);
+                });
                 const ligasValidas = await ligaServices.pegaTodosOsRegistros({
                     where: { id: { [Op.in]: ids } }
                 });
 
-                if (ligasValidas.length !== ids.length) {
-                    throw new Error("Alguma liga não contem em nossos sistema!");
+                if (ligasValidas.length !== regra.liga.length) {
+                    res.status(400).json({
+                        "status": "error",
+                        "message": "Formulário inválido",
+                        "errorCode": 400,
+                        "details": [{
+                            path: ['Ligas'],
+                            message: ['Alguma liga selecioanda não contem em nossos sistema!'],
+                        }]
+                    });
+                    return false;
                 }
 
-                ligasIds.push(...ids); // Adiciona os valores ao array global
+                ligasIds.push(...ids);
             }
 
             // Adiciona os dados validados à nova regra
@@ -85,7 +351,9 @@ class EstrategiaController extends Controller {
                 ...regra,
                 validPaisesIds: paisesIds,
                 validLigasIds: ligasIds,
+                validTimesIds: timesIds
             });
+
         }
 
         const regrasCriar = novaRegras.map(regra => ({
@@ -93,31 +361,56 @@ class EstrategiaController extends Controller {
             oddmax: regra.oddMax ? parseFloat(regra.oddMax) : null,
             pai_id: regra.validPaisesIds.length > 0 ? regra.validPaisesIds.join(',') : null,
             liga_id: regra.validLigasIds.length > 0 ? regra.validLigasIds.join(',') : null,
+            time_id: regra.validTimesIds.length > 0 ? regra.validTimesIds.join(',') : null,
             regravalidacoe_id: regra.aposta,
             regravalidacoe2_id: regra.aposta2 ? regra.aposta2 : null,
             oddmin2: regra.oddMin2 ? parseFloat(regra.oddMin2) : null,
             oddmax2: regra.oddMax2 ? parseFloat(regra.oddMax2) : null,
-            regravalidacoe3_id: regra.aposta3 ? regra.aposta3 : null,
-            oddmin3: regra.oddMin3 ? parseFloat(regra.oddMin3) : null,
-            oddmax3: regra.oddMax3 ? parseFloat(regra.oddMax3) : null,
+            //regravalidacoe3_id: req.body.aposta3 ? req.body.aposta3 : null,
+            //oddmin3: req.body.oddMin3 ? parseFloat(req.body.oddMin3) : null,
+            //oddmax3: req.body.oddMax3 ? parseFloat(req.body.oddMax3) : null,
+            filtrojogo_id: req.body.filtroTime && req.body.filtroTime != "Todos" ? req.body.filtroTime : null,
         }));
 
-
-        return ({ nome, descricao, regras: regrasCriar });
+        return ({ estrategia, descricao, regras: regrasCriar });
     }
 
     async estrategiaTeste(req, res) {
         try {
 
-            var estrategiaValida = await this.#validaEstrategia(req, res);
+            let parsedBody;
+            try {
+                parsedBody = formSchema.parse(req.body);
+            } catch (error) {
+                return res.status(400).json({
+                    "status": "error",
+                    "message": "Formulário inválido",
+                    "errorCode": 400,
+                    "details": error.errors
+                });
+            }
 
-            const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
-            estrategiaValida.bilhetes = bilhetes;
-            estrategiaValida.jogos = jogos;
+            var estrategiaValida = await this.#validaEstrategia({ body: parsedBody }, res);
+            if (estrategiaValida === false) return;
 
+            try {
+                const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
+                estrategiaValida.bilhetes = bilhetes;
+                estrategiaValida.jogos = jogos;
+            } catch (error) {
+                return res.status(400).json({
+                    "status": "error",
+                    "message": "Formulário inválido",
+                    "errorCode": 400,
+                    "details": [{
+                        path: ['Erro ao Buscar Jogos'],
+                        message: [error.message],
+                    }]
+                });
+            }
             estrategiaValida = await estrategiaServices.geraEstistica(estrategiaValida, false);
 
-            estrategiaValida.grafico = bilhetesToGrafico(bilhetes);
+            estrategiaValida.grafico = bilhetesToGrafico(estrategiaValida.bilhetes);
             delete estrategiaValida.bilhetes;
             delete estrategiaValida.jogos;
 
@@ -129,6 +422,7 @@ class EstrategiaController extends Controller {
                 data: estrategiaValida
             });
         } catch (error) {
+            console.log('error', error)
             return res.status(500).json({
                 "status": "error",
                 "message": "Erro ao testar estratégia",
@@ -216,7 +510,7 @@ class EstrategiaController extends Controller {
                 "statusCode": 200,
                 "pagination": {
                     "Page": parseInt(page, 10),
-                    "totalPages": Math.ceil(count/ pageSize),
+                    "totalPages": Math.ceil(count / pageSize),
                     "totalItems": parseInt(count, 10)
                 },
                 data: estrategias
@@ -362,7 +656,6 @@ class EstrategiaController extends Controller {
 
     async criarEstrategia(req, res) {
         try {
-
             const estrategiaValida = await this.#validaEstrategia(req, res);
 
             // Cria a estratégia
@@ -401,9 +694,67 @@ class EstrategiaController extends Controller {
                 data: estrategiaComRegras
             });
         } catch (error) {
+            console.error(error)
             return res.status(500).json({
                 "status": "error",
                 "message": "Erro interno ao criar estrategia",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    }
+
+    async dataForms(req, res) {
+        try {
+            const regras = [];
+            const { count, rows } = await regravalidacoeServices.getRegrasValidacao();
+            for (const regra of rows) {
+                regras.push({
+                    value: regra.id.toString(),
+                    label: regra.nome
+                });
+            }
+            const paises = [];
+            for (const pai of await paiServices.pegaTodosOsRegistros()) {
+                paises.push({
+                    value: pai.id.toString(),
+                    label: pai.nome
+                });
+            }
+            const ligas = [];
+            for (const liga of await ligaServices.pegaTodosOsRegistros()) {
+                ligas.push({
+                    value: liga.id.toString(),
+                    label: liga.nome
+                });
+            }
+            const times = [];
+            for (const time of await timeServices.pegaPrincipaisTimes()) {
+                times.push({
+                    value: time.id.toString(),
+                    label: time.nome
+                });
+            }
+            const Filtrojogo = await filtro.getFiltrosJogos();
+
+            return res.status(200).json({
+                "status": "success",
+                "message": "Dados retornados com sucesso!",
+                "statusCode": 200,
+                "pagination": {},
+                data: {
+                    regras,
+                    times,
+                    paises,
+                    ligas,
+                    Filtrojogo
+                }
+            });
+        } catch (error) {
+            console.error(error)
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar dados",
                 "errorCode": 500,
                 "details": error.message
             });

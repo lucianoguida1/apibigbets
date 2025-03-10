@@ -7,7 +7,7 @@ const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
-const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, sequelize } = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Filtrojogo, sequelize } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -25,13 +25,13 @@ class JogoServices extends Services {
     async filtrarJogosUnicos(regras, jogosPendente = false) {
         regras.map((regra, index) => {
             if (!regra.id) {
-                regra.id = `${index+1}`;
+                regra.id = `${index + 1}`;
             }
             return regra;
         });
-        
+
         const jogosPorRegra = [];
-        for(const regra of regras) {
+        for (const regra of regras) {
             const jogos = await this.filtrarJogosPorRegra(regra, jogosPendente);
             jogosPorRegra.push(...jogos);
         }
@@ -43,14 +43,32 @@ class JogoServices extends Services {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
-        
+
+        const times_ids = [];
+        if (regra.filtrojogo_id) {
+            const filtroTime = await Filtrojogo.findOne({
+                where: { id: regra.filtrojogo_id }
+            });
+            if (filtroTime) {
+                regra.time_id = filtroTime.time_id;
+                const resu = (await sequelize.query(filtroTime.sql, {
+                    type: sequelize.QueryTypes.SELECT,
+                }));
+                resu.map((r) => {
+                    times_ids.push(r.time_id);
+                });
+            } else {
+                throw new Error('Filtro de times não encontrado');
+            }
+        }
+
         const sql = `
         select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
         o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
         from jogos j
-        inner join times casa on j.casa_id = casa.id
-        inner join times fora on j.fora_id = fora.id
+        inner join times casa on j.casa_id = casa.id ${regra.time_id ? `and (casa.id in (${regra.time_id}))` : ``}
+        inner join times fora on j.fora_id = fora.id ${regra.time_id ? `and (fora.id in (${regra.time_id}))` : ``}
         inner join temporadas t on t.id = j.temporada_id
         inner join ligas l on l.id = t.liga_id
         inner join pais p on p.id = l.pai_id
@@ -63,15 +81,20 @@ class JogoServices extends Services {
         and (o.regra_id = ${regra.regravalidacoe_id})
         ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
         ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
+        ${regra.filtrojogo_id ? `and (casa.id in (${times_ids.join(',')}) or fora.id in (${times_ids.join(',')}))` : ''}
         and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
         ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
         ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
         ORDER BY j.id ASC;`;
 
-        const results = await sequelize.query(sql, {
-            type: sequelize.QueryTypes.SELECT,
-        });
-
+        let results = [];
+        try {
+            results = await sequelize.query(sql, {
+                type: sequelize.QueryTypes.SELECT,
+            });
+        } catch (error) {
+            console.log(error);
+        }
         return results;
     }
 

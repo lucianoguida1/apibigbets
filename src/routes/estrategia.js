@@ -1512,4 +1512,6 @@ router.post('/estrategia/teste/', (req, res) => estrategiaController.estrategiaT
  */
 router.get('/topestrategia', (req, res) => estrategiaController.getTopEstrategia(req, res));
 
+router.get('/dataform', (req, res) => estrategiaController.dataForms(req, res));
+
 module.exports = router;

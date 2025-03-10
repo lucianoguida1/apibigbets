@@ -1,16 +1,18 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-
-const RequestController = require('../controllers/RequestController.js');
-const ServicesBaseController = require('../controllers/ServicesBaseController.js');
-
 const regraValidacao = require('./regraValidacao.js');
 const estrategia = require('./estrategia.js');
 const pais = require('./pais.js');
 const liga = require('./liga.js');
 
+const EstrategiaController = require('../controllers/EstrategiaController.js');
+const estrategiaController = new EstrategiaController();
+
+const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
+
+const RequestController = require('../controllers/RequestController.js');
 const request = new RequestController();
 
 module.exports = app => {
@@ -28,6 +30,7 @@ module.exports = app => {
      *   name: Services Base
      *   description: API para gerenciar serviços base
      */
+
 
     /**
     * @swagger

@@ -22,27 +22,41 @@ module.exports = (bilhetes) => {
             meuGrafico[data].saldoReaplicado += bilhete.status_bilhete ? apostaReaplicada * (odd - 1) : -apostaReaplicada;
             meuGrafico[data].num_apostas += 1;
             meuGrafico[data].saldoFixoAcumulado = saldoFixoAcumulado;
+            meuGrafico[data].bilhetes_ganhos += bilhete.status_bilhete ? 1 : 0;
+            meuGrafico[data].bilhetes_perdidos += bilhete.status_bilhete ? 0 : 1;
         } else {
             meuGrafico[data] = {
                 saldoFixo: (bilhete.status_bilhete ? 1 * (odd - 1) : -1),
                 saldoReaplicado: (bilhete.status_bilhete ? apostaReaplicada * (odd - 1) : -apostaReaplicada),
                 num_apostas: 1,
                 saldoFixoAcumulado: saldoFixoAcumulado,
+                bilhetes_ganhos: bilhete.status_bilhete ? 1 : 0,
+                bilhetes_perdidos: bilhete.status_bilhete ? 0 : 1,
             };
         }
     };
 
-
     // Transformação dos dados para o gráfico
-    const labels = Object.keys(meuGrafico); // Datas no eixo X
-    const saldosFixos = Object.values(meuGrafico).map((entry) => entry.saldoFixo.toFixed(2)); // Saldos da aposta fixa
-    const saldosReaplicados = Object.values(meuGrafico).map((entry) => entry.saldoFixoAcumulado.toFixed(2)); // Saldos da aposta reaplicada
-
-    const dadosGrafico = {
-        saldo_dia_dia: meuGrafico,
-        labels,
-        saldosFixos,
-        saldoFixoAcumulado: saldosReaplicados,
-    };
-    return dadosGrafico;
+    const chartData = {};
+    chartData['SaldoAcumulado'] = Object.keys(meuGrafico).map((data) => ({
+        label: data,
+        value: meuGrafico[data].saldoFixoAcumulado.toFixed(2)
+    }));
+    chartData['SaldoFixo'] = Object.keys(meuGrafico).map((data) => ({
+        label: data,
+        value: meuGrafico[data].saldoFixo.toFixed(2)
+    }));
+    chartData['BilhetesGanhos'] = Object.keys(meuGrafico).map((data) => ({
+        label: data,
+        value: meuGrafico[data].bilhetes_ganhos
+    }));
+    chartData['BilhetesPerdidos'] = Object.keys(meuGrafico).map((data) => ({
+        label: data,
+        value: meuGrafico[data].bilhetes_perdidos
+    }));
+    chartData['NumApostas'] = Object.keys(meuGrafico).map((data) => ({
+        label: data,
+        value: meuGrafico[data].num_apostas
+    }));
+    return chartData;
 }
