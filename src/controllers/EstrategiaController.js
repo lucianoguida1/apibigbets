@@ -660,7 +660,7 @@ class EstrategiaController extends Controller {
 
             // Cria a estratégia
             const novaEstrategia = await estrategiaServices.criaRegistro({
-                nome: estrategiaValida.nome,
+                nome: estrategiaValida.estrategia,
                 descricao: estrategiaValida.descricao
             });
 
