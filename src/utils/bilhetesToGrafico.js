@@ -18,7 +18,7 @@ module.exports = (bilhetes) => {
         const data = bilhetes.length > 90 ? dataFormatada.slice(0, 7) : dataFormatada;
         
         if (meuGrafico[data]) {
-            meuGrafico[data].saldoFixo += bilhete.status_bilhete ? 1 * (odd - 1) : -1;
+            meuGrafico[data].saldoFixo += bilhete.status_bilhete ? (odd - 1) : -1;
             meuGrafico[data].saldoReaplicado += bilhete.status_bilhete ? apostaReaplicada * (odd - 1) : -apostaReaplicada;
             meuGrafico[data].num_apostas += 1;
             meuGrafico[data].saldoFixoAcumulado = saldoFixoAcumulado;

@@ -145,7 +145,6 @@ class EstrategiaServices extends Services {
                     'odd',
                     'data'
                 ],
-                group: ['status_bilhete', 'odd', 'data'],
                 where: {
                     status_bilhete: {
                         [Op.not]: null

@@ -112,7 +112,7 @@ class BilheteServices extends Services {
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
         }else if(jogosUnicos.length > 500 && !salvaNoBanco){
-            jogosUnicos.splice(0, jogosUnicos.length - 3500);
+            jogosUnicos.splice(0, jogosUnicos.length - 350000);
         }
 
         if (jogosUnicos.length < regras.length) {
