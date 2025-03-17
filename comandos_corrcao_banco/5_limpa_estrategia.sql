@@ -1,0 +1,4 @@
+DELETE FROM bilhetesodds WHERE 1=1;
+DELETE FROM bilhetes WHERE 1=1;
+DELETE FROM regras WHERE 1=1;
+DELETE FROM estrategias WHERE 1=1;

@@ -44,6 +44,23 @@ class JogoServices extends Services {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
 
+        const montaWhereCase = (regra,time_id) => {
+            return `and (
+                case
+                    when ${regra} = 9999991 and casa.id in (${time_id}) then o.regra_id = 1
+                    when ${regra} = 9999991 and fora.id in (${time_id}) then o.regra_id = 3
+                    when ${regra} = 9999992 and (fora.id in (${time_id}) or casa.id in (${time_id})) then o.regra_id = 2
+                    when ${regra} = 9999993 and casa.id in (${time_id}) then o.regra_id = 3
+                    when ${regra} = 9999993 and fora.id in (${time_id}) then o.regra_id = 1
+                    when ${regra} = 9999994 and casa.id in (${time_id}) then o.regra_id = 124
+                    when ${regra} = 9999994 and fora.id in (${time_id}) then o.regra_id = 126
+                    when ${regra} = 9999995 and casa.id in (${time_id}) then o.regra_id = 126
+                    when ${regra} = 9999995 and fora.id in (${time_id}) then o.regra_id = 124
+                    else o.regra_id = ${regra}
+                end
+            )`;
+        };
+
         const times_ids = [];
         if (regra.filtrojogo_id) {
             const filtroTime = await Filtrojogo.findOne({
@@ -61,24 +78,26 @@ class JogoServices extends Services {
                 throw new Error('Filtro de times não encontrado');
             }
         }
-
+        let regraV = regra.regravalidacoe_id;
+        let regraV1 = regra.regravalidacoe2_id;
+        let regraV2 = regra.regravalidacoe3_id;
         const sql = `
         select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
         o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
         from jogos j
-        inner join times casa on j.casa_id = casa.id ${regra.time_id ? `and (casa.id in (${regra.time_id}))` : ``}
-        inner join times fora on j.fora_id = fora.id ${regra.time_id ? `and (fora.id in (${regra.time_id}))` : ``}
+        inner join times casa on j.casa_id = casa.id
+        inner join times fora on j.fora_id = fora.id
         inner join temporadas t on t.id = j.temporada_id
         inner join ligas l on l.id = t.liga_id
         inner join pais p on p.id = l.pai_id
         inner join odds o on o.jogo_id = j.id
-        ${regra.regravalidacoe2_id ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
-        ${regra.regravalidacoe3_id ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
+        ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
+        ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
         where j."deletedAt" is null
         ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
-        and (o.regra_id = ${regra.regravalidacoe_id})
+        ${regraV > 9999990 ? montaWhereCase(regraV,regra.time_id) : `and o.regra_id = ${regraV}`}
         ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
         ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
         ${regra.filtrojogo_id ? `and (casa.id in (${times_ids.join(',')}) or fora.id in (${times_ids.join(',')}))` : ''}
@@ -87,6 +106,7 @@ class JogoServices extends Services {
         ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
         ORDER BY j.id ASC;`;
 
+        console.log('sql', sql)
         let results = [];
         try {
             results = await sequelize.query(sql, {

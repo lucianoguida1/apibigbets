@@ -22,21 +22,24 @@ class TimeServices extends Services {
 
         const sql = `WITH todos_jogos AS (
                         SELECT * FROM JOGOS
-                    ),times_id AS (
-                        SELECT time_id from (
-                            select casa_id as time_id from todos_jogos
-                            union all
-                            select fora_id as time_id from todos_jogos
-                        )t1 group by time_id having count(*) >= 10
+                    ), times_id AS (
+                        SELECT time_id, COUNT(*) num_jogos 
+                        FROM (
+                            SELECT casa_id AS time_id FROM todos_jogos
+                            UNION ALL
+                            SELECT fora_id AS time_id FROM todos_jogos
+                        ) t1 
+                        GROUP BY time_id
                     )
-                    SELECT TIME.* FROM TIMES TIME
-                    INNER JOIN times_id T on T.time_id = TIME.id
-                    ORDER BY TIME.nome ASC`;
-
+                    SELECT num_jogos, TIME.* 
+                    FROM TIMES TIME
+                    INNER JOIN times_id T ON T.time_id = TIME.id
+                    ORDER BY num_jogos DESC
+                    LIMIT 100;
+                    `;
         const teams = await sequelize.query(sql, {
             type: sequelize.QueryTypes.SELECT,
         });
-
 
         return teams;
     }

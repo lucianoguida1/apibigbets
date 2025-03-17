@@ -5,9 +5,7 @@ const regraValidacao = require('./regraValidacao.js');
 const estrategia = require('./estrategia.js');
 const pais = require('./pais.js');
 const liga = require('./liga.js');
-
-const EstrategiaController = require('../controllers/EstrategiaController.js');
-const estrategiaController = new EstrategiaController();
+const time = require('./time.js');
 
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
@@ -22,6 +20,7 @@ module.exports = app => {
         estrategia,
         pais,
         liga,
+        time,
     );
 
     /**

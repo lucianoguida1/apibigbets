@@ -714,6 +714,13 @@ class EstrategiaController extends Controller {
                     label: regra.nome
                 });
             }
+            const regras2 = [
+                { value: "9999991", label: 'Time(s) Selecionado(s) Ganhar' },
+                { value: "9999992", label: 'Time(s) Selecionado(s) Empatar' },
+                { value: "9999993", label: 'Time(s) Selecionado(s) Perder' },
+                { value: "9999994", label: 'Time(s) Selecionado(s) Ganhar ou Empatar' },
+                { value: "9999995", label: 'Time(s) Selecionado(s) Perder ou Empatar' },
+            ];
             const paises = [];
             for (const pai of await paiServices.pegaTodosOsRegistros()) {
                 paises.push({
@@ -747,7 +754,8 @@ class EstrategiaController extends Controller {
                     times,
                     paises,
                     ligas,
-                    Filtrojogo
+                    Filtrojogo,
+                    regras2
                 }
             });
         } catch (error) {
