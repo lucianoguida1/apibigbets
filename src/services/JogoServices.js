@@ -67,7 +67,7 @@ class JogoServices extends Services {
                 where: { id: regra.filtrojogo_id }
             });
             if (filtroTime) {
-                regra.time_id = filtroTime.time_id;
+                //regra.time_id = filtroTime.time_id;
                 const resu = (await sequelize.query(filtroTime.sql, {
                     type: sequelize.QueryTypes.SELECT,
                 }));
@@ -81,6 +81,9 @@ class JogoServices extends Services {
         let regraV = regra.regravalidacoe_id;
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
+
+        const timesIds = [...times_ids, regra.time_id].filter(Boolean).join(',');
+
         const sql = `
         select j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
@@ -97,16 +100,15 @@ class JogoServices extends Services {
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
         where j."deletedAt" is null
         ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
-        ${regraV > 9999990 ? montaWhereCase(regraV,regra.time_id) : `and o.regra_id = ${regraV}`}
+        ${regraV > 9999990 ? montaWhereCase(regraV,timesIds) : `and o.regra_id = ${regraV}`}
         ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
         ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
-        ${regra.filtrojogo_id ? `and (casa.id in (${times_ids.join(',')}) or fora.id in (${times_ids.join(',')}))` : ''}
         and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
         ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
         ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
-        ORDER BY j.id ASC;`;
+        ORDER BY j.id ASC
+        LIMIT 3500;`;
 
-        console.log('sql', sql)
         let results = [];
         try {
             results = await sequelize.query(sql, {

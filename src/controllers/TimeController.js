@@ -34,7 +34,12 @@ class TimeController extends Controller {
                     data: []
                 });
             }
-
+            const data = times.map(time => {
+                return {
+                    value: time.id.toString(),
+                    label: time.nome
+                }
+            });
             return res.status(200).json({
                 "status": "success",
                 "message": "Times buscados com sucesso!",
@@ -45,7 +50,7 @@ class TimeController extends Controller {
                     "totalItems": times.length,
                     "totalRegistro": count
                 },
-                data: times
+                data: data
             });
         } catch (error) {
             return res.status(500).json({
