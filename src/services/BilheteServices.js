@@ -227,6 +227,12 @@ class BilheteServices extends Services {
                                     }, {
                                         model: Tipoaposta,
                                         required: true,
+                                    },
+                                    {
+                                        model: Regravalidacoe,
+                                        as: 'regra',
+                                        required: true,
+                                        attributes: ['id', 'nome', 'name']
                                     }
                                 ]
                             }
