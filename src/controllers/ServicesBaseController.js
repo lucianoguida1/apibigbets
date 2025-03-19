@@ -222,6 +222,7 @@ class ServicesBaseController extends Controller {
         }
     }
 
+    // envia a mensagem no grupo do telegram
     async verificaGrupoBot(req, res) {
         try {
             const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
@@ -257,12 +258,14 @@ class ServicesBaseController extends Controller {
                             logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
 
                             // Atualiza o offset para evitar processar as mesmas atualizações novamente
-                            const lastUpdateId = updates[updates.length - 1].update_id;
-                            await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ offset: lastUpdateId + 1 })
-                            });
+                            if (process.env.NODE_ENV !== 'development') {
+                                const lastUpdateId = updates[updates.length - 1].update_id;
+                                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ offset: lastUpdateId + 1 })
+                                });
+                            }
                         }
                     }
                 }
@@ -298,7 +301,7 @@ class ServicesBaseController extends Controller {
             for (const bilhete of bilhetes) {
                 if (mensagems[bilhete.Estrategium.chat_id] === undefined) {
                     mensagems[bilhete.Estrategium.chat_id] = {
-                        msg: `Temos ${count} bilhetes para você conferir:\n Estratégia: ${bilhete.Estrategium.nome} \n\n`,
+                        msg: `Temos ${count} bilhetes para você conferir\n\nEstratégia: ${bilhete.Estrategium.nome} \n\n`,
                         bilehtes: []
                     }
                     mensagems[bilhete.Estrategium.chat_id].bilehtes = bilhete.id;
@@ -309,16 +312,17 @@ class ServicesBaseController extends Controller {
                     mensagems[bilhete.Estrategium.chat_id].bilehtes += `, ${bilhete.id}`;
                 }
                 mensagems[bilhete.Estrategium.chat_id].msg += `Bilhete: ${bilhete.id}\n`;
-                mensagems[bilhete.Estrategium.chat_id].msg += `Odd do bilhete: ${parseFloat(bilhete.odd).toFixed(2)} \n \n`;
-                mensagems[bilhete.Estrategium.chat_id].msg += `Jogo(s): \n`;
+                mensagems[bilhete.Estrategium.chat_id].msg += `Odd: ${parseFloat(bilhete.odd).toFixed(2)}\n\n`;
+                mensagems[bilhete.Estrategium.chat_id].msg += `Jogo(s):\n`;
                 for (const odd of bilhete.Odds) {
-                    mensagems[bilhete.Estrategium.chat_id].msg += ` - ${odd.Jogo.casa.nome} x ${odd.Jogo.fora.nome} \n`;
+                    mensagems[bilhete.Estrategium.chat_id].msg += `- ${odd.Jogo.casa.nome} x ${odd.Jogo.fora.nome}\n`;
                     const dataHora = new Date(odd.Jogo.datahora);
-                    const dataFormatada = dataHora.toLocaleString('pt-BR');
-                    mensagems[bilhete.Estrategium.chat_id].msg += ` - Data: ${dataFormatada} \n`;
-                    mensagems[bilhete.Estrategium.chat_id].msg += ` - Odd: ${parseFloat(odd.odd).toFixed(2)} \n \n`;
+                    const dataFormatada = dataHora.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit' });
+                    mensagems[bilhete.Estrategium.chat_id].msg += `- Data: ${dataFormatada}\n`;
+                    mensagems[bilhete.Estrategium.chat_id].msg += `- Odd: ${parseFloat(odd.odd).toFixed(2)}\n`;
+                    mensagems[bilhete.Estrategium.chat_id].msg += `- ${odd.Tipoapostum.nome} - ${odd.nome}\n\n`;
                 }
-                mensagems[bilhete.Estrategium.chat_id].msg += `-----------------------\n\n`;
+                mensagems[bilhete.Estrategium.chat_id].msg += `- # - # - # - # - # - # - # - # -\n\n`;
             }
 
             for (const chatId in mensagems) {
@@ -346,7 +350,7 @@ class ServicesBaseController extends Controller {
                 } else {
                     logTo(`Erro ao enviar mensagem para o grupo ${chatId}: ${data.description}`);
                 }
-                await new Promise(resolve => setTimeout(resolve, 300)); // Aguarda 300ms entre cada mensagem
+                await new Promise(resolve => setTimeout(resolve, 3000)); // Aguarda 300ms entre cada mensagem
             }
 
             return ({ mensagem: 'Mensagens enviadas' });

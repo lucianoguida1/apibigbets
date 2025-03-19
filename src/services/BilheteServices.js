@@ -111,7 +111,7 @@ class BilheteServices extends Services {
 
         if (jogosUnicos.length === 0) {
             throw new Error('Nenhum jogo encontrado!');
-        }else if(jogosUnicos.length > 500 && !salvaNoBanco){
+        } else if (jogosUnicos.length > 500 && !salvaNoBanco) {
             jogosUnicos.splice(0, jogosUnicos.length - 350000);
         }
 
@@ -140,7 +140,7 @@ class BilheteServices extends Services {
                     }]
                 }
 
-            
+
                 if (regras.length > 1) {
                     const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
                     for (const jogoMesmoDia of jogosMesmoDia) {
@@ -164,12 +164,12 @@ class BilheteServices extends Services {
                             return status;
                         }, true);
                         bilhetesCriar[i].status_bilhete = statusBilhete;
-                        if(regras.length == bilhetesCriar[i].bilhetesodd.length) break;
+                        if (regras.length == bilhetesCriar[i].bilhetesodd.length) break;
                     }
                 }
                 i++;
             }
-            
+
             if (salvaNoBanco) {
                 //salvar no banco de forma lenta
                 const bilhetes = [];
@@ -274,6 +274,11 @@ class BilheteServices extends Services {
                                         attributes: ['id', 'nome', 'logo']
                                     }
                                 ]
+                            },
+                            {
+                                model: Tipoaposta,
+                                required: true,
+                                attributes: ['id', 'nome', 'name']
                             }
                         ]
                     }
