@@ -293,7 +293,6 @@ class ServicesBaseController extends Controller {
                 where: { chat_id: { [Op.ne]: null } }
             });
 
-
             if (bilhetes.length === 0) {
                 return ({ mensagem: 'Nenhum bilhete para enviar mensagem' });
             }
@@ -320,7 +319,7 @@ class ServicesBaseController extends Controller {
                     const dataFormatada = dataHora.toLocaleString('pt-BR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: '2-digit' });
                     mensagems[bilhete.Estrategium.chat_id].msg += `- Data: ${dataFormatada}\n`;
                     mensagems[bilhete.Estrategium.chat_id].msg += `- Odd: ${parseFloat(odd.odd).toFixed(2)}\n`;
-                    mensagems[bilhete.Estrategium.chat_id].msg += `- ${odd.Tipoapostum.nome} - ${odd.nome}\n\n`;
+                    mensagems[bilhete.Estrategium.chat_id].msg += `- ${odd.Tipoapostum.nome} - ${odd.regra.nome}\n\n`;
                 }
                 mensagems[bilhete.Estrategium.chat_id].msg += `- # - # - # - # - # - # - # - # -\n\n`;
             }
@@ -335,7 +334,7 @@ class ServicesBaseController extends Controller {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        chat_id: chatId,
+                        chat_id: process.env.NODE_ENV !== 'development' ? chatId : process.env.TELEGRAM_CHAT_ID,
                         text: mensagem
                     })
                 });
@@ -346,7 +345,7 @@ class ServicesBaseController extends Controller {
                         id: {
                             [Op.in]: bilhetesId.split(', ')
                         }
-                    });
+                    })
                 } else {
                     logTo(`Erro ao enviar mensagem para o grupo ${chatId}: ${data.description}`);
                 }

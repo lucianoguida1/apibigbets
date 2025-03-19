@@ -1,5 +1,5 @@
 const Services = require('./Services.js');
-const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, Tipoaposta, sequelize } = require('../database/models');
+const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, Tipoaposta, Regravalidacoe, sequelize } = require('../database/models');
 
 
 const JogoServices = require('./JogoServices.js');
@@ -277,6 +277,12 @@ class BilheteServices extends Services {
                             },
                             {
                                 model: Tipoaposta,
+                                required: true,
+                                attributes: ['id', 'nome', 'name']
+                            },
+                            {
+                                model: Regravalidacoe,
+                                as: 'regra',
                                 required: true,
                                 attributes: ['id', 'nome', 'name']
                             }
