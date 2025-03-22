@@ -326,7 +326,7 @@ class ServicesBaseController extends Controller {
 
             for (const chatId in mensagems) {
                 let mensagem = mensagems[chatId].msg;
-                const bilhetesId = mensagems[chatId].bilehtes;
+                const bilhetesId = mensagems[chatId].bilehtes.id;
                 mensagem += `Todas as odds são com base na casa de apota BET365. \n\n`;
                 mensagem += `Clique no link: https://www.bet365.com/pt/ \n\n`;
 
@@ -340,6 +340,7 @@ class ServicesBaseController extends Controller {
                 });
 
                 const data = await response.json();
+                console.log('data', data)
                 if (data.ok) {
                     await bilheteServices.atualizaRegistro({ alert: true }, {
                         id: {
