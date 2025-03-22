@@ -41,7 +41,7 @@ routes(app);
 tarefaCron.agendarTarefas();
 
 
-/*
+
 const ServicesBaseController = require('./controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
 
@@ -49,7 +49,7 @@ const serviceBase = new ServicesBaseController();
   await serviceBase.verificaGrupoBot();
   await serviceBase.enviaMensagensTelegram();
 })();
-*/
+
 
 
 module.exports = app;

@@ -4,6 +4,7 @@ module.exports = (bilhetes) => {
     let apostaReaplicada = saldoReaplicado / 10; // Aposta inicial reaplicada
     const meuGrafico = {};
     
+    
     for (let bilhete of bilhetes) {
         const odd = parseFloat(bilhete.odd);
         apostaReaplicada = saldoReaplicado / 10;
@@ -55,6 +56,14 @@ module.exports = (bilhetes) => {
         chartData.BilhetesPerdidos.push({ label: data, value: meuGrafico[data].bilhetes_perdidos });
         chartData.NumApostas.push({ label: data, value: meuGrafico[data].num_apostas });
     });
+
+    // Ordena os dados por data
+    const sortByDate = (a, b) => new Date(a.label) - new Date(b.label);
+    chartData.SaldoAcumulado.sort(sortByDate);
+    chartData.SaldoFixo.sort(sortByDate);
+    chartData.BilhetesGanhos.sort(sortByDate);
+    chartData.BilhetesPerdidos.sort(sortByDate);
+    chartData.NumApostas.sort(sortByDate);
     
     return chartData;
 };
