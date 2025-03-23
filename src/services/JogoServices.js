@@ -80,7 +80,7 @@ class JogoServices extends Services {
         ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
         ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
         ${regra.filtrojogo_id ? `inner join filtrojogodata fj 
-                                            on (j.data::DATE - INTERVAL '1 day') = (fj.data::DATE - INTERVAL '1 day') 
+                                            on j.data::DATE = fj.data::DATE
                                             and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}
