@@ -274,7 +274,6 @@ class ServicesBaseController extends Controller {
 
             return ({ mensagem: 'Verificação de grupos concluída' });
         } catch (error) {
-            console.error('Erro ao verificar grupos do bot:', error.message);
             if (error.message) {
                 logTo('Erro ao verificar grupos do bot:', error.message);
             }
@@ -297,6 +296,8 @@ class ServicesBaseController extends Controller {
                 return ({ mensagem: 'Nenhum bilhete para enviar mensagem' });
             }
             const mensagems = [];
+            let bilhetesId = [];
+
             for (const bilhete of bilhetes) {
                 if (mensagems[bilhete.Estrategium.chat_id] === undefined) {
                     mensagems[bilhete.Estrategium.chat_id] = {
@@ -322,11 +323,11 @@ class ServicesBaseController extends Controller {
                     mensagems[bilhete.Estrategium.chat_id].msg += `- ${odd.Tipoapostum.nome} - ${odd.regra.nome}\n\n`;
                 }
                 mensagems[bilhete.Estrategium.chat_id].msg += `- # - # - # - # - # - # - # - # -\n\n`;
+                bilhetesId.push(bilhete.id);
             }
 
             for (const chatId in mensagems) {
                 let mensagem = mensagems[chatId].msg;
-                const bilhetesId = mensagems[chatId].bilehtes.id;
                 mensagem += `Todas as odds são com base na casa de apota BET365. \n\n`;
                 mensagem += `Clique no link: https://www.bet365.com/pt/ \n\n`;
 
@@ -340,11 +341,10 @@ class ServicesBaseController extends Controller {
                 });
 
                 const data = await response.json();
-                console.log('data', data)
                 if (data.ok) {
                     await bilheteServices.atualizaRegistro({ alert: true }, {
                         id: {
-                            [Op.in]: bilhetesId.split(', ')
+                            [Op.in]: bilhetesId
                         }
                     })
                 } else {

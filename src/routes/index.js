@@ -6,6 +6,7 @@ const estrategia = require('./estrategia.js');
 const pais = require('./pais.js');
 const liga = require('./liga.js');
 const time = require('./time.js');
+const filtrojogo = require('./filtrojogo.js');
 
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
@@ -21,6 +22,7 @@ module.exports = app => {
         pais,
         liga,
         time,
+        filtrojogo,
     );
 
     /**

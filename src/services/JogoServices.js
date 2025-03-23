@@ -44,25 +44,28 @@ class JogoServices extends Services {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
 
-        let filtroTime = null;
-        if (regra.filtrojogo_id) {
-            filtroTime = await Filtrojogo.findOne({
+        if (regra.filtrojogo_id && jogosPendente) {
+            const filtroTime = await Filtrojogo.findOne({
                 where: { id: regra.filtrojogo_id }
             });
-            if(!filtroTime) {
-                return [];
+            if (filtroTime.sql.includes('@data')) {
+                const endDate = new Date();
+                endDate.setDate(endDate.getDate() + 1);
+                const formattedDate = endDate.toISOString().split('T')[0];
+                let sqlF = sql.replace(/@data/g, `'${formattedDate}'`);
+                sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
+
+                const results = await sequelize.query(sqlF, {
+                    type: sequelize.QueryTypes.SELECT,
+                });
             }
         }
         let regraV = regra.regravalidacoe_id;
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
-
+        console.log('regra', regra)
 
         const sql = `
-        ${regra.filtrojogo_id ? `
-        with times_ids as (
-            ${filtroTime.sql}
-        )` : ''}
 
         select distinct j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
@@ -76,26 +79,31 @@ class JogoServices extends Services {
         inner join odds o on o.jogo_id = j.id
         ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
         ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
-        ${regra.filtrojogo_id ? `inner join times_Ids ids on ids.data = j.data and (j.casa_id = ids.id_time or j.fora_id = ids.id_time)` :``}
+        ${regra.filtrojogo_id ? `inner join filtrojogodata fj 
+                                            on (j.data::DATE - INTERVAL '1 day') = (fj.data::DATE - INTERVAL '1 day') 
+                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
+                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                            ` : ``}
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
         where j."deletedAt" is null
         ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
         ${regraV > 9999990 ? `
             and (
                 case
-                    when ${regraV} = 9999991 then o.regra_id = 1
-                    when ${regraV} = 9999991 then o.regra_id = 3
+                    when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 1
+                    when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 3
                     when ${regraV} = 9999992 then o.regra_id = 2
-                    when ${regraV} = 9999993 then o.regra_id = 3
-                    when ${regraV} = 9999993 then o.regra_id = 1
-                    when ${regraV} = 9999994 then o.regra_id = 124
-                    when ${regraV} = 9999994 then o.regra_id = 126
-                    when ${regraV} = 9999995 then o.regra_id = 126
-                    when ${regraV} = 9999995 then o.regra_id = 124
+                    when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 3
+                    when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 1
+                    when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 124
+                    when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 126
+                    when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 126
+                    when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 124
                     else o.regra_id = ${regraV}
                 end
             )
             ` : `and o.regra_id = ${regraV}`}
+        ${!regra.filtrojogo_id && regra.time_id ? `and  (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id}))` : ''}
         ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
         ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
         and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
@@ -104,6 +112,7 @@ class JogoServices extends Services {
         ORDER BY j.id ASC
         LIMIT 3500;`;
 
+        console.log('sql', sql)
         let results = [];
         try {
             results = await sequelize.query(sql, {

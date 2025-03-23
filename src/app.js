@@ -46,8 +46,9 @@ const ServicesBaseController = require('./controllers/ServicesBaseController.js'
 const serviceBase = new ServicesBaseController();
 
 (async () => {
-  await serviceBase.verificaGrupoBot();
-  await serviceBase.enviaMensagensTelegram();
+  //await serviceBase.verificaGrupoBot();
+  //await serviceBase.enviaMensagensTelegram();
+  //await serviceBase.executarEstrategias();
 })();
 
 
