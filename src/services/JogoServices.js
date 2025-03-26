@@ -63,7 +63,6 @@ class JogoServices extends Services {
         let regraV = regra.regravalidacoe_id;
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
-        console.log('regra', regra)
 
         const sql = `
 
@@ -79,9 +78,14 @@ class JogoServices extends Services {
         inner join odds o on o.jogo_id = j.id
         ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
         ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
-        ${regra.filtrojogo_id ? `inner join filtrojogodata fj 
-                                            on j.data::DATE = fj.data::DATE
-                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
+        ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
+                                            and (j.data::DATE) = (fj.data::DATE)
+                                            and ((j.casa_id = fj.time_id )
+                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                            ` : ``}
+        ${regra.filtrojogo_id ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
+                                            and (j.data::DATE) = (fj2.data::DATE)
+                                            and ((j.fora_id = fj2.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
