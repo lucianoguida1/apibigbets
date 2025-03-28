@@ -8,7 +8,7 @@ const filtrojogos = new Filtrojogos();
 class FiltrojogoController extends Controller {
     async createFiltroJogo(req, res) {
         try {
-            const { nome, sql } = req.body;
+            const { nome, sql, ambos_times } = req.body;
 
             if (!nome || !sql) {
                 return res.status(400).json({
@@ -19,7 +19,7 @@ class FiltrojogoController extends Controller {
             }
 
             // Buscar registros com filtros aplicados e limite
-            const filtrojogo = await filtrojogos.criaRegistro({ nome, sql });
+            const filtrojogo = await filtrojogos.criaRegistro({ nome, sql, ambos_times });
 
             if (sql.includes('@data')) {
                 const startDate = new Date('2024-09-26');

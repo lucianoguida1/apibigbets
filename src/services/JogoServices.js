@@ -43,23 +43,29 @@ class JogoServices extends Services {
         const convertStringToArray = (stringValue) => {
             return stringValue ? stringValue.split(',').map(Number) : [];
         };
-
-        if (regra.filtrojogo_id && jogosPendente) {
-            const filtroTime = await Filtrojogo.findOne({
+        let filtroTime = null;
+        if (regra.filtrojogo_id) {
+            filtroTime = await Filtrojogo.findOne({
                 where: { id: regra.filtrojogo_id }
             });
-            if (filtroTime.sql.includes('@data')) {
+
+            if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
                 const endDate = new Date();
                 endDate.setDate(endDate.getDate() + 1);
                 const formattedDate = endDate.toISOString().split('T')[0];
-                let sqlF = sql.replace(/@data/g, `'${formattedDate}'`);
+
+                // Certifique-se de que filtroTime.sql está sendo usado corretamente
+                let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
                 sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
 
                 const results = await sequelize.query(sqlF, {
                     type: sequelize.QueryTypes.SELECT,
                 });
+
+                console.log('Results:', results);
             }
         }
+        
         let regraV = regra.regravalidacoe_id;
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
@@ -78,6 +84,7 @@ class JogoServices extends Services {
         inner join odds o on o.jogo_id = j.id
         ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
         ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
+        ${filtroTime && filtroTime.ambos_times ? `
         ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj.data::DATE)
                                             and ((j.casa_id = fj.time_id )
@@ -87,7 +94,12 @@ class JogoServices extends Services {
                                             and (j.data::DATE) = (fj2.data::DATE)
                                             and ((j.fora_id = fj2.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                            ` : ``}
+                                            ` : ``}` : `
+        ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
+                                            and (j.data::DATE) = (fj.data::DATE)
+                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
+                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                            ` : ``}`}
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
         where j."deletedAt" is null
         ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
