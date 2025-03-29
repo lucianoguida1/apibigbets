@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
   Filtrojogos.init({
     nome: DataTypes.STRING,
     sql: DataTypes.TEXT,
-    ambos_times: DataTypes.BOOLEAN
+    so_casa: DataTypes.BOOLEAN,
+    so_fora: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Filtrojogo',
