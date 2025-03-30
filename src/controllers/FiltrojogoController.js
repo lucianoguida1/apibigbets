@@ -8,11 +8,11 @@ const filtrojogos = new Filtrojogos();
 class FiltrojogoController extends Controller {
     async getFiltrosJogos(req, res) {
         try {
-            const { page = 1, limit = 10 } = req.query;
+            const { page = 1, limit = 1000 } = req.query;
             const offset = (page - 1) * limit;
 
             // Buscar registros com filtros aplicados e limite
-            const filtrosJogos = await filtrojogos.buscaRegistros({ offset, limit });
+            const filtrosJogos = await filtrojogos.getFiltrosJogos({ offset, limit });
 
             if (!filtrosJogos) {
                 return res.status(404).json({
@@ -30,9 +30,9 @@ class FiltrojogoController extends Controller {
                 "pagination": {
                     page: parseInt(page),
                     limit: parseInt(limit),
-                    total: filtrosJogos.count,
+                    total: filtrosJogos.length,
                 },
-                data: filtrosJogos.rows
+                data: filtrosJogos
             });
         } catch (error) {
             console.error('Erro ao buscar filtros de jogos:', error);
