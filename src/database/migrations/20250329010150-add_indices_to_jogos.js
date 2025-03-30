@@ -2,6 +2,23 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
+        
+        await queryInterface.removeIndex('jogos', 'idx_jogos_data');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_casa');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_fora');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_deleted');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_gols');
+        await queryInterface.removeIndex('filtrojogodata', 'idx_filtrojogodata_data_time');
+        await queryInterface.removeIndex('odds', 'idx_odds_jogo_tipo');
+        await queryInterface.removeIndex('tipoapostas', 'idx_tipoapostas_id');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_casa_fora');
+        await queryInterface.removeIndex('filtrojogodata', 'idx_filtrojogodata_time_id');
+        await queryInterface.removeIndex('times', 'idx_times_id');
+        await queryInterface.removeIndex('temporadas', 'idx_temporadas_id');
+        await queryInterface.removeIndex('ligas', 'idx_ligas_id');
+        await queryInterface.removeIndex('pais', 'idx_pais_id');
+        await queryInterface.removeIndex('odds', 'idx_odds_valor');
+        await queryInterface.removeIndex('jogos', 'idx_jogos_data_asc');
         await queryInterface.addIndex('jogos', ['data'], {
             name: 'idx_jogos_data'
         });
