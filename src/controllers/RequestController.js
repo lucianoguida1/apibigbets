@@ -70,8 +70,7 @@ class RequestController extends Controller {
                     const regras = await regraServices.pegaTodosOsRegistros();
 
                     let endTime = Date.now();
-                    let duration = endTime - startTime;
-                    while (page <= totalPaginas && await requestServices.podeRequisitar() && duration < ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
+                    while (page <= totalPaginas && await requestServices.podeRequisitar()) {
                         logTo(`Processando página ${page} de ${totalPaginas}...`);
                         for (const e of response.data.response) {
                             // Busca a liga no cache ou cria se não existir
@@ -116,11 +115,6 @@ class RequestController extends Controller {
                         } else {
                             reqPendente.destroy();
                         }
-                        endTime = Date.now();
-                        duration = endTime - startTime;
-                    }
-                    if (duration > ((process.env.TEMPO_EXECUCAO || 1800000) * 0.9)) {
-                        logTo(`Exedido tempo de execução. Tempo Maximo: ${formatMilliseconds((process.env.TEMPO_EXECUCAO || 1800000))}.. tempo em execução ${formatMilliseconds(duration)}..`);
                     }
                 } else {
                     logTo(`Erro ao requisitar página: ${page}`);

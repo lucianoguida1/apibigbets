@@ -16,6 +16,9 @@ const tipoapostaServices = new TipoapostaServices();
 const golServices = new GolServices();
 const timetemporadaServices = new TimestemporadaServices();
 
+const formatMilliseconds = require('../utils/formatMilliseconds.js');
+
+
 class JogoServices extends Services {
     constructor() {
         super('Jogo');
@@ -65,7 +68,7 @@ class JogoServices extends Services {
                 console.log('Results:', results);
             }
         }
-        
+
         let regraV = regra.regravalidacoe_id;
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
@@ -232,6 +235,13 @@ class JogoServices extends Services {
             const todosTimes = await timeServices.pegaTodosOsRegistros();
             const todasLigas = await ligaServices.pegaTodosOsRegistros();
             const todasTemporadas = await temporadaServices.pegaTodosOsRegistros();
+            const jogos = await super.pegaTodosOsRegistros({
+                where: {
+                    createdAt: {
+                        [Op.gte]: new Date(new Date() - 3 * 24 * 60 * 60 * 1000) // Últimos 3 dias
+                    }
+                }
+            });
 
             const jogosParaCriar = [];
             let jogosInseridos = [];
@@ -253,14 +263,7 @@ class JogoServices extends Services {
                     || await temporadaServices.pegaTemporada(e.league, liga);
 
                 // Busca o jogo no banco de dados
-                let jogo = await super.pegaUmRegistro({
-                    where: {
-                        'casa_id': casa.id,
-                        'fora_id': fora.id,
-                        'id_sports': e.fixture.id,
-                    },
-                    paranoid: false
-                });
+                let jogo = jogos.find(j => j.id_sports === e.fixture.id && j.casa_id === casa.id && j.fora_id === fora.id);
 
                 if (!jogo) {
                     jogosParaCriar.push({
@@ -279,9 +282,8 @@ class JogoServices extends Services {
                     jogo.gols_fora = e.goals.away;
                     jogo.status = e.fixture.status.long;
                     jogo.datahora = e.fixture.date,
-                        jogo.data = e.fixture.date.split('T')[0],
-                        await golServices.adicionaGols(e.score, jogo);
-
+                    jogo.data = e.fixture.date.split('T')[0],
+                    await golServices.adicionaGols(e.score, jogo);
                     jogo.save();
                 }
             }
@@ -296,6 +298,7 @@ class JogoServices extends Services {
                 await golServices.adicionaGols(e.score, jogo);
                 await timetemporadaServices.pegaTimeNaTemporada(jogo);
             }
+
         } catch (error) {
             logTo(error.message);
         }
