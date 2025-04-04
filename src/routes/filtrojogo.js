@@ -12,6 +12,7 @@ const router = Router();
  */
 
 router.post('/filtrojogo', (req, res) => filtrojogoController.createFiltroJogo(req, res));
+router.post('/testefiltrojogo', (req, res) => filtrojogoController.testFiltroJogo(req, res));
 router.get('/filtrojogo', (req, res) => filtrojogoController.getFiltrosJogos(req, res));
 
 
