@@ -73,8 +73,9 @@ class JogoServices extends Services {
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
 
-        const sql = `
+        console.log('regraV', filtroTime)
 
+        const sql = `
         select distinct j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
         o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
@@ -87,20 +88,20 @@ class JogoServices extends Services {
         inner join odds o on o.jogo_id = j.id
         ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
         ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
-        ${filtroTime && filtroTime.ambos_times ? `
+        ${filtroTime && filtroTime.casa && filtroTime.fora ? `
         ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj.data::DATE)
                                             and ((j.casa_id = fj.time_id )
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}
-        ${regra.filtrojogo_id ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
+        ${regra.filtrojogo_id && filtroTime.fora ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj2.data::DATE)
                                             and ((j.fora_id = fj2.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}` : `
-        ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
+        ${regra.filtrojogo_id && filtroTime.casa ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj.data::DATE)
-                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
+                                            and ((j.fora_id = fj.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}`}
         inner join tipoapostas tp on tp.id = o.tipoaposta_id
