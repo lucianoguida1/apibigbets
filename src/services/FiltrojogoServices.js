@@ -11,6 +11,7 @@ class FiltrojogoServices extends Services {
             `select fj.id,fj.nome,fj.casa,fj.fora,count(r.id) as total_regras,e.id as estrategia_id,e.nome as nome_estrategia,e.lucro_total,e.taxaacerto from filtrojogos fj
             left join regras r on r.filtrojogo_id = fj.id
             left join estrategias e on e.id = r.estrategia_id
+            where fj."deletedAt" is null
             group by fj.id,fj.nome,fj.casa,fj.fora,e.nome,e.lucro_total,e.taxaacerto,e.id
             ${opitions.limit ? `LIMIT ${opitions.limit}` : ''}
             ${opitions.offset ? `OFFSET ${opitions.offset}` : ''}`,
@@ -53,9 +54,8 @@ class FiltrojogoServices extends Services {
             throw new Error('O filtro jogo não pode ser excluído porque está associado a uma ou mais regras.');
         }
 
-        const result = await Filtrojogo.destroy({
-            where: { id }
-        });
+        const result = await super.excluiRegistro(id);
+        console.log('associatedRules', result)
         return result;
     }
 }
