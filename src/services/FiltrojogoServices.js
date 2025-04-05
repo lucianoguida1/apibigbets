@@ -43,5 +43,20 @@ class FiltrojogoServices extends Services {
 
         return Object.values(groupedResult);
     }
+
+    async deleteFiltroJogo(id) {
+        const associatedRules = await Regra.count({
+            where: { filtrojogo_id: id }
+        });
+
+        if (associatedRules > 0) {
+            throw new Error('O filtro jogo não pode ser excluído porque está associado a uma ou mais regras.');
+        }
+
+        const result = await Filtrojogo.destroy({
+            where: { id }
+        });
+        return result;
+    }
 }
 module.exports = FiltrojogoServices;
