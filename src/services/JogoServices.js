@@ -73,8 +73,6 @@ class JogoServices extends Services {
         let regraV1 = regra.regravalidacoe2_id;
         let regraV2 = regra.regravalidacoe3_id;
 
-        console.log('regraV', filtroTime)
-
         const sql = `
         select distinct j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
         j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
@@ -91,15 +89,15 @@ class JogoServices extends Services {
         ${filtroTime && filtroTime.casa && filtroTime.fora ? `
         ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj.data::DATE)
-                                            and ((j.casa_id = fj.time_id )
+                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}
-        ${regra.filtrojogo_id && filtroTime.fora ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
+        ${regra.filtrojogo_id && filtroTime.fora && !filtroTime.casa ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj2.data::DATE)
                                             and ((j.fora_id = fj2.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                             ` : ``}` : `
-        ${regra.filtrojogo_id && filtroTime.casa ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
+        ${regra.filtrojogo_id && filtroTime.casa && !filtroTime.fora  ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
                                             and (j.data::DATE) = (fj.data::DATE)
                                             and ((j.fora_id = fj.time_id)
                                             ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
