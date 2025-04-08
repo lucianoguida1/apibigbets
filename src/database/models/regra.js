@@ -18,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       //Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
       Regra.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id', as: 'estrategia' });
       Regra.belongsTo(models.Filtrojogo, { foreignKey: 'filtrojogo_id' });
+      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjcasa_id' });
+      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjfora_id' });
     }
   }
   Regra.init({
@@ -37,6 +39,8 @@ module.exports = (sequelize, DataTypes) => {
     oddmax: DataTypes.NUMBER,
     multipla: DataTypes.NUMBER,
     filtrojogo_id: DataTypes.NUMBER,
+    fjcasa_id: DataTypes.NUMBER,
+    fjfora_id: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Regra',

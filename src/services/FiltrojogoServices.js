@@ -12,6 +12,9 @@ class FiltrojogoServices extends Services {
             left join regras r on r.filtrojogo_id = fj.id
             left join estrategias e on e.id = r.estrategia_id
             where fj."deletedAt" is null
+            ${opitions.geral ? `and (casa = true and fora = true)`:``}
+            ${opitions.casa ? `and (casa = true and fora = false)`:``}
+            ${opitions.fora ? `and (casa = false and fora = true)`:``}
             group by fj.id,fj.nome,fj.casa,fj.fora,e.nome,e.lucro_total,e.taxaacerto,e.id
             ${opitions.limit ? `LIMIT ${opitions.limit}` : ''}
             ${opitions.offset ? `OFFSET ${opitions.offset}` : ''}`,

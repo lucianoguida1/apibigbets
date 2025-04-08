@@ -43,103 +43,146 @@ class JogoServices extends Services {
     }
 
     async filtrarJogosPorRegra(regra, jogosPendente = false) {
-        const convertStringToArray = (stringValue) => {
-            return stringValue ? stringValue.split(',').map(Number) : [];
-        };
-        let filtroTime = null;
-        if (regra.filtrojogo_id) {
-            filtroTime = await Filtrojogo.findOne({
-                where: { id: regra.filtrojogo_id }
-            });
-
-            if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
-                const endDate = new Date();
-                endDate.setDate(endDate.getDate() + 1);
-                const formattedDate = endDate.toISOString().split('T')[0];
-
-                // Certifique-se de que filtroTime.sql está sendo usado corretamente
-                let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
-                sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
-
-                const results = await sequelize.query(sqlF, {
-                    type: sequelize.QueryTypes.SELECT,
+        try {
+            const convertStringToArray = (stringValue) => {
+                return stringValue ? stringValue.split(',').map(Number) : [];
+            };
+            let filtroTime = null;
+            if (regra.filtrojogo_id) {
+                filtroTime = await Filtrojogo.findOne({
+                    where: { id: regra.filtrojogo_id }
                 });
 
-                console.log('Results:', results);
+                if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + 1);
+                    const formattedDate = endDate.toISOString().split('T')[0];
+
+                    // Certifique-se de que filtroTime.sql está sendo usado corretamente
+                    let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
+                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
+
+                    const results = await sequelize.query(sqlF, {
+                        type: sequelize.QueryTypes.SELECT,
+                    });
+
+                }
             }
-        }
 
-        let regraV = regra.regravalidacoe_id;
-        let regraV1 = regra.regravalidacoe2_id;
-        let regraV2 = regra.regravalidacoe3_id;
+            let fjcasa = null;
+            if (regra.fjcasa_id) {
+                fjcasa = await Filtrojogo.findOne({
+                    where: { id: regra.fjcasa_id }
+                });
 
-        const sql = `
-        select distinct j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
-        j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
-        o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
-        from jogos j
-        inner join times casa on j.casa_id = casa.id
-        inner join times fora on j.fora_id = fora.id
-        inner join temporadas t on t.id = j.temporada_id
-        inner join ligas l on l.id = t.liga_id
-        inner join pais p on p.id = l.pai_id
-        inner join odds o on o.jogo_id = j.id
-        ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
-        ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
-        ${filtroTime && filtroTime.casa && filtroTime.fora ? `
-        ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
-                                            and (j.data::DATE) = (fj.data::DATE)
-                                            and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
-                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                            ` : ``}
-        ${regra.filtrojogo_id && filtroTime.fora && !filtroTime.casa ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.filtrojogo_id}
-                                            and (j.data::DATE) = (fj2.data::DATE)
-                                            and ((j.fora_id = fj2.time_id)
-                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                            ` : ``}` : `
-        ${regra.filtrojogo_id && filtroTime.casa && !filtroTime.fora  ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
-                                            and (j.data::DATE) = (fj.data::DATE)
-                                            and ((j.fora_id = fj.time_id)
-                                            ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                            ` : ``}`}
-        inner join tipoapostas tp on tp.id = o.tipoaposta_id
-        where j."deletedAt" is null
-        ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
-        ${regraV > 9999990 ? `
-            and (
-                case
-                    when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 1
-                    when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 3
-                    when ${regraV} = 9999992 then o.regra_id = 2
-                    when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 3
-                    when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 1
-                    when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 124
-                    when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 126
-                    when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 126
-                    when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 124
-                    else o.regra_id = ${regraV}
-                end
-            )
-            ` : `and o.regra_id = ${regraV}`}
-        ${!regra.filtrojogo_id && regra.time_id ? `and  (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id}))` : ''}
-        ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
-        ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
-        and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
-        ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
-        ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
-        ORDER BY j.id ASC
-        LIMIT 3500;`;
+                if (fjcasa && fjcasa.sql.includes('@data') && jogosPendente) {
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + 1);
+                    const formattedDate = endDate.toISOString().split('T')[0];
 
-        console.log('sql', sql)
-        let results = [];
-        try {
-            results = await sequelize.query(sql, {
-                type: sequelize.QueryTypes.SELECT,
-            });
+                    // Certifique-se de que fjcasa.sql está sendo usado corretamente
+                    let sqlF = fjcasa.sql.replace(/@data/g, `'${formattedDate}'`);
+                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${fjcasa.id}'`);
+
+                    const results = await sequelize.query(sqlF, {
+                        type: sequelize.QueryTypes.SELECT,
+                    });
+                }
+            }
+
+            let fjfora = null;
+            if (regra.fjfora_id) {
+                fjfora = await Filtrojogo.findOne({
+                    where: { id: regra.fjfora_id }
+                });
+
+                if (fjfora && fjfora.sql.includes('@data') && jogosPendente) {
+                    const endDate = new Date();
+                    endDate.setDate(endDate.getDate() + 1);
+                    const formattedDate = endDate.toISOString().split('T')[0];
+
+                    // Certifique-se de que fjfora.sql está sendo usado corretamente
+                    let sqlF = fjfora.sql.replace(/@data/g, `'${formattedDate}'`);
+                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${fjfora.id}'`);
+
+                    const results = await sequelize.query(sqlF, {
+                        type: sequelize.QueryTypes.SELECT,
+                    });
+                }
+            }
+
+            let regraV = regra.regravalidacoe_id;
+            let regraV1 = regra.regravalidacoe2_id;
+            let regraV2 = regra.regravalidacoe3_id;
+
+            const sql = `
+                select distinct j.id,casa.nome as casa,fora.nome as fora,concat(j.gols_casa,'-',j.gols_fora) as placar,
+                j.data,j.datahora,t.ano as temporada,l.nome as liga,p.nome as pais,COALESCE(tp.nome,tp.name) as tipoAposta,
+                o.nome,o.id as odd_id,o.odd,o.status as statusodd,${regra.id} as regra_id
+                from jogos j
+                inner join times casa on j.casa_id = casa.id
+                inner join times fora on j.fora_id = fora.id
+                inner join temporadas t on t.id = j.temporada_id
+                inner join ligas l on l.id = t.liga_id
+                inner join pais p on p.id = l.pai_id
+                inner join odds o on o.jogo_id = j.id
+                ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
+                ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
+
+                ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
+                                                    and (j.data::DATE) = (fj.data::DATE)
+                                                    and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
+                                                    ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                                    ` : ``}
+                ${regra.fjcasa_id && fjcasa.casa && !fjcasa.fora ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.fjcasa_id}
+                                                    and (j.data::DATE) = (fj2.data::DATE)
+                                                    and ((j.casa_id = fj2.time_id)
+                                                    ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                                    `: ``}
+                ${regra.fjfora_id && fjfora.fora && !fjfora.casa ? `inner join filtrojogodata fj3 on fj3.filtrojogo_id = ${regra.fjfora_id}
+                                                    and (j.data::DATE) = (fj3.data::DATE)
+                                                    and ((j.fora_id = fj3.time_id)
+                                                    ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
+                                                    ` : ``}
+                inner join tipoapostas tp on tp.id = o.tipoaposta_id
+                where j."deletedAt" is null
+                ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
+                ${regraV > 9999990 ? `
+                    and (
+                        case
+                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999992 then o.regra_id = 2
+                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 124
+                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 124
+                            else o.regra_id = ${regraV}
+                        end
+                    )
+                    ` : `and o.regra_id = ${regraV}`}
+                ${!regra.filtrojogo_id && !regra.fjcasa_id && !regra.fjfora_id  && regra.time_id ? `and  (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id}))` : ''}
+                ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
+                ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
+                and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
+                ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
+                ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
+                ORDER BY j.id ASC
+                LIMIT 3500;`;
+            let results = [];
+            try {
+                results = await sequelize.query(sql, {
+                    type: sequelize.QueryTypes.SELECT,
+                });
+            } catch (error) {
+                console.log(error);
+            }
+            return results;
         } catch (error) {
-            console.log(error);
+            console.error(error.message);
         }
-        return results;
     }
 
     async jogoEstruturadoIds(ids, where = {}) {
@@ -281,8 +324,8 @@ class JogoServices extends Services {
                     jogo.gols_fora = e.goals.away;
                     jogo.status = e.fixture.status.long;
                     jogo.datahora = e.fixture.date,
-                    jogo.data = e.fixture.date.split('T')[0],
-                    await golServices.adicionaGols(e.score, jogo);
+                        jogo.data = e.fixture.date.split('T')[0],
+                        await golServices.adicionaGols(e.score, jogo);
                     jogo.save();
                 }
             }

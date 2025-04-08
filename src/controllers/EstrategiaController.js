@@ -42,6 +42,8 @@ const formSchema = z.object({
     liga: z.array(optionSchema),
     pais: z.array(optionSchema),
     filtroTime: z.string(), filtroTime2: z.string(), filtroTime3: z.string(),
+    fjcasa: z.string(), fjcasa2: z.string(), fjcasa3: z.string(),
+    fjfora: z.string(), fjfora2: z.string(), fjfora3: z.string(),
     times: z.array(optionSchema), times2: z.array(optionSchema), times3: z.array(optionSchema),
     aposta: z.string({ required_error: "Selecione uma aposta." }).min(1, { message: "Selecione pelo menos uma aposta." }),
     oddmin: z.preprocess((val) => Number(val), z.number().positive()
@@ -370,6 +372,8 @@ class EstrategiaController extends Controller {
             //oddmin3: req.body.oddMin3 ? parseFloat(req.body.oddMin3) : null,
             //oddmax3: req.body.oddMax3 ? parseFloat(req.body.oddMax3) : null,
             filtrojogo_id: req.body.filtroTime && req.body.filtroTime != "Todos" ? req.body.filtroTime : null,
+            fjcasa_id: req.body.fjcasa && req.body.fjcasa != "Todos" ? req.body.fjcasa : null,
+            fjfora_id: req.body.fjfora && req.body.fjfora != "Todos" ? req.body.fjfora : null,
         }));
 
         return ({ estrategia, descricao, regras: regrasCriar });
@@ -742,8 +746,10 @@ class EstrategiaController extends Controller {
                     label: time.nome
                 });
             }
-            const Filtrojogo = await filtro.getFiltrosJogos();
-
+            const Filtrojogogeral = await filtro.getFiltrosJogos({ geral: true });
+            const Filtrojogocasa = await filtro.getFiltrosJogos({ casa: true });
+            const Filtrojogofora = await filtro.getFiltrosJogos({ fora: true });
+            
             return res.status(200).json({
                 "status": "success",
                 "message": "Dados retornados com sucesso!",
@@ -754,10 +760,13 @@ class EstrategiaController extends Controller {
                     times,
                     paises,
                     ligas,
-                    Filtrojogo,
+                    Filtrojogogeral,
+                    Filtrojogocasa,
+                    Filtrojogofora,
                     regras2
                 }
             });
+
         } catch (error) {
             console.error(error)
             return res.status(500).json({

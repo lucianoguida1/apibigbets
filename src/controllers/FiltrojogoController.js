@@ -16,14 +16,14 @@ const formSchema = z
             .min(1, {
                 message: "O valor mínimo deve ser pelo menos 1.",
             })
-            .max(10, {
+            .max(100, {
                 message: "O valor máximo não deve ser maior que 10.",
             })).optional(),
         maximoJogos: z.preprocess((val) => Number(val), z.number().positive()
             .min(1, {
                 message: "O valor mínimo deve ser pelo menos 1.",
             })
-            .max(10, {
+            .max(100, {
                 message: "O valor máximo não deve ser maior que 10.",
             })).optional(),
         where: z.string().min(5, { message: "O campo 'Quando' deve ser preenchido." }),
