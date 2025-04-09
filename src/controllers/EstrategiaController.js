@@ -399,6 +399,7 @@ class EstrategiaController extends Controller {
 
             try {
                 const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
+                console.log('bilhetes', bilhetes)
                 estrategiaValida.bilhetes = bilhetes;
                 estrategiaValida.jogos = jogos;
             } catch (error) {

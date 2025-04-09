@@ -175,7 +175,7 @@ class FiltrojogoController extends Controller {
                 type: sequelize.QueryTypes.SELECT
             });
 
-            const filtrojogo = await filtrojogos.criaRegistro({ nome, sql, casa, fora });
+            const filtrojogo = await filtrojogos.criaRegistro({ nome, sql, casa, fora, minimoJogos, maximoJogos, where });
 
             if (!filtrojogo) {
                 return res.status(400).json({

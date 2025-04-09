@@ -18,7 +18,10 @@ module.exports = (sequelize, DataTypes) => {
     nome: DataTypes.STRING,
     sql: DataTypes.TEXT,
     casa: DataTypes.BOOLEAN,
-    fora: DataTypes.BOOLEAN
+    fora: DataTypes.BOOLEAN,
+    minimoJogos: DataTypes.INTEGER,
+    maximoJogos: DataTypes.INTEGER,
+    where: DataTypes.TEXT,
   }, {
     sequelize,
     modelName: 'Filtrojogo',

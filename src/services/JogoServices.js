@@ -150,20 +150,20 @@ class JogoServices extends Services {
                 ${regraV > 9999990 ? `
                     and (
                         case
-                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 124
+                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 124
                             when ${regraV} = 9999992 then o.regra_id = 2
-                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 3
-                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 124
-                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.casa_id = fj.time_id` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id ? `or j.fora_id = fj.time_id` : ``}) then o.regra_id = 124
                             else o.regra_id = ${regraV}
                         end
                     )
                     ` : `and o.regra_id = ${regraV}`}
-                ${!regra.filtrojogo_id && !regra.fjcasa_id && !regra.fjfora_id  && regra.time_id ? `and  (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id}))` : ''}
+                ${!regra.filtrojogo_id && !regra.fjcasa_id && !regra.fjfora_id && regra.time_id ? `and  (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id}))` : ''}
                 ${regra.pai_id ? `and (p.id in (${convertStringToArray(regra.pai_id)}))` : ''}
                 ${regra.liga_id ? `and (l.id in (${convertStringToArray(regra.liga_id)}))` : ''}
                 and (o.odd between ${regra.oddmin || 0} and ${regra.oddmax || Number.MAX_VALUE})
@@ -171,6 +171,9 @@ class JogoServices extends Services {
                 ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
                 ORDER BY j.id ASC
                 LIMIT 3500;`;
+
+            //console.log(sql);
+
             let results = [];
             try {
                 results = await sequelize.query(sql, {
