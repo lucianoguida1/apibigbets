@@ -150,14 +150,14 @@ class JogoServices extends Services {
                 ${regraV > 9999990 ? `
                     and (
                         case
-                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 3
-                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 3
-                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 124
-                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id`:``}` : ``}) then o.regra_id = 124
+                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 1
+                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 124
+                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 124
                             when ${regraV} = 9999992 then o.regra_id = 2
                             else o.regra_id = ${regraV}
                         end
@@ -346,6 +346,48 @@ class JogoServices extends Services {
 
         } catch (error) {
             logTo(error.message);
+        }
+    }
+
+    async jogosSemPlacar() {
+        try {
+            const jogos = await Jogo.findAndCountAll({
+                where: {
+                    gols_casa: { [Op.eq]: null },
+                    data: { [Op.lt]: new Date() },
+                },
+                include: [
+                    {
+                        model: Time,
+                        as: 'casa',
+                        required: true,
+                        attributes: ['id', 'nome', 'logo'],
+                    },
+                    {
+                        model: Time,
+                        as: 'fora',
+                        required: true,
+                        attributes: ['id', 'nome', 'logo'],
+                    },
+                    {
+                        model: Temporada,
+                        attributes: ['id', 'ano'],
+                        include: [
+                            {
+                                model: Liga,
+                                attributes: ['id', 'nome'],
+                            }
+                        ]
+                    },
+                ],
+                order: [['data', 'DESC']],
+                limit: 100,
+            });
+
+            return jogos;
+        } catch (error) {
+            console.error(error.message);
+            throw error;
         }
     }
 }
