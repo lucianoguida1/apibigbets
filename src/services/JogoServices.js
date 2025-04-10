@@ -381,7 +381,7 @@ class JogoServices extends Services {
                     },
                 ],
                 order: [['data', 'DESC']],
-                limit: 100,
+                limit: 50,
             });
 
             return jogos;
