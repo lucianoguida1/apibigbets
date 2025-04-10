@@ -171,16 +171,36 @@ class BilheteServices extends Services {
             }
 
             if (salvaNoBanco) {
-                //salvar no banco de forma lenta
                 const bilhetes = [];
+
                 for (const bilhete of bilhetesCriar) {
+                    const existe = await sequelize.query(
+                        `SELECT b.id FROM bilhetes b
+                            JOIN bilhetesodds bo ON bo.bilhete_id = b.id
+                            WHERE b.estrategia_id = :estrategia_id AND bo.odd_id = :odd_id
+                            LIMIT 1`,
+                        {
+                            replacements: {
+                                estrategia_id: bilhete.estrategia_id,
+                                odd_id: bilhete.bilhetesodd[0].odd_id,
+                            },
+                            type: sequelize.QueryTypes.SELECT,
+                        }
+                    );
+
+                    // Se já existe, pula para o próximo
+                    if (existe.length > 0) continue;
+
+                    // Caso contrário, cria normalmente
                     const bilheteSalvo = await this.criaRegistro(bilhete);
                     bilhetes.push(bilheteSalvo);
+
                     for (const bilheteOdd of bilhete.bilhetesodd) {
                         bilheteOdd.bilhete_id = bilheteSalvo.id;
                         await Bilhetesodd.create(bilheteOdd);
                     }
                 }
+
                 return bilhetes;
             }
 

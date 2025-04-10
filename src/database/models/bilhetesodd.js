@@ -22,7 +22,12 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Bilhetesodd',
     tableName: 'bilhetesodds',
-    paranoid: true
+    paranoid: true,
+    uniqueKeys: {
+      unique_bilhete_odd: {
+        fields: ['bilhete_id', 'odd_id'] // Garante unicidade entre bilhete_id e odd_id
+      }
+    }
   });
   return Bilhetesodd;
 };

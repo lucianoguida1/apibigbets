@@ -38,6 +38,14 @@ const tarefas = {
         }
     },
 
+    async montabilhete() {
+        try {
+            await serviceBase.executarEstrategias();
+        } catch (error) {
+            console.error('Erro na tarefa de montar bilhete:', error.message);
+        }
+    },
+
     async tarefa3Horas() {
         try {
             await request.adicionaJogos(toDay());

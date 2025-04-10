@@ -146,7 +146,7 @@ class JogoServices extends Services {
                                                     ` : ``}
                 inner join tipoapostas tp on tp.id = o.tipoaposta_id
                 where j."deletedAt" is null
-                ${jogosPendente ? `and j.gols_casa is null` : `and j.gols_casa is not null`}
+                ${jogosPendente ? `and j.gols_casa is null AND j.data::DATE >= CURRENT_DATE` : `and j.gols_casa is not null`}
                 ${regraV > 9999990 ? `
                     and (
                         case
