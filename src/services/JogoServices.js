@@ -7,7 +7,7 @@ const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
-const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Filtrojogo, sequelize } = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Filtrojogo, Bilhete, sequelize } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -354,7 +354,7 @@ class JogoServices extends Services {
             const jogos = await Jogo.findAndCountAll({
                 where: {
                     gols_casa: { [Op.eq]: null },
-                    data: { [Op.lt]: new Date() },
+                    datahora: { [Op.lt]: new Date() },
                 },
                 include: [
                     {
@@ -379,6 +379,18 @@ class JogoServices extends Services {
                             }
                         ]
                     },
+                    {
+                        model: Odd,
+                        required: true,
+                        attributes: [],
+                        include: [
+                            {
+                                model: Bilhete,
+                                required: true,
+                                attributes: [],
+                            }
+                        ],
+                    }
                 ],
                 order: [['data', 'DESC']],
                 limit: 50,
@@ -387,6 +399,33 @@ class JogoServices extends Services {
             return jogos;
         } catch (error) {
             console.error(error.message);
+            throw error;
+        }
+    }
+
+    async atualizarPlacar(id, { gols_casa, gols_fora }) {
+        try {
+            // Busca o jogo pelo ID
+            const jogo = await Jogo.findByPk(id);
+
+            if (!jogo) {
+                throw new Error(`Jogo com ID ${id} não encontrado.`);
+            }
+
+            // Atualiza os gols da casa e fora
+            jogo.gols_casa = gols_casa;
+            jogo.gols_fora = gols_fora;
+
+            // Salva as alterações no banco de dados
+            await jogo.save();
+
+            // Atualiza os gols relacionados ao jogo
+            await golServices.adicionaGols({ gols_casa, gols_fora }, jogo);
+
+            console.log('jogo', jogo)
+            return jogo;
+        } catch (error) {
+            console.error(`Erro ao atualizar o placar do jogo com ID ${id}:`, error.message);
             throw error;
         }
     }
