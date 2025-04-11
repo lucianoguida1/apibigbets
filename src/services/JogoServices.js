@@ -189,6 +189,7 @@ class JogoServices extends Services {
     }
 
     async jogoEstruturadoIds(ids, where = {}) {
+
         const jogos = await Jogo.findAll({
             where: {
                 ...where,
@@ -217,6 +218,7 @@ class JogoServices extends Services {
                 }
             ]
         });
+
         return jogos;
     }
 

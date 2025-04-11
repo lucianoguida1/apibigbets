@@ -38,14 +38,6 @@ const tarefas = {
         }
     },
 
-    async montabilhete() {
-        try {
-            await serviceBase.executarEstrategias();
-        } catch (error) {
-            console.error('Erro na tarefa de montar bilhete:', error.message);
-        }
-    },
-
     async tarefa3Horas() {
         try {
             await request.adicionaJogos(toDay());
@@ -72,6 +64,23 @@ const tarefas = {
         }
         catch (error) {
             console.error('Erro na tarefa de teste:', error.message);
+        }
+    },
+
+    async montabilhete() {
+        try {
+            await serviceBase.executarEstrategias();
+        } catch (error) {
+            console.error('Erro na tarefa de montar bilhete:', error.message);
+        }
+    },
+
+    async validaBilhete() {
+        try {
+            await serviceBase.validaRegras();
+            await serviceBase.validaBilhetes();
+        } catch (error) {
+            console.error('Erro na tarefa de validar bilhete:', error.message);
         }
     }
 };

@@ -3,13 +3,14 @@ const Controller = require('./Controller.js');
 const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const JogosServices = require('../services/JogoServices.js');
 const logTo = require('../utils/logTo.js');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const { Odd, Bilhete } = require('../database/models');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const RequestServices = require('../services/RequestServices.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
+const OddServices = require('../services/OddServices.js');
 const toDay = require('../utils/toDay.js');
 const PaiServices = require('../services/PaiServices.js');
 const { TELEGRAM_BOT_TOKEN } = process.env;
@@ -21,6 +22,7 @@ const requestServices = new RequestServices();
 const bilheteServices = new BilheteServices();
 const estrategiaServices = new EstrategiaServices();
 const paiServices = new PaiServices();
+const oddSevices = new OddServices();
 
 class ServicesBaseController extends Controller {
     async statusBasico(req, res) {
@@ -77,14 +79,16 @@ class ServicesBaseController extends Controller {
             if (regras.length <= 0) throw new Error('Sem regras para validar!');
 
             for (const regra of regras) {
-                const odds = await regra.getOdds({
+                const odds = await oddSevices.pegaTodosOsRegistros({
                     where: {
+                        regra_id: regra.id,
                         [Op.or]: [
+                            { status: null },
                             { createdAt: { [Op.between]: [toDay(-1), toDay()] } },
-                            { status: null }
                         ]
                     }
                 });
+
                 const jogoIds = odds.map(odd => odd.jogo_id);
                 const jogos = await jogoServices.jogoEstruturadoIds(jogoIds, { gols_casa: { [Op.ne]: null } });
 
@@ -125,9 +129,7 @@ class ServicesBaseController extends Controller {
             let totalAtualizado = 0;
             const bilhetes = await bilheteServices.pegaTodosOsRegistros({
                 where: {
-                    createdAt: {
-                        [Op.gte]: toDay(-1)
-                    }
+                    status_bilhete: null,
                 },
                 include: [
                     {
