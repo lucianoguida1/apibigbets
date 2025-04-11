@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     fulltime: DataTypes.STRING,
     extratime: DataTypes.STRING,
     penalty: DataTypes.STRING,
+    adiado: DataTypes.BOOLEAN,
   }, {
     sequelize,
     modelName: 'Jogo',

@@ -85,6 +85,39 @@ class JogosController extends Controller {
         }
     }
 
+    async setAdiado(req, res) {
+        try {
+            const { id } = req.body;
+
+            // Verificar se o jogo existe
+            const jogo = await jogoServices.pegaUmRegistroPorId(id); // Método fictício para buscar o jogo pelo ID
+            if (!jogo) {
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Jogo não encontrado",
+                    "errorCode": 404
+                });
+            }
+
+            jogo.adiado = true; // Alterna o status de adiado
+            jogo.status = "adiado"; // Atualiza o status do jogo para "adiado"
+            await jogo.save(); // Salva as alterações no banco de dados
+
+            return res.status(200).json({
+                "status": "success",
+                "message": "Status de adiado atualizado com sucesso!",
+                "statusCode": 200
+            });
+        } catch (error) {
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao processar a solicitação",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    }
+
 }
 
 module.exports = JogosController;

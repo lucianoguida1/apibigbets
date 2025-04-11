@@ -355,6 +355,7 @@ class JogoServices extends Services {
                 where: {
                     gols_casa: { [Op.eq]: null },
                     datahora: { [Op.lt]: new Date() },
+                    adiado: { [Op.eq]: false },
                 },
                 include: [
                     {
