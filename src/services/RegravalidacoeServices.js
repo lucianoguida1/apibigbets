@@ -32,7 +32,11 @@ class RegravalidacoeServices extends Services {
                 model: Tipoaposta,
                 required: true,
                 attributes: ['nome','name']
-            }
+            },
+            order: [
+                [{ model: Tipoaposta }, 'nome', 'ASC'],
+                ['name', 'ASC']
+            ]
         });
     }
 

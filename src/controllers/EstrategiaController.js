@@ -399,7 +399,7 @@ class EstrategiaController extends Controller {
 
             try {
                 const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
-                
+
                 estrategiaValida.bilhetes = bilhetes;
                 estrategiaValida.jogos = jogos;
             } catch (error) {
@@ -713,10 +713,11 @@ class EstrategiaController extends Controller {
         try {
             const regras = [];
             const { count, rows } = await regravalidacoeServices.getRegrasValidacao();
+
             for (const regra of rows) {
                 regras.push({
                     value: regra.id.toString(),
-                    label: regra.nome
+                    label: `${regra.Tipoapostum.nome ? regra.Tipoapostum.nome : regra.Tipoapostum.name} - ${regra.nome}`
                 });
             }
             const regras2 = [
@@ -750,7 +751,7 @@ class EstrategiaController extends Controller {
             const Filtrojogogeral = await filtro.getFiltrosJogos({ geral: true });
             const Filtrojogocasa = await filtro.getFiltrosJogos({ casa: true });
             const Filtrojogofora = await filtro.getFiltrosJogos({ fora: true });
-            
+
             return res.status(200).json({
                 "status": "success",
                 "message": "Dados retornados com sucesso!",
