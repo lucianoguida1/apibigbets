@@ -129,7 +129,10 @@ class ServicesBaseController extends Controller {
             let totalAtualizado = 0;
             const bilhetes = await bilheteServices.pegaTodosOsRegistros({
                 where: {
-                    status_bilhete: null,
+                    [Op.or]: [
+                        { status_bilhete: null },
+                        { createdAt: { [Op.between]: [toDay(-2), toDay()] } },
+                    ]
                 },
                 include: [
                     {

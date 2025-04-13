@@ -13,6 +13,9 @@ module.exports = (bilhetes) => {
     const contagemUltimos7Dias = {};
 
     for (let bilhete of bilhetes) {
+        if (bilhete.status_bilhete == null || bilhete.status_bilhete == undefined) {
+            continue; // Ignora bilhetes sem status            
+        }
         const odd = parseFloat(bilhete.odd);
         apostaReaplicada = saldoReaplicado / 10;
 
