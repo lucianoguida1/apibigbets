@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const Services = require('./Services.js');
-const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, Bilhete, Jogo, Odd } = require('../database/models');
+const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Filtrojogo, Time, Bilhete, Jogo, Odd } = require('../database/models');
 
 
 class EstrategiaServices extends Services {
@@ -42,21 +42,19 @@ class EstrategiaServices extends Services {
             attributes: {
                 exclude: ["updatedAt", "createdAt", "deletedAt"]
             },
-            include: {
+            include: [{
                 model: Regra,
                 required: true,
                 attributes: {
-                    exclude: ["updatedAt", "createdAt", "deletedAt", "time_id", "regravalidacoe_id", "estrategia_id"]
+                    exclude: ["updatedAt", "createdAt", "deletedAt", "estrategia_id"]
                 },
                 include: [
                     {
                         model: Regravalidacoe,
-                        required: true,
-                        as: 'aposta',
+                        as: 'regra1',
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
-                            required: true,
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     },
@@ -66,7 +64,6 @@ class EstrategiaServices extends Services {
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
-                            required: true,
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     },
@@ -76,12 +73,27 @@ class EstrategiaServices extends Services {
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "tipoaposta_id", "regra"] },
                         include: {
                             model: Tipoaposta,
-                            required: true,
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     },
+                    {
+                        model: Filtrojogo,
+                        as: 'filtroGeral',
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                    },
+                    {
+                        model: Filtrojogo,
+                        as: 'filtroCasa',
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                    },
+                    {
+                        model: Filtrojogo,
+                        as: 'filtroFora',
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                    }
                 ]
             }
+            ],
         });
 
         const estrategia = estrategiaSequelize ? estrategiaSequelize.toJSON() : null;
@@ -109,6 +121,14 @@ class EstrategiaServices extends Services {
                 });
                 regra.Pais = Pais;
                 delete regra.pai_id;
+            }
+            if (regra.time_id) {
+                const Times = await Time.findAll({
+                    where: { id: { [Op.in]: convertStringToArray(regra.time_id) } },
+                    attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
+                });
+                regra.Times = Times;
+                delete regra.time_id;
             }
             regraCompleta.push(regra);
         }
@@ -177,6 +197,8 @@ class EstrategiaServices extends Services {
             estrategia.maior_derrotas_semana = 0;
             estrategia.maior_vitorias_dia = 0;
             estrategia.maior_vitorias_semana = 0;
+            estrategia.sequencia_vitorias = 0; // Initialize to 0
+            estrategia.sequencia_derrotas = 0; // Initialize to 0
 
             let sequenciaAtualVitoria = 0;
             let sequenciaAtualDerrota = 0;

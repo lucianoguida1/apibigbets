@@ -10,16 +10,16 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe_id', as: 'aposta' });
+      Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe_id', as: 'regra1' });
       Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe2_id', as: 'regra2' });
       Regra.belongsTo(models.Regravalidacoe, { foreignKey: 'regravalidacoe3_id', as: 'regra3' });
       //Regra.belongsTo(models.Pai, { foreignKey: 'pai_id' });
       //Regra.belongsTo(models.Liga, { foreignKey: 'liga_id' });
       //Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
       Regra.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id', as: 'estrategia' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'filtrojogo_id' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjcasa_id' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjfora_id' });
+      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'filtrojogo_id', as: 'filtroGeral' });
+      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjcasa_id', as: 'filtroCasa' });
+      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjfora_id', as: 'filtroFora' });
     }
   }
   Regra.init({

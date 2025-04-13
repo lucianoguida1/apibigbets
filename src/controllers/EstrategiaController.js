@@ -571,11 +571,12 @@ class EstrategiaController extends Controller {
 
         try {
 
-            const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+            const estrategia = await estrategiaServices.getEstrategia(Number(id));
 
             if (estrategia.grafico_json == null) {
-                estrategia.grafico_json = bilhetesToGrafico(await estrategia.getBilhetes());
-                await estrategia.save();
+                const ee = await estrategiaServices.pegaUmRegistroPorId(id);
+                ee.grafico_json = bilhetesToGrafico(await ee.getBilhetes());
+                await ee.save();
             }
 
             if (!estrategia) {
@@ -600,7 +601,11 @@ class EstrategiaController extends Controller {
                     "errorCode": 404,
                     "details": `Nenhum bilhete foi encontrado para a estratégia com id: ${id}. Verifique se a estratégia possui bilhetes associados ou se houve algum erro no processamento dos bilhetes.`
                 });
+
             }
+
+            const ret = { ...bilhetes.dataValues };
+            ret.regras = estrategia.Regras;
 
             return res.status(200).json({
                 "status": "success",
@@ -612,9 +617,10 @@ class EstrategiaController extends Controller {
                     "totalItems": bilhetes.length,
                     "totalRegistro": count
                 },
-                data: bilhetes
+                data: ret
             });
         } catch (erro) {
+            console.error(erro)
             return res.status(500).json({
                 "status": "error",
                 "message": "Erro interno ao buscar bilehtes da estrategia",
