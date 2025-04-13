@@ -1514,4 +1514,6 @@ router.get('/topestrategia', (req, res) => estrategiaController.getTopEstrategia
 
 router.get('/dataform', (req, res) => estrategiaController.dataForms(req, res));
 
+router.put('/estrategia/:id', (req, res) => estrategiaController.updateEstrategia(req, res));
+
 module.exports = router;

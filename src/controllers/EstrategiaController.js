@@ -715,6 +715,55 @@ class EstrategiaController extends Controller {
         }
     }
 
+    async updateEstrategia(req, res) {
+        const { id } = req.params;
+        try {
+            const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+
+            const { nome, descricao } = req.body;
+
+            if (!nome || !descricao) {
+                res.status(400).json({
+                    "status": "error",
+                    "message": "Nome e descrição são obrigatórios!",
+                    "errorCode": 400,
+                    "details": "Nome e descrição são obrigatórios!"
+                });
+            }
+
+            if (!estrategia) {
+                res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": `Nenhuma estrategia foi encontrada com esse id: ${id}!`
+                });
+            }
+
+            estrategia.nome = nome;
+            estrategia.descricao = descricao;
+            estrategia.grafico_json = null;
+
+            await estrategia.save();
+
+            res.status(200).json({
+                "status": "success",
+                "message": "Estrategia atualizada com sucesso",
+                "statusCode": 200,
+                "pagination": {},
+                data: estrategia
+            });
+            
+        } catch (error) {
+            res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar estrategia",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    }
+
     async dataForms(req, res) {
         try {
             const regras = [];
