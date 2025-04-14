@@ -1,4 +1,4 @@
-const { Op, Sequelize } = require('sequelize');
+
 const Controller = require('./Controller.js');
 const Filtrojogos = require('../services/FiltrojogoServices.js');
 const { sequelize } = require('../database/models');

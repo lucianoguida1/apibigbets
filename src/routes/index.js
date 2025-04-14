@@ -8,6 +8,7 @@ const liga = require('./liga.js');
 const time = require('./time.js');
 const filtrojogo = require('./filtrojogo.js');
 const jogo = require('./jogo.js');
+const help = require('./help.js');
 
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
@@ -25,6 +26,7 @@ module.exports = app => {
         time,
         filtrojogo,
         jogo,
+        help,
     );
 
     /**
