@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Bilhete',
     tableName: 'bilhetes',
-    //paranoid: true,
+    paranoid: true,
     uniqueKeys: {
       unique_jogo_estrategia: {
         fields: ['jogo_id', 'estrategia_id']

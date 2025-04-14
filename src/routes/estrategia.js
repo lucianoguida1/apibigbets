@@ -1516,4 +1516,6 @@ router.get('/dataform', (req, res) => estrategiaController.dataForms(req, res));
 
 router.put('/estrategia/:id', (req, res) => estrategiaController.updateEstrategia(req, res));
 
+router.delete('/estrategia/:id', (req, res) => estrategiaController.deleteEstrategia(req, res));
+
 module.exports = router;

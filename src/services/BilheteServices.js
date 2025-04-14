@@ -236,12 +236,12 @@ class BilheteServices extends Services {
                                             {
                                                 model: Time,
                                                 as: 'casa',
-                                                attributes: ['id', 'nome', 'logo']
+                                                attributes: ['id', 'nome', 'logo','dados_json']
                                             },
                                             {
                                                 model: Time,
                                                 as: 'fora',
-                                                attributes: ['id', 'nome', 'logo']
+                                                attributes: ['id', 'nome', 'logo','dados_json']
                                             }
                                         ]
                                     }, {

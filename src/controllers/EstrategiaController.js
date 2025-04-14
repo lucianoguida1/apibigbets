@@ -573,12 +573,6 @@ class EstrategiaController extends Controller {
 
             const estrategia = await estrategiaServices.getEstrategia(Number(id));
 
-            if (estrategia.grafico_json == null) {
-                const ee = await estrategiaServices.pegaUmRegistroPorId(id);
-                ee.grafico_json = bilhetesToGrafico(await ee.getBilhetes());
-                await ee.save();
-            }
-
             if (!estrategia) {
                 return res.status(404).json({
                     "status": "error",
@@ -586,6 +580,12 @@ class EstrategiaController extends Controller {
                     "errorCode": 404,
                     "details": "Nenhuma estrategia foi encontrada!"
                 });
+            }
+
+            if (estrategia.grafico_json == null) {
+                const ee = await estrategiaServices.pegaUmRegistroPorId(id);
+                ee.grafico_json = bilhetesToGrafico(await ee.getBilhetes());
+                await ee.save();
             }
 
             const { count, bilhetes } = await bilheteServices.getBilhetes({
@@ -753,11 +753,57 @@ class EstrategiaController extends Controller {
                 "pagination": {},
                 data: estrategia
             });
-            
+
         } catch (error) {
             res.status(500).json({
                 "status": "error",
                 "message": "Erro interno ao buscar estrategia",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    }
+
+    async deleteEstrategia(req, res) {
+        const { id } = req.params;
+        try {
+            const estrategia = await estrategiaServices.pegaUmRegistroPorId(Number(id));
+            const bilhetes = await estrategia.getBilhetes();
+            const regras = await estrategia.getRegras();
+
+            if (bilhetes) {
+                for (const bilhete of bilhetes) {
+                    await bilhete.destroy();
+                }
+            }
+            if (regras) {
+                for (const regra of regras) {
+                    await regra.destroy();
+                }
+            }
+
+            if (!estrategia) {
+                return res.status(404).json({
+                    "status": "error",
+                    "message": "Estrategia não encontrada",
+                    "errorCode": 404,
+                    "details": `Nenhuma estrategia foi encontrada com esse id: ${id}!`
+                });
+            }
+
+            await estrategia.destroy();
+
+            return res.status(200).json({
+                "status": "success",
+                "message": "Estrategia deletada com sucesso",
+                "statusCode": 200,
+                "pagination": {},
+                data: null
+            });
+        } catch (error) {
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao deletar estrategia",
                 "errorCode": 500,
                 "details": error.message
             });
