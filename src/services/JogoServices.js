@@ -5,19 +5,14 @@ const TemporadaServices = require('../services/TemporadaServices.js');
 const TimeServices = require('../services/TimeServices.js');
 const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
-const TipoapostaServices = require('../services/TipoapostaServices.js');
 const logTo = require('../utils/logTo.js');
 const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Filtrojogo, Bilhete, sequelize } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
 const temporadaServices = new TemporadaServices();
-const tipoapostaServices = new TipoapostaServices();
 const golServices = new GolServices();
 const timetemporadaServices = new TimestemporadaServices();
-
-const formatMilliseconds = require('../utils/formatMilliseconds.js');
-
 
 class JogoServices extends Services {
     constructor() {

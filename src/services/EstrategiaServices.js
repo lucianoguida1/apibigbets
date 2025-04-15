@@ -92,7 +92,7 @@ class EstrategiaServices extends Services {
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
                     }
                 ]
-            }
+            },
             ],
         });
 

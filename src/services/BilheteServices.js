@@ -178,15 +178,13 @@ class BilheteServices extends Services {
                         `SELECT b.id FROM bilhetes b
                             JOIN bilhetesodds bo ON bo.bilhete_id = b.id
                             WHERE b.estrategia_id = :estrategia_id AND bo.odd_id = :odd_id
-                            LIMIT 1`,
-                        {
-                            replacements: {
-                                estrategia_id: bilhete.estrategia_id,
-                                odd_id: bilhete.bilhetesodd[0].odd_id,
-                            },
-                            type: sequelize.QueryTypes.SELECT,
-                        }
-                    );
+                            LIMIT 1`, {
+                        replacements: {
+                            estrategia_id: bilhete.estrategia_id,
+                            odd_id: bilhete.bilhetesodd[0].odd_id,
+                        },
+                        type: sequelize.QueryTypes.SELECT,
+                    });
 
                     // Se já existe, pula para o próximo
                     if (existe.length > 0) continue;
@@ -228,6 +226,7 @@ class BilheteServices extends Services {
                                 model: Odd,
                                 required: true,
                                 attributes: ['id', 'odd', 'status', 'nome'],
+                                order: [['id', 'DESC']],
                                 include: [
                                     {
                                         model: Jogo,
@@ -236,12 +235,12 @@ class BilheteServices extends Services {
                                             {
                                                 model: Time,
                                                 as: 'casa',
-                                                attributes: ['id', 'nome', 'logo','dados_json']
+                                                attributes: ['id', 'nome', 'logo', 'dados_json']
                                             },
                                             {
                                                 model: Time,
                                                 as: 'fora',
-                                                attributes: ['id', 'nome', 'logo','dados_json']
+                                                attributes: ['id', 'nome', 'logo', 'dados_json']
                                             }
                                         ]
                                     }, {
