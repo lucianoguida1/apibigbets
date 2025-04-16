@@ -306,6 +306,7 @@ class ServicesBaseController extends Controller {
 
             return ({ mensagem: 'Verificação de grupos concluída' });
         } catch (error) {
+            console.error('Erro ao verificar grupos do bot:', error.message);
             if (error.message) {
                 logTo('Erro ao verificar grupos do bot:', error.message);
             }
