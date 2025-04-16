@@ -295,12 +295,14 @@ class ServicesBaseController extends Controller {
 
             // Atualiza o offset para evitar processar as mesmas atualizações novamente
             if (process.env.NODE_ENV !== 'development') {
-                const lastUpdateId = updates[updates.length - 1].update_id;
-                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ offset: lastUpdateId + 1 })
-                });
+                if (updates.length > 0) {
+                    const lastUpdateId = updates[updates.length - 1].update_id;
+                    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ offset: lastUpdateId + 1 })
+                    });
+                }
             }
 
 
