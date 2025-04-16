@@ -99,7 +99,7 @@ const agendarTarefas = () => {
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */3 * * *', tarefas.tarefa3Horas);
-    cron.schedule('*/5 * * * *', tarefas.tarefa5Minutos);
+    cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
 };
 
 module.exports = { agendarTarefas, tarefas };
