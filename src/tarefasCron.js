@@ -86,6 +86,7 @@ const tarefas = {
 
     async enviaMensagens() {
         try {
+            await serviceBase.verificaGrupoBot();
             await serviceBase.enviaMensagensTelegram();
         } catch (error) {
             console.error('Erro na tarefa de enviar mensagens Telegram:', error.message);
