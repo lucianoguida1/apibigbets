@@ -261,19 +261,46 @@ class ServicesBaseController extends Controller {
 
                             await estrategia.update({ chat_id: grupo.id, link_grupo: groupLinkData.result });
                             logTo(`Atualizado chat_id da estratégia ${estrategia.nome} com o id do grupo ${grupo.id}`);
+                        }
+                    }
+                }
 
-                            // Atualiza o offset para evitar processar as mesmas atualizações novamente
-                            if (process.env.NODE_ENV !== 'development') {
-                                const lastUpdateId = updates[updates.length - 1].update_id;
-                                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ offset: lastUpdateId + 1 })
-                                });
+                // 👉 Verifica se o bot foi removido do grupo
+                if (update.my_chat_member) {
+                    const membro = update.my_chat_member;
+                    const grupo = membro.chat;
+                    const usuario = membro.new_chat_member?.user;
+
+                    if (usuario?.username === 'BigBet_alert_bot') {
+                        const novoStatus = membro.new_chat_member.status;
+                        const antigoStatus = membro.old_chat_member.status;
+
+                        // Se o novo status for "left" ou "kicked", o bot saiu ou foi removido
+                        if (novoStatus === 'left' || novoStatus === 'kicked') {
+                            const nomeGrupo = grupo.title;
+                            const match = nomeGrupo.match(/#(\w{4})/);
+                            if (match) {
+                                const chaveGrupo = match[1];
+                                const estrategia = await estrategiaServices.pegaUmRegistro({ where: { chave_grupo: chaveGrupo } });
+                                if (estrategia) {
+                                    await estrategia.update({ chat_id: null, link_grupo: null });
+                                    logTo(`⚠️ Bot removido do grupo ${nomeGrupo}. Campos da estratégia ${estrategia.nome} foram limpos.`);
+                                }
                             }
                         }
                     }
                 }
+            }
+
+
+            // Atualiza o offset para evitar processar as mesmas atualizações novamente
+            if (process.env.NODE_ENV !== 'development') {
+                const lastUpdateId = updates[updates.length - 1].update_id;
+                await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ offset: lastUpdateId + 1 })
+                });
             }
 
 
@@ -290,7 +317,8 @@ class ServicesBaseController extends Controller {
         try {
             const { count, bilhetes } = await bilheteServices.getBilhetesFromMsg({
                 where: {
-                    alert: null
+                    alert: null,
+                    status_bilhete: null,
                 },
                 order: [['id', 'DESC']]
             }, {
@@ -306,8 +334,9 @@ class ServicesBaseController extends Controller {
             for (const bilhete of bilhetes) {
                 if (mensagems[bilhete.Estrategium.chat_id] === undefined) {
                     mensagems[bilhete.Estrategium.chat_id] = {
-                        msg: `Temos ${count} bilhetes para você conferir\n\nEstratégia: ${bilhete.Estrategium.nome} \n\n`,
-                        bilehtes: []
+                        msg: `Temos novos bilhetes para você conferir\n\nEstratégia: ${bilhete.Estrategium.nome} \n\n`,
+                        bilehtes: [],
+                        estrategia: bilhete.Estrategium,
                     }
                     mensagems[bilhete.Estrategium.chat_id].bilehtes = bilhete.id;
                 } else {
@@ -334,7 +363,7 @@ class ServicesBaseController extends Controller {
             for (const chatId in mensagems) {
                 let mensagem = mensagems[chatId].msg;
                 mensagem += `Todas as odds são com base na casa de apota BET365. \n\n`;
-                mensagem += `Clique no link: https://www.bet365.com/pt/ \n\n`;
+                mensagem += `Clique no link: https://bigbets.pro/estrategia/${mensagems[chatId].estrategia.id} \n\n`;
 
                 const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -353,7 +382,28 @@ class ServicesBaseController extends Controller {
                         }
                     })
                 } else {
-                    logTo(`Erro ao enviar mensagem para o grupo ${chatId}: ${data.description}`);
+                    logTo(`Erro ao enviar mensagem para o grupossssss ${chatId}: ${data.description}`);
+
+                    // 👉 Verifica se o erro indica que o bot foi removido/bloqueado
+                    const errosCriticos = [
+                        'bot was kicked',
+                        'bot was blocked',
+                        'user is deactivated',
+                        'not enough rights',
+                        'have no rights',
+                        'CHAT_WRITE_FORBIDDEN'
+                    ];
+
+                    if (errosCriticos.some(erro => data.description.toLowerCase().includes(erro))) {
+                        const estrategiaId = mensagems[chatId]?.estrategia?.id;
+                        if (estrategiaId) {
+                            const estrategia = await estrategiaServices.pegaUmRegistro({ where: { id: estrategiaId } });
+                            if (estrategia) {
+                                await estrategia.update({ chat_id: null, link_grupo: null });
+                                logTo(`⚠️ Campos resetados da estratégia ${estrategia.nome} pois o bot foi removido do grupo ${chatId}.`);
+                            }
+                        }
+                    }
                 }
                 await new Promise(resolve => setTimeout(resolve, 3000)); // Aguarda 300ms entre cada mensagem
             }

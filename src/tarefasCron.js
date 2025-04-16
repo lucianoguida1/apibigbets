@@ -82,7 +82,15 @@ const tarefas = {
         } catch (error) {
             console.error('Erro na tarefa de validar bilhete:', error.message);
         }
-    }
+    },
+
+    async enviaMensagens() {
+        try {
+            await serviceBase.enviaMensagensTelegram();
+        } catch (error) {
+            console.error('Erro na tarefa de enviar mensagens Telegram:', error.message);
+        }
+    },
 };
 
 // Agendamento automático com `node-cron`
