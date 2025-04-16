@@ -283,7 +283,11 @@ class ServicesBaseController extends Controller {
                                 const chaveGrupo = match[1];
                                 const estrategia = await estrategiaServices.pegaUmRegistro({ where: { chave_grupo: chaveGrupo } });
                                 if (estrategia) {
-                                    await estrategia.update({ chat_id: null, link_grupo: null });
+                                    try {
+                                        await estrategia.update({ chat_id: null, link_grupo: null });
+                                    } catch (error) {
+                                        logTo('Erro ao atualizar estratégia:', error.message);
+                                    }
                                     logTo(`⚠️ Bot removido do grupo ${nomeGrupo}. Campos da estratégia ${estrategia.nome} foram limpos.`);
                                 }
                             }
