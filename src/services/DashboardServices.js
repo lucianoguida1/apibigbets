@@ -1,5 +1,4 @@
 const Services = require('./Services.js');
-const { Op, where } = require('sequelize');
 const { sequelize } = require('../database/models');
 const logTo = require('../utils/logTo.js');
 
@@ -16,7 +15,7 @@ class DashboardServices extends Services {
 
             const query = `
                 SELECT 
-                t.nome as estrategia,
+                t.nome as label,
                 b.estrategia_id,
                 ROUND(SUM(
                     CASE 
@@ -24,7 +23,7 @@ class DashboardServices extends Services {
                     WHEN status_bilhete IS NOT NULL AND status_bilhete = false THEN -1
                     ELSE 0 
                     END
-                )::numeric, 2) AS lucro,
+                )::numeric, 2) AS value,
                 COUNT(*) AS num_bilhetes,
                 b.data::DATE
                 FROM bilhetes b
@@ -34,7 +33,7 @@ class DashboardServices extends Services {
                 INNER JOIN jogos j ON j.id = o.jogo_id
                 where j.data::DATE = '${formattedDate}'
                 group by t.nome,b.estrategia_id,b.data
-                order by lucro desc
+                order by value desc
                 limit 5
             `;
             const dados = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
