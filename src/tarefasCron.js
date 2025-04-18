@@ -43,6 +43,7 @@ const tarefas = {
             await request.adicionaJogos(toDay());
             await serviceBase.validaRegras();
             await serviceBase.validaBilhetes();
+            await serviceBase.atualizaGraficos();
         } catch (error) {
             console.error('Erro na tarefa agendada a cada 3 horas:', error.message);
         }
@@ -54,16 +55,6 @@ const tarefas = {
             await serviceBase.enviaMensagensTelegram();
         } catch (error) {
             console.error('Erro na tarefa agendada a cada 5 minutos:', error.message);
-        }
-    },
-
-    async tarefaTeste() {
-        try {
-            await serviceBase.verificaGrupoBot();
-            //await serviceBase.enviaMensagensTelegram();
-        }
-        catch (error) {
-            console.error('Erro na tarefa de teste:', error.message);
         }
     },
 
@@ -92,6 +83,14 @@ const tarefas = {
             console.error('Erro na tarefa de enviar mensagens Telegram:', error.message);
         }
     },
+
+    async atualizaGraficos() {
+        try {
+            await serviceBase.atualizaGraficos();
+        } catch (error) {
+            console.error('Erro na tarefa de atualizar gráficos:', error.message);
+        }
+    }
 };
 
 // Agendamento automático com `node-cron`

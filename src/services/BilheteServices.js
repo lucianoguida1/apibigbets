@@ -137,6 +137,7 @@ class BilheteServices extends Services {
                         bilhete_id: null,
                         status_odd: jogo.statusodd,
                         regra_id: jogo.regra_id,
+                        data: jogo.data
                     }]
                 }
 
@@ -155,6 +156,7 @@ class BilheteServices extends Services {
                                 bilhete_id: null,
                                 status_odd: jogoMesmoDia.statusodd,
                                 regra_id: jogoMesmoDia.regra_id,
+                                data: jogoMesmoDia.data
                             });
                             bilhetesCriar[i].odd *= jogoMesmoDia.odd;
                         }

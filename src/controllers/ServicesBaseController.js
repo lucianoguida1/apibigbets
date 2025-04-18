@@ -3,16 +3,18 @@ const Controller = require('./Controller.js');
 const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
 const JogosServices = require('../services/JogoServices.js');
 const logTo = require('../utils/logTo.js');
-const { Op, where } = require('sequelize');
-const { Odd, Bilhete } = require('../database/models');
+const { Op } = require('sequelize');
+const { Odd } = require('../database/models');
+const toDay = require('../utils/toDay.js');
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 const RequestServices = require('../services/RequestServices.js');
 const EstrategiaServices = require('../services/EstrategiaServices.js');
 const BilheteServices = require('../services/BilheteServices.js');
 const OddServices = require('../services/OddServices.js');
-const toDay = require('../utils/toDay.js');
 const PaiServices = require('../services/PaiServices.js');
+const DashboardServices = require('../services/DashboardServices.js');
+
 const { TELEGRAM_BOT_TOKEN } = process.env;
 
 const regraServices = new RegravalidacoeServices();
@@ -21,8 +23,9 @@ const requisicaopendenteServices = new RequisicaopendenteServices();
 const requestServices = new RequestServices();
 const bilheteServices = new BilheteServices();
 const estrategiaServices = new EstrategiaServices();
-const paiServices = new PaiServices();
 const oddSevices = new OddServices();
+const paiServices = new PaiServices();
+const dashboardServices = new DashboardServices();
 
 class ServicesBaseController extends Controller {
     async statusBasico(req, res) {
@@ -418,6 +421,22 @@ class ServicesBaseController extends Controller {
             return ({ mensagem: 'Mensagens enviadas' });
         } catch (error) {
             console.error('Erro ao enviar mensagens:', error.message);
+        }
+    }
+
+    async atualizaGraficos(req, res) {
+        try {
+            const estrategias = await estrategiaServices.pegaTodosOsRegistros();
+            for (const estrategia of estrategias) {
+                await estrategia.update({ grafico_json: null });
+            }
+
+            await dashboardServices.atualizaLucrativoOntem();
+
+            return { mensagem: 'Gráficos atualizados com sucesso.' };
+        } catch (error) {
+            console.error('Erro ao atualizar gráficos:', error);
+            return { erro: error.message };
         }
     }
 }
