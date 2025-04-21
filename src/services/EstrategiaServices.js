@@ -79,17 +79,17 @@ class EstrategiaServices extends Services {
                     {
                         model: Filtrojogo,
                         as: 'filtroGeral',
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "sql"] }
                     },
                     {
                         model: Filtrojogo,
                         as: 'filtroCasa',
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "sql"] }
                     },
                     {
                         model: Filtrojogo,
                         as: 'filtroFora',
-                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt","sql"] }
+                        attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "sql"] }
                     }
                 ]
             },
@@ -163,7 +163,8 @@ class EstrategiaServices extends Services {
                 attributes: [
                     'status_bilhete',
                     'odd',
-                    'data'
+                    'data',
+                    'valor_aposta',
                 ],
                 where: {
                     status_bilhete: {
@@ -199,6 +200,7 @@ class EstrategiaServices extends Services {
             estrategia.maior_vitorias_semana = 0;
             estrategia.sequencia_vitorias = 0; // Initialize to 0
             estrategia.sequencia_derrotas = 0; // Initialize to 0
+            estrategia.media_aposta = 0; // Initialize to 0
 
             let sequenciaAtualVitoria = 0;
             let sequenciaAtualDerrota = 0;
@@ -235,7 +237,7 @@ class EstrategiaServices extends Services {
                     sequenciaAtualVitoria++;
                     sequenciaAtualDerrota = 0;
 
-                    estrategia.lucro_total += (odd - 1); // ajustado conforme o cálculo de lucro desejado
+                    estrategia.lucro_total += (odd - 1) * bilhete.valor_aposta; // ajustado conforme o cálculo de lucro desejado
                     somaOddVitoriosa += odd;
                     countVitoriosa++;
                 } else {
@@ -250,7 +252,7 @@ class EstrategiaServices extends Services {
                         sequenciaAtualVitoria = 0;
                     }
 
-                    estrategia.lucro_total -= 1; // ajustado conforme o cálculo de lucro desejado
+                    estrategia.lucro_total -= bilhete.valor_aposta; // ajustado conforme o cálculo de lucro desejado
                     somaOddDerrotada += odd;
                     countDerrotada++;
                 }
@@ -278,6 +280,12 @@ class EstrategiaServices extends Services {
             // Maior número de vitórias e derrotas em uma única semana
             estrategia.maior_vitorias_semana = Math.max(...Object.values(semanas).map(s => s.vitorias));
             estrategia.maior_derrotas_semana = Math.max(...Object.values(semanas).map(s => s.derrotas));
+
+            // Calcular a média do valor das apostas
+            const somaValorAposta = bilhetes.reduce((total, bilhete) => total + Number(bilhete.valor_aposta), 0);
+            console.log('somaValorAposta', somaValorAposta)
+            estrategia.total_apostado = somaValorAposta.toFixed(2);
+            estrategia.media_aposta = (somaValorAposta / bilhetes.length).toFixed(2);
 
             estrategia.lucro_total = estrategia.lucro_total.toFixed(2);
             if (salvaNoBanco) {

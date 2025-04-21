@@ -4,6 +4,7 @@ const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, Tipoaposta, Regravali
 
 const JogoServices = require('./JogoServices.js');
 const e = require('express');
+const { es } = require('date-fns/locale');
 const jogoServices = new JogoServices();
 
 
@@ -127,11 +128,14 @@ class BilheteServices extends Services {
                     jogosUnicos.splice(jogosUnicos.indexOf(jogo), 1);
                     continue;
                 }
+
                 bilhetesCriar[i] = {
+                    bilhete_id: i,
                     estrategia_id: estrategia.id,
                     odd: jogo.odd,
                     data: jogo.data,
                     status_bilhete: jogo.statusodd,
+                    valor_aposta: 1,
                     bilhetesodd: [{
                         odd_id: jogo.odd_id,
                         bilhete_id: null,
@@ -172,6 +176,39 @@ class BilheteServices extends Services {
                 i++;
             }
 
+            if (estrategia.kelly || estrategia.filtro_kelly) {
+
+                let valorAposta = 1;
+
+                let acerto = 0
+                let erro = 0;
+                bilhetesCriar.forEach((bilhete, index) => {
+                    acerto += bilhete.status_bilhete ? 1 : 0;
+                    erro += bilhete.status_bilhete ? 0 : 1;
+                    const probabilidade = (acerto + erro) > 10 ? (acerto / (acerto + erro) * 100) : 30;
+
+                    // Converte probabilidade percentual para decimal (ex: 55% → 0.55)
+                    const p = probabilidade / 100;
+                    const o = bilhete.odd;
+
+                    const kelly = ((p * (o - 1)) - (1 - p)) / (o - 1);
+
+                    // Se o kelly for negativo, não deve apostar
+                    const fracao = kelly > 0 ? kelly : 0;
+                    valorAposta = fracao * 100;
+                    const filtro_kelly = kelly > 0 ? true : false;
+
+                    if (estrategia.kelly) {
+                        bilhetesCriar[index].valor_aposta = (valorAposta < 1 ? 1 : valorAposta).toFixed(2);
+                    }
+
+                    if (estrategia.filtro_kelly && !filtro_kelly) {
+                        bilhetesCriar.splice(index, 1);
+                    }
+                });
+
+            }
+
             if (salvaNoBanco) {
                 const bilhetes = [];
 
@@ -206,7 +243,7 @@ class BilheteServices extends Services {
 
             return { bilhetes: bilhetesCriar, jogos: jogosUnicos };
         } catch (error) {
-            console.error('BilhetesServices:', error.message);
+            console.error('BilhetesServices:', error);
         }
     }
 

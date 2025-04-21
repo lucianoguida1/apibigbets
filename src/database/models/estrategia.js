@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
     grafico_json: DataTypes.JSON,
     chat_id: DataTypes.STRING, // Novo campo
     link_grupo: DataTypes.STRING,
+    kelly: DataTypes.BOOLEAN,
+    filtro_kelly: DataTypes.BOOLEAN,
+    media_aposta: DataTypes.FLOAT,
+    total_apostado: DataTypes.FLOAT,
     chave_grupo: {
       type: DataTypes.STRING,
       defaultValue: () => Math.random().toString(36).substr(2, 4) // Gera uma chave única de 4 dígitos

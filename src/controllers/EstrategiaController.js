@@ -39,6 +39,8 @@ const formSchema = z.object({
         .max(160, {
             message: "A descrição não deve ter mais de 160 caracteres.",
         }),
+    kelly: z.boolean().default(false),
+    filtro_kelly: z.boolean().default(false),
     liga: z.array(optionSchema),
     pais: z.array(optionSchema),
     filtroTime: z.string(), filtroTime2: z.string(), filtroTime3: z.string(),
@@ -151,7 +153,7 @@ class EstrategiaController extends Controller {
     }
 
     async #validaEstrategia(req, res) {
-        const { estrategia, descricao, aposta } = req.body;
+        const { estrategia, descricao, kelly, filtro_kelly, aposta } = req.body;
 
         // Verificação de campos obrigatórios
         if (!estrategia) {
@@ -376,7 +378,7 @@ class EstrategiaController extends Controller {
             fjfora_id: req.body.fjfora && req.body.fjfora != "Todos" ? req.body.fjfora : null,
         }));
 
-        return ({ estrategia, descricao, regras: regrasCriar });
+        return ({ estrategia, descricao, kelly, filtro_kelly, regras: regrasCriar });
     }
 
     async estrategiaTeste(req, res) {
@@ -399,7 +401,6 @@ class EstrategiaController extends Controller {
 
             try {
                 const { jogos, bilhetes } = await bilheteServices.montaBilhetes(estrategiaValida, false, false);
-
                 estrategiaValida.bilhetes = bilhetes;
                 estrategiaValida.jogos = jogos;
             } catch (error) {
@@ -672,7 +673,9 @@ class EstrategiaController extends Controller {
             // Cria a estratégia
             const novaEstrategia = await estrategiaServices.criaRegistro({
                 nome: estrategiaValida.estrategia,
-                descricao: estrategiaValida.descricao
+                descricao: estrategiaValida.descricao,
+                kelly: estrategiaValida.kelly,
+                filtro_kelly: estrategiaValida.filtro_kelly,
             });
 
             if (!novaEstrategia || !novaEstrategia.id) {

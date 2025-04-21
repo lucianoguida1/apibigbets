@@ -19,7 +19,7 @@ module.exports = (bilhetes) => {
         const odd = parseFloat(bilhete.odd);
         apostaReaplicada = saldoReaplicado / 10;
 
-        const ganhoOuPerda = bilhete.status_bilhete ? (odd - 1) : -1;
+        const ganhoOuPerda = bilhete.status_bilhete ? ((odd - 1) * bilhete.valor_aposta) : bilhete.valor_aposta * (-1);
         saldoFixoAcumulado += ganhoOuPerda;
 
         const dataOriginal = new Date(bilhete.data);

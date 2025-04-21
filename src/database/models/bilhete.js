@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     odd: DataTypes.NUMBER,
     status_bilhete: DataTypes.BOOLEAN,
     data: DataTypes.DATE,
+    valor_aposta: DataTypes.NUMBER,
   }, {
     sequelize,
     modelName: 'Bilhete',
