@@ -27,11 +27,11 @@ class DashboardServices extends Services {
                 COUNT(*) AS num_bilhetes,
                 b.data::DATE
                 FROM bilhetes b
-                INNER JOIN estrategias t ON b.estrategia_id = t.id
+                INNER JOIN estrategias t ON b.estrategia_id = t.id and t."deletedAt" is null
                 INNER JOIN bilhetesodds bo ON bo.bilhete_id = b.id
-                INNER JOIN odds o ON bo.odd_id = o.id
-                INNER JOIN jogos j ON j.id = o.jogo_id
-                where j.data::DATE = '${formattedDate}'
+                INNER JOIN odds o ON bo.odd_id = o.id and o."deletedAt" is null
+                INNER JOIN jogos j ON j.id = o.jogo_id and j."deletedAt" is null
+                where j.data::DATE = '${formattedDate}' and b."deletedAt" is null
                 group by t.nome,b.estrategia_id,b.data
                 order by value desc
                 limit 5
