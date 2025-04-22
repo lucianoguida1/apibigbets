@@ -177,15 +177,20 @@ class BilheteServices extends Services {
             }
 
             if (estrategia.kelly || estrategia.filtro_kelly) {
-
                 let valorAposta = 1;
-
-                let acerto = 0
+                let acerto = 0;
                 let erro = 0;
                 bilhetesCriar.forEach((bilhete, index) => {
-                    acerto += bilhete.status_bilhete ? 1 : 0;
-                    erro += bilhete.status_bilhete ? 0 : 1;
-                    const probabilidade = (acerto + erro) > 10 ? (acerto / (acerto + erro) * 100) : 30;
+                    if (bilhete.status_bilhete !== null) {
+                        acerto += bilhete.status_bilhete ? 1 : 0;
+                        erro += bilhete.status_bilhete ? 0 : 1;
+                    }
+                    let probabilidade = 0;
+                    if (estrategia.taxaacerto && estrategia.taxaacerto > 0) {
+                        probabilidade = estrategia.taxaacerto;
+                    } else {
+                        probabilidade = (acerto + erro) > 10 ? (acerto / (acerto + erro) * 100) : 30;
+                    }
 
                     // Converte probabilidade percentual para decimal (ex: 55% → 0.55)
                     const p = probabilidade / 100;
@@ -269,7 +274,7 @@ class BilheteServices extends Services {
                                 include: [
                                     {
                                         model: Jogo,
-                                        attributes: ['id', 'datahora', 'gols_casa', 'gols_fora','adiado'],
+                                        attributes: ['id', 'datahora', 'gols_casa', 'gols_fora', 'adiado'],
                                         include: [
                                             {
                                                 model: Time,
