@@ -2,6 +2,7 @@ const Controller = require('./Controller.js');
 const HelpServices = require('../services/HelpServices.js');
 
 const { z } = require('zod'); // Certifique-se de que o zod está instalado
+const logTo = require('../utils/logTo.js');
 
 const helpServices = new HelpServices();
 
@@ -19,11 +20,12 @@ class HelpController extends Controller {
             // Valida os dados recebidos usando o schema
             const validatedData = formSchema.parse(req.body);
             
-            console.log(validatedData)
             // Cria o registro usando o serviço
             const newHelp = await helpServices.criaRegistro(validatedData);
 
-            // Retorna o registro criado
+            const mensagem = `Novo pedido de ajuda recebido: ${JSON.stringify(validatedData)}`;
+            logTo(mensagem);
+            
             return res.status(201).json(newHelp);
         } catch (error) {
             console.log('error', error)

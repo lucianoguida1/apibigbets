@@ -269,7 +269,7 @@ class BilheteServices extends Services {
                                 include: [
                                     {
                                         model: Jogo,
-                                        attributes: ['id', 'datahora', 'gols_casa', 'gols_fora'],
+                                        attributes: ['id', 'datahora', 'gols_casa', 'gols_fora','adiado'],
                                         include: [
                                             {
                                                 model: Time,
