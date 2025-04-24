@@ -39,7 +39,7 @@ module.exports = async (message, telegram = true, cons = true) => {
     fs.appendFileSync(logFilePath, `${formatDateTime()} - ${message}\n`);
 
     if (telegram) {
-        if(process.env.NODE_ENV = 'development'){
+        if(process.env.NODE_ENV == 'development'){
             message = `\n DEVELOPMENT \n ${message}`
         }
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN; // Token do bot do Telegram

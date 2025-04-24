@@ -301,7 +301,7 @@ class ServicesBaseController extends Controller {
 
 
             // Atualiza o offset para evitar processar as mesmas atualizações novamente
-            if (process.env.NODE_ENV !== 'development') {
+            if (process.env.NODE_ENV != 'development') {
                 if (updates.length > 0) {
                     const lastUpdateId = updates[updates.length - 1].update_id;
                     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`, {
@@ -309,7 +309,10 @@ class ServicesBaseController extends Controller {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ offset: lastUpdateId + 1 })
                     });
+                    logTo(`Atualizado offset para evitar processar as mesmas atualizações novamente: ${lastUpdateId + 1}`);
                 }
+            } else {
+                logTo('Atualização de offset não realizada em ambiente de desenvolvimento.');
             }
 
 
