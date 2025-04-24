@@ -19,9 +19,9 @@ class DashboardServices extends Services {
                 b.estrategia_id,
                 ROUND(SUM(
                     CASE 
-                    WHEN status_bilhete IS NOT NULL AND status_bilhete = true THEN (b.odd - 1)
-                    WHEN status_bilhete IS NOT NULL AND status_bilhete = false THEN -1
-                    ELSE 0 
+                        WHEN b.status_bilhete IS TRUE THEN (b.odd - 1) * b.valor_aposta
+                        WHEN b.status_bilhete IS FALSE THEN -1 * b.valor_aposta
+                        ELSE 0
                     END
                 )::numeric, 2) AS value,
                 COUNT(*) AS num_bilhetes,
