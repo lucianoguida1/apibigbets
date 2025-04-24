@@ -134,7 +134,7 @@ class ServicesBaseController extends Controller {
                 where: {
                     [Op.or]: [
                         { status_bilhete: null },
-                        { createdAt: { [Op.between]: [toDay(-2), toDay()] } },
+                        { createdAt: { [Op.between]: [toDay(-2), toDay(+1)] } },
                     ]
                 },
                 include: [
