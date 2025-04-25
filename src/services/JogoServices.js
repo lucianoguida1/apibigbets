@@ -350,7 +350,7 @@ class JogoServices extends Services {
         try {
             const jogos = await Jogo.findAndCountAll({
                 where: {
-                    gols_casa: { [Op.eq]: null },
+                    gols_casa: { [Op.is]: null },
                     datahora: { [Op.lt]: new Date() },
                     adiado: { [Op.eq]: false },
                 },
