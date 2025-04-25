@@ -133,7 +133,7 @@ class BilheteServices extends Services {
                     bilhete_id: i,
                     estrategia_id: estrategia.id,
                     odd: jogo.odd,
-                    data: jogo.data,
+                    data: jogo.datahora,
                     status_bilhete: jogo.statusodd,
                     valor_aposta: 1,
                     bilhetesodd: [{
@@ -141,10 +141,9 @@ class BilheteServices extends Services {
                         bilhete_id: null,
                         status_odd: jogo.statusodd,
                         regra_id: jogo.regra_id,
-                        data: jogo.data
+                        data: jogo.datahora
                     }]
                 }
-
 
                 if (regras.length > 1) {
                     const jogosMesmoDia = jogosUnicos.filter(j => j.data === jogo.data);
@@ -160,7 +159,7 @@ class BilheteServices extends Services {
                                 bilhete_id: null,
                                 status_odd: jogoMesmoDia.statusodd,
                                 regra_id: jogoMesmoDia.regra_id,
-                                data: jogoMesmoDia.data
+                                data: jogoMesmoDia.datahora
                             });
                             bilhetesCriar[i].odd *= jogoMesmoDia.odd;
                         }
