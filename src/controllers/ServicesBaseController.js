@@ -130,23 +130,9 @@ class ServicesBaseController extends Controller {
             const startTime = new Date();  // Marca o início da execução
             logTo('Iniciando validação bilhetes');
             let totalAtualizado = 0;
-            const bilhetes = await bilheteServices.pegaTodosOsRegistros({
-                where: {
-                    [Op.or]: [
-                        { status_bilhete: null },
-                        { createdAt: { [Op.between]: [toDay(-2), toDay(+1)] } },
-                    ]
-                },
-                include: [
-                    {
-                        model: Odd,
-                        required: true,
-                        where: {
-                            status: { [Op.ne]: null }
-                        },
-                    }
-                ]
-            });
+            const bilhetes = await bilheteServices.bilhetesPendenteStatus();
+
+            if (bilhetes.length <= 0) logTo('Sem bilhetes para validar!');
 
             for (const bilhete of bilhetes) {
                 let status = null;

@@ -364,6 +364,31 @@ class BilheteServices extends Services {
             throw new Error('Erro ao buscar bilhetes!:' + error.message);
         }
     }
+
+    async bilhetesPendenteStatus() {
+        try {
+            const sql = `
+                SELECT *
+                FROM bilhetes b
+                INNER JOIN bilhetesodds bo ON bo.bilhete_id = b.id
+                INNER JOIN odds o ON o.id = bo.odd_id AND o."deletedAt" IS NULL
+                INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
+                WHERE b."deletedAt" IS NULL
+                AND b.status_bilhete IS NULL
+                AND o.status IS NOT NULL
+                AND (j.datahora + INTERVAL '2 hours') < NOW();
+            `;
+
+            const results = await sequelize.query(sql, {
+                type: sequelize.QueryTypes.SELECT,
+            });
+
+            return results;
+        } catch (error) {
+            console.error('Erro ao buscar bilhetes pendentes:', error);
+            throw new Error('Erro ao buscar bilhetes pendentes!');
+        }
+    }
 }
 
 module.exports = BilheteServices;

@@ -4,14 +4,19 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { createBullBoard } = require('bull-board');
+const { BullAdapter } = require('bull-board/bullAdapter');
+const Queue = require('./lib/Queue');
+
+
 const routes = require('./routes');
-const tarefaCron = require('./tarefasCron.js');
+const tarefaCron = require('./tarefasCron');
 
 const corsOptions = {
-  origin: '*', // Permitir apenas este domínio
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Permitir apenas esses métodos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Permitir apenas esses cabeçalhos
-  credentials: false // Se você precisar permitir credenciais (cookies, autorização)
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
 };
 
 const app = express();
@@ -35,22 +40,24 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+const { router: bullBoardRouter } = createBullBoard(
+  Queue.queues.map(queue => new BullAdapter(queue.bull))
+);
+
+app.use('/admin/queues', bullBoardRouter);
+
 routes(app);
 
-// EXECUTA AS TAREFAS CRONS
+// Tarefas agendadas
 tarefaCron.agendarTarefas();
 
-
-
-const ServicesBaseController = require('./controllers/ServicesBaseController.js');
-const serviceBase = new ServicesBaseController();
-
+/*
 (async () => {
-  //await serviceBase.verificaGrupoBot();
-  //await serviceBase.enviaMensagensTelegram();
-  //await serviceBase.executarEstrategias();
+  await Queue.add('EnviaMsgTelegram', {
+    chatId: process.env.TELEGRAM_CHAT_ID,
+    message: 'Hello, this is a test message!',
+  });
 })();
-
-
+*/
 
 module.exports = app;
