@@ -2,10 +2,15 @@ const Queue = require('bull');
 const redisConfig = require('../config/radis');
 
 const jobs = require('../jobs/'); // O index.js na pasta já será carregado automaticamente
-console.log('jobs', jobs)
 
 const queues = Object.values(jobs).map(job => ({
-  bull: new Queue(job.key, redisConfig),
+  bull: new Queue(job.key, {
+    ...redisConfig,
+    settings: {
+      stalledInterval: 60000,   // verifica jobs travados a cada 60s (padrão é 30s)
+      lockDuration: 600000,     // bloqueia o job por até 10 minutos (padrão é 30s)
+    }
+  }),
   name: job.key,
   handle: job.handle,
   options: job.options,

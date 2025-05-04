@@ -51,13 +51,10 @@ routes(app);
 // Tarefas agendadas
 tarefaCron.agendarTarefas();
 
-/*
+
 (async () => {
-  await Queue.add('EnviaMsgTelegram', {
-    chatId: process.env.TELEGRAM_CHAT_ID,
-    message: 'Hello, this is a test message!',
-  });
+  //await Queue.add('getDadosAPI'); 
 })();
-*/
+
 
 module.exports = app;

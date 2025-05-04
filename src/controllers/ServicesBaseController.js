@@ -295,10 +295,7 @@ class ServicesBaseController extends Controller {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ offset: lastUpdateId + 1 })
                     });
-                    logTo(`Atualizado offset para evitar processar as mesmas atualizações novamente: ${lastUpdateId + 1}`);
                 }
-            } else {
-                logTo('Atualização de offset não realizada em ambiente de desenvolvimento.');
             }
 
 
@@ -381,7 +378,7 @@ class ServicesBaseController extends Controller {
                         }
                     })
                 } else {
-                    logTo(`Erro ao enviar mensagem para o grupossssss ${chatId}: ${data.description}`);
+                    logTo(`Erro ao enviar mensagem para o grupos ${chatId}: ${data.description}`);
 
                     // 👉 Verifica se o erro indica que o bot foi removido/bloqueado
                     const errosCriticos = [
