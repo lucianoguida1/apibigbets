@@ -2,6 +2,7 @@ const logTo = require("../utils/logTo");
 const formatMilliseconds = require('../utils/formatMilliseconds.js');
 const toDay = require('../utils/toDay.js');
 const axios = require('axios');
+const salvaJson = require('../utils/salvaJsonArquivo.js');
 
 const RequestServices = require('../services/RequestServices.js');
 const LigaServices = require('../services/LigaServices.js');
@@ -12,7 +13,6 @@ const OddServices = require('../services/OddServices.js');
 const Regra = require('../services/RegravalidacoeServices.js');
 const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
 
-const salvaJson = require('../utils/salvaJsonArquivo.js');
 const regraServices = new Regra();
 const requestServices = new RequestServices();
 const ligaServices = new LigaServices();

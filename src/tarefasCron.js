@@ -1,10 +1,9 @@
 const cron = require('node-cron');
-const RequestController = require('./controllers/RequestController.js');
-const ServicesBaseController = require('./controllers/ServicesBaseController.js');
-const toDay = require('./utils/toDay.js');
+const Queue = require('./lib/Queue');
 
+const ServicesBaseController = require('./controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
-const request = new RequestController();
+
 
 // Define cada tarefa como uma função separada
 const tarefas = {
@@ -18,8 +17,7 @@ const tarefas = {
 
     async tarefa19hrs() {
         try {
-            await request.dadosSport();
-            //await serviceBase.deletaJogosAntigos();
+            await Queue.add('getDadosAPI'); 
             await serviceBase.executarEstrategias();
             await serviceBase.validaRegras();
         } catch (error) {
@@ -29,8 +27,7 @@ const tarefas = {
 
     async tarefa10hrs() {
         try {
-            await request.dadosSport(toDay());
-            //await serviceBase.deletaJogosAntigos();
+            await Queue.add('getDadosAPI'); 
             await serviceBase.executarEstrategias();
             await serviceBase.validaRegras();
         } catch (error) {
@@ -38,9 +35,9 @@ const tarefas = {
         }
     },
 
-    async tarefa3Horas() {
+    async tarefa2Horas() {
         try {
-            await request.adicionaJogos(toDay());
+            await Queue.add('getJogosAPI'); // Adiciona a tarefa de obter jogos à fila
             await serviceBase.validaRegras();
             await serviceBase.validaBilhetes();
             await serviceBase.atualizaGraficos();
@@ -98,7 +95,7 @@ const agendarTarefas = () => {
     cron.schedule('0 20 * * *', tarefas.tarefa20hrs);
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
-    cron.schedule('0 */3 * * *', tarefas.tarefa3Horas);
+    cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
 };
 

@@ -53,7 +53,7 @@ tarefaCron.agendarTarefas();
 
 
 (async () => {
-  //await Queue.add('getDadosAPI'); 
+  //await Queue.add('getJogosAPI'); 
 })();
 
 
