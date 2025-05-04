@@ -283,7 +283,6 @@ class EstrategiaServices extends Services {
 
             // Calcular a média do valor das apostas
             const somaValorAposta = bilhetes.reduce((total, bilhete) => total + Number(bilhete.valor_aposta), 0);
-            console.log('somaValorAposta', somaValorAposta)
             estrategia.total_apostado = somaValorAposta.toFixed(2);
             estrategia.media_aposta = (somaValorAposta / bilhetes.length).toFixed(2);
 

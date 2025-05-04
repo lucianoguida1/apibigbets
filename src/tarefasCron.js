@@ -17,8 +17,8 @@ const tarefas = {
 
     async tarefa19hrs() {
         try {
-            await Queue.add('getDadosAPI'); 
-            await serviceBase.executarEstrategias();
+            await Queue.add('getDadosAPI');
+            await Queue.add('executaEstrategias');
             await serviceBase.validaRegras();
         } catch (error) {
             console.error('Erro na tarefa agendada às 19hrs:', error.message);
@@ -27,8 +27,8 @@ const tarefas = {
 
     async tarefa10hrs() {
         try {
-            await Queue.add('getDadosAPI'); 
-            await serviceBase.executarEstrategias();
+            await Queue.add('getDadosAPI');
+            await Queue.add('executaEstrategias');
             await serviceBase.validaRegras();
         } catch (error) {
             console.error('Erro na tarefa agendada às 7hrs:', error.message);
