@@ -636,8 +636,9 @@ class EstrategiaController extends Controller {
             const estrategia = await estrategiaServices.getTopEstrategia();
 
             if (estrategia.grafico_json == null) {
-                estrategia.grafico_json = bilhetesToGrafico(await estrategia.getBilhetes());
-                await estrategia.save();
+                const ee = await estrategiaServices.pegaUmRegistroPorId(id);
+                ee.grafico_json = bilhetesToGrafico(await ee.getBilhetes({ order: [['id', 'ASC']] }));
+                await ee.save();
             }
 
             if (!estrategia) {
