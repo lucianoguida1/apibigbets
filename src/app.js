@@ -44,12 +44,15 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 const bullBoardPath = '/api1.0/adminwl/queues';
 
-const { router: bullBoardRouter } = createBullBoard(
-  Queue.queues.map(queue => new BullAdapter(queue.bull))
-);
+const { router: bullBoardRouter } = createBullBoard({
+  queues: Queue.queues.map(queue => new BullAdapter(queue.bull)),
+  options: {
+    basePath: bullBoardPath, // <- Define corretamente o caminho base
+  },
+});
 
 // Corrige o caminho interno dos assets da UI do Bull Board
-app.use(bullBoardPath, (req, res, next) => {
+app.use('/adminwl/queues', (req, res, next) => {
   // Faz o Bull Board funcionar mesmo com prefixo do NGINX
   req.originalUrl = req.baseUrl + req.url;
   return bullBoardRouter(req, res, next);
