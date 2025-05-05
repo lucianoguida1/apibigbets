@@ -114,7 +114,7 @@ module.exports = {
             } finally {
                 let endTime = Date.now();
                 let duration = endTime - startTime;
-                logTo(`Tempo de execução: ${formatMilliseconds(duration)} data: ${date}`);
+                logTo(`Tempo de execução CARGA DADOS: ${formatMilliseconds(duration)} data: ${date}`);
             }
         } else {
             logTo(`Limite de requisições atingido... (${date})`);

@@ -1,6 +1,7 @@
 const logTo = require("../utils/logTo");
 const BilheteServices = require('../services/BilheteServices.js');
 const bilheteServices = new BilheteServices();
+const { Op } = require('sequelize');
 
 
 

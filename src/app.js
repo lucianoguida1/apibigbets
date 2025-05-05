@@ -44,24 +44,11 @@ const { router: bullBoardRouter } = createBullBoard(
   Queue.queues.map(queue => new BullAdapter(queue.bull))
 );
 
-app.use('/admin/queues', bullBoardRouter);
+app.use('/adminwl/queues', bullBoardRouter);
 
 routes(app);
 
 // Tarefas agendadas
 tarefaCron.agendarTarefas();
-
-
-(async () => {
-  await Queue.add('getJogosAPI'); 
-  await Queue.add('getDadosAPI'); 
-  await Queue.add('enviaMsgTelegram'); 
-  await Queue.add('executaEstrategias'); 
-  await Queue.add('validaOdds');
-  await Queue.add('validaBilhetes');
-  await Queue.add('atualizaGraficos');
-  await Queue.add('verficaGruposTelegram');
-})();
-
 
 module.exports = app;
