@@ -40,14 +40,12 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-const bullBoardPath = '/api1.0/adminwl/queues';
-
 const { router: bullBoardRouter } = createBullBoard(
   Queue.queues.map(queue => new BullAdapter(queue.bull))
 );
 
 // Corrigir assets quebrados
-app.use(bullBoardPath, (req, res, next) => {
+app.use('/adminwl/queues', (req, res, next) => {
   req.originalUrl = req.url; // caminho fixado
   return bullBoardRouter(req, res, next);
 });
