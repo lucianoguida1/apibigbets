@@ -3,8 +3,9 @@ const BilheteServices = require('../services/BilheteServices.js');
 const bilheteServices = new BilheteServices();
 
 
+
 module.exports = {
-    key: 'EnviaMsgTelegram',
+    key: 'enviaMsgTelegram',
     options: {
         delay: 1000,
         attempts: 3,

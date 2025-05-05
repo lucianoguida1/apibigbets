@@ -1,49 +1,17 @@
-require('dotenv').config();
-const Controller = require('./Controller.js');
-const RegravalidacoeServices = require('../services/RegravalidacoeServices.js');
-const JogosServices = require('../services/JogoServices.js');
-const logTo = require('../utils/logTo.js');
-const { Op } = require('sequelize');
-const { Odd } = require('../database/models');
-const toDay = require('../utils/toDay.js');
-const formatMilliseconds = require('../utils/formatMilliseconds.js');
-const RequisicaopendenteServices = require('../services/RequisicaopendenteServices.js');
-const RequestServices = require('../services/RequestServices.js');
-const EstrategiaServices = require('../services/EstrategiaServices.js');
-const BilheteServices = require('../services/BilheteServices.js');
-const OddServices = require('../services/OddServices.js');
-const PaiServices = require('../services/PaiServices.js');
-const DashboardServices = require('../services/DashboardServices.js');
-
+const logTo = require("../utils/logTo.js");
 const { TELEGRAM_BOT_TOKEN } = process.env;
 
-const regraServices = new RegravalidacoeServices();
-const jogoServices = new JogosServices();
-const requisicaopendenteServices = new RequisicaopendenteServices();
-const requestServices = new RequestServices();
-const bilheteServices = new BilheteServices();
+const EstrategiaServices = require('../services/EstrategiaServices.js');
 const estrategiaServices = new EstrategiaServices();
-const oddSevices = new OddServices();
-const paiServices = new PaiServices();
-const dashboardServices = new DashboardServices();
-
-class ServicesBaseController extends Controller {
-    async statusBasico(req, res) {
-        try {
-            let dados = {};
-            dados.requisicaoPendente = await requisicaopendenteServices.pegaTodosOsRegistros();
-            dados.RequisicaoSports = await requestServices.pegaRegistrosDeHoje();
-            dados.jogosHoje = await jogoServices.pegaEContaRegistros({ where: { 'data': toDay() } });
-            return res.status(200).json(dados);
-        } catch (error) {
-            return res.status(500).json({ erro: error.message });
-        }
-    }
 
 
-
-    // envia a mensagem no grupo do telegram
-    async verificaGrupoBot(req, res) {
+module.exports = {
+    key: 'verficaGruposTelegram',
+    options: {
+        delay: 1000,
+        attempts: 3,
+    },
+    async handle(job) {
         try {
             const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
             const data = await response.json();
@@ -53,6 +21,7 @@ class ServicesBaseController extends Controller {
 
             const updates = data.result;
             for (const update of updates) {
+                await job.progress(Math.round(((updates.indexOf(update) + 1) / updates.length) * 100));
                 if (update.message && update.message.chat && update.message.chat.type === 'supergroup') {
                     const grupo = update.message.chat;
                     const nomeGrupo = grupo.title;
@@ -111,7 +80,6 @@ class ServicesBaseController extends Controller {
                 }
             }
 
-
             // Atualiza o offset para evitar processar as mesmas atualizações novamente
             if (process.env.NODE_ENV != 'development') {
                 if (updates.length > 0) {
@@ -123,19 +91,12 @@ class ServicesBaseController extends Controller {
                     });
                 }
             }
-
-
-            return ({ mensagem: 'Verificação de grupos concluída' });
+            await job.progress(100);
         } catch (error) {
             console.error('Erro ao verificar grupos do bot:', error.message);
             if (error.message) {
                 logTo('Erro ao verificar grupos do bot:', error.message);
             }
-            return ({ erro: error.message });
         }
     }
-
 }
-
-
-module.exports = ServicesBaseController;

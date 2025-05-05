@@ -53,11 +53,14 @@ tarefaCron.agendarTarefas();
 
 
 (async () => {
-  //await Queue.add('getJogosAPI'); 
-  //await Queue.add('getDadosAPI'); 
-  //await Queue.add('EnviaMsgTelegram', { chatId: '123456789', message: 'Hello, World!' }); 
-  //await Queue.add('executaEstrategias'); 
-  //await Queue.add('validaOdds'); 
+  await Queue.add('getJogosAPI'); 
+  await Queue.add('getDadosAPI'); 
+  await Queue.add('enviaMsgTelegram'); 
+  await Queue.add('executaEstrategias'); 
+  await Queue.add('validaOdds');
+  await Queue.add('validaBilhetes');
+  await Queue.add('atualizaGraficos');
+  await Queue.add('verficaGruposTelegram');
 })();
 
 
