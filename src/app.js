@@ -46,7 +46,7 @@ const { router: bullBoardRouter } = createBullBoard(
 
 // Corrigir assets quebrados
 app.use('/adminwl/queues', (req, res, next) => {
-  req.originalUrl = req.url; // caminho fixado
+  req.originalUrl = '/api1.0/' + req.url; // caminho fixado
   return bullBoardRouter(req, res, next);
 });
 
