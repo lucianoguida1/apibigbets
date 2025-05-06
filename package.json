@@ -10,7 +10,7 @@
     "migrate:dev": "sequelize-cli db:migrate",
     "migrate:prod": "cross-env NODE_ENV=production sequelize-cli db:migrate",
     "dev": "npm run migrate:dev && nodemon server.js",
-    "devjobs": "npm run migrate:dev && node src/queue.js",
+    "devjobs": "nodemon src/queue.js",
     "start": "npm run migrate:prod && node server.js",
     "vercel-build": "npm install && sequelize-cli db:migrate && npm install pg",
     "render-build": "node server.js"

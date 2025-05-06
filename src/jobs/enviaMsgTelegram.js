@@ -3,6 +3,7 @@ const BilheteServices = require('../services/BilheteServices.js');
 const bilheteServices = new BilheteServices();
 const { Op } = require('sequelize');
 
+const { TELEGRAM_BOT_TOKEN } = process.env;
 
 
 module.exports = {
@@ -11,7 +12,7 @@ module.exports = {
         delay: 1000,
         attempts: 3,
     },
-    async handle({ data }) {
+    async handle(job) {
         try {
             const { count, bilhetes } = await bilheteServices.getBilhetesFromMsg({
                 where: {
@@ -22,13 +23,11 @@ module.exports = {
             }, {
                 where: { chat_id: { [Op.ne]: null } }
             });
-
             if (bilhetes.length === 0) {
                 return ({ mensagem: 'Nenhum bilhete para enviar mensagem' });
             }
             const mensagems = [];
             let bilhetesId = [];
-
             for (const bilhete of bilhetes) {
                 const progress = Math.floor((bilhetes.indexOf(bilhete) + 1) / bilhetes.length * 100);
                 await job.progress(progress);
@@ -108,9 +107,10 @@ module.exports = {
                 await new Promise(resolve => setTimeout(resolve, 3000)); // Aguarda 300ms entre cada mensagem
             }
 
-            return ({ mensagem: 'Mensagens enviadas' });
+            return ({ mensagem: `Mensagens enviadas. Total: ${count}` });
         } catch (error) {
-            console.error('Erro ao enviar mensagens:', error.message);
+            console.error(error);
+            return ({ error });
         }
     },
 };

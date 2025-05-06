@@ -55,4 +55,15 @@ routes(app);
 // Tarefas agendadas
 tarefaCron.agendarTarefas();
 
+
+
+
+
+
+ 
+ (async () => {
+   //await Queue.add('enviaMsgTelegram');
+ })();
+ 
+
 module.exports = app;
