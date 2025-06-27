@@ -22,6 +22,7 @@ module.exports = {
 
         } catch (error) {
             console.error('Erro ao atualizar gráficos:', error);
+            return error;
         }
     }
 }

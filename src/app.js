@@ -62,7 +62,7 @@ tarefaCron.agendarTarefas();
 
  
  (async () => {
-   //await Queue.add('enviaMsgTelegram');
+   await Queue.add('validaBilhetes');
  })();
  
 

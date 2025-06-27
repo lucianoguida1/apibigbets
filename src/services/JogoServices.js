@@ -167,7 +167,7 @@ class JogoServices extends Services {
                 ORDER BY j.id ASC
                 LIMIT 3500;`;
 
-            //console.log(sql);
+            console.log(sql);
 
             let results = [];
             try {

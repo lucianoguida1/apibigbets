@@ -25,6 +25,7 @@ module.exports = {
                     // não faz nada só para n parar o loop
                 }
             }
+            await job.progress(100);
         } catch (error) {
             logTo('Erro ao executar estratégia: ' + error.message, true, true);
         }
