@@ -76,7 +76,7 @@ class EstrategiaServices extends Services {
                             attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "id_sports"] },
                         }
                     },
-                    {
+                    /*{
                         model: Filtrojogo,
                         as: 'filtroGeral',
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "sql"] }
@@ -90,7 +90,7 @@ class EstrategiaServices extends Services {
                         model: Filtrojogo,
                         as: 'filtroFora',
                         attributes: { exclude: ["updatedAt", "createdAt", "deletedAt", "sql"] }
-                    }
+                    }*/
                 ]
             },
             ],

@@ -13,9 +13,12 @@ module.exports = {
         try {
             const bilhetes = await bilheteServices.bilhetesPendenteStatus();
             for (const bilhete of bilhetes) {
+                console.log(bilhete)
                 let status = null;
-                for (const odd of bilhete.Odds) {
-                    const progress = Math.round((bilhete.Odds.indexOf(odd) + 1) / bilhete.Odds.length * 100);
+                for (const odd of await bilhete.getOdds()) {
+                    const progress = Math.round(
+                        ((bilhetes.indexOf(bilhete) + (await bilhete.getOdds()).indexOf(odd) / (await bilhete.getOdds()).length) / bilhetes.length) * 100
+                    );
                     await job.progress(progress);
                     if (odd.status === null) {
                         status = null;

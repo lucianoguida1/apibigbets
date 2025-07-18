@@ -9,7 +9,7 @@ class FiltrojogoServices extends Services {
     async getFiltrosJogos(opitions = {}) {
         const rawResult = await sequelize.query(
             `select fj.id,fj.nome,fj.casa,fj.fora,count(r.id) as total_regras,e.id as estrategia_id,e.nome as nome_estrategia,e.lucro_total,e.taxaacerto from filtrojogos fj
-            left join regras r on r.filtrojogo_id = fj.id
+            left join regras r on fj.id = ANY(string_to_array(r.filtrojogo_ids, ',')::int[])
             left join estrategias e on e.id = r.estrategia_id
             where fj."deletedAt" is null
             ${opitions.geral ? `and (casa = true and fora = true)`:``}

@@ -17,9 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       //Regra.belongsTo(models.Liga, { foreignKey: 'liga_id' });
       //Regra.belongsTo(models.Time, { foreignKey: 'time_id' });
       Regra.belongsTo(models.Estrategia, { foreignKey: 'estrategia_id', as: 'estrategia' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'filtrojogo_id', as: 'filtroGeral' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjcasa_id', as: 'filtroCasa' });
-      Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjfora_id', as: 'filtroFora' });
+      //Regra.belongsTo(models.Filtrojogo, { foreignKey: 'filtrojogo_id', as: 'filtroGeral' });
+      //Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjcasa_id', as: 'filtroCasa' });
+      //Regra.belongsTo(models.Filtrojogo, { foreignKey: 'fjfora_id', as: 'filtroFora' });
     }
   }
   Regra.init({
@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
     oddmin: DataTypes.NUMBER,
     oddmax: DataTypes.NUMBER,
     multipla: DataTypes.NUMBER,
-    filtrojogo_id: DataTypes.NUMBER,
+    filtrojogo_ids: DataTypes.NUMBER,
     fjcasa_id: DataTypes.NUMBER,
     fjfora_id: DataTypes.NUMBER,
   }, {

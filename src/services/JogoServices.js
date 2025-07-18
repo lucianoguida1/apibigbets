@@ -42,28 +42,35 @@ class JogoServices extends Services {
             const convertStringToArray = (stringValue) => {
                 return stringValue ? stringValue.split(',').map(Number) : [];
             };
-            let filtroTime = null;
-            if (regra.filtrojogo_id) {
-                filtroTime = await Filtrojogo.findOne({
-                    where: { id: regra.filtrojogo_id }
+            if (regra.filtrojogo_ids) {
+                const filtroTimeIds = convertStringToArray(regra.filtrojogo_ids);
+                const filtroTimes = await Filtrojogo.findAll({
+                    where: {
+                        id: {
+                            [Op.in]: filtroTimeIds
+                        }
+                    }
                 });
 
-                if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + 1);
-                    const formattedDate = endDate.toISOString().split('T')[0];
+                for (const filtroTime of filtroTimes) {
+                    if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
+                        const endDate = new Date();
+                        endDate.setDate(endDate.getDate() + 1);
+                        const formattedDate = endDate.toISOString().split('T')[0];
 
-                    // Certifique-se de que filtroTime.sql está sendo usado corretamente
-                    let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
-                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
+                        // Certifique-se de que filtroTime.sql está sendo usado corretamente
+                        let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
+                        sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
 
-                    const results = await sequelize.query(sqlF, {
-                        type: sequelize.QueryTypes.SELECT,
-                    });
+                        const results = await sequelize.query(sqlF, {
+                            type: sequelize.QueryTypes.SELECT,
+                        });
 
+                    }
                 }
             }
 
+            /*
             let fjcasa = null;
             if (regra.fjcasa_id) {
                 fjcasa = await Filtrojogo.findOne({
@@ -105,7 +112,8 @@ class JogoServices extends Services {
                     });
                 }
             }
-
+            */
+           
             let regraV = regra.regravalidacoe_id;
             let regraV1 = regra.regravalidacoe2_id;
             let regraV2 = regra.regravalidacoe3_id;
@@ -124,8 +132,8 @@ class JogoServices extends Services {
                 ${regraV1 ? `inner join odds o2 on o2.jogo_id = j.id` : ''}
                 ${regraV2 ? `inner join odds o3 on o3.jogo_id = j.id` : ''}
 
-                ${regra.filtrojogo_id ? `inner join filtrojogodata fj on fj.filtrojogo_id = ${regra.filtrojogo_id}
-                                                    and (j.data::DATE) = (fj.data::DATE)
+                ${regra.filtrojogo_ids ? `inner join (SELECT data,time_id FROM filtrojogodata WHERE filtrojogo_id IN (${regra.filtrojogo_ids}) GROUP BY data, time_id HAVING COUNT(DISTINCT filtrojogo_id) = ${regra.filtrojogo_ids.split(',').filter(Boolean).length}) fj on
+                                                    (j.data::DATE) = (fj.data::DATE)
                                                     and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
                                                     ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                                     ` : ``}

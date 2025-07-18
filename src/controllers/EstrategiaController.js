@@ -43,7 +43,7 @@ const formSchema = z.object({
     filtro_kelly: z.boolean().default(false),
     liga: z.array(optionSchema),
     pais: z.array(optionSchema),
-    filtroTime: z.string(), filtroTime2: z.string(), filtroTime3: z.string(),
+    filtroTime: z.array(optionSchema), filtroTime2: z.array(optionSchema), filtroTime3: z.array(optionSchema),
     fjcasa: z.string(), fjcasa2: z.string(), fjcasa3: z.string(),
     fjfora: z.string(), fjfora2: z.string(), fjfora3: z.string(),
     times: z.array(optionSchema), times2: z.array(optionSchema), times3: z.array(optionSchema),
@@ -155,6 +155,8 @@ class EstrategiaController extends Controller {
     async #validaEstrategia(req, res) {
         const { estrategia, descricao, kelly, filtro_kelly, aposta } = req.body;
 
+        let filtroTimeEmVirgula = null;
+
         // Verificação de campos obrigatórios
         if (!estrategia) {
             res.status(400).json({
@@ -234,8 +236,13 @@ class EstrategiaController extends Controller {
 
             // Validação de `Filtro de Time`
             if (regra.filtroTime != "" && regra.filtroTime != "Todos") {
+                const filtroTimeIds = regra.filtroTime.map(f => f.value);
                 const filtroTime = await filtro.pegaUmRegistro({
-                    where: { id: regra.filtroTime }
+                    where: {
+                        id: {
+                            [Op.in]: filtroTimeIds
+                        }
+                    }
                 });
 
                 if (!filtroTime) {
@@ -250,6 +257,7 @@ class EstrategiaController extends Controller {
                     });
                     return false;
                 }
+                filtroTimeEmVirgula = regra.filtroTime.map(f => f.value).join(',')
             }
 
             // Validação de `Time`
@@ -373,7 +381,7 @@ class EstrategiaController extends Controller {
             //regravalidacoe3_id: req.body.aposta3 ? req.body.aposta3 : null,
             //oddmin3: req.body.oddMin3 ? parseFloat(req.body.oddMin3) : null,
             //oddmax3: req.body.oddMax3 ? parseFloat(req.body.oddMax3) : null,
-            filtrojogo_id: req.body.filtroTime && req.body.filtroTime != "Todos" ? req.body.filtroTime : null,
+            filtrojogo_ids: req.body.filtroTime && req.body.filtroTime != "Todos" ? filtroTimeEmVirgula : null,
             fjcasa_id: req.body.fjcasa && req.body.fjcasa != "Todos" ? req.body.fjcasa : null,
             fjfora_id: req.body.fjfora && req.body.fjfora != "Todos" ? req.body.fjfora : null,
         }));
@@ -538,7 +546,7 @@ class EstrategiaController extends Controller {
 
         try {
             const umRegistro = await estrategiaServices.getEstrategia(Number(id), Number(page), Number(pageSize));
-
+            console.log('umRegistro', umRegistro)
             if (!umRegistro) {
                 return res.status(404).json({
                     "status": "error",
@@ -695,6 +703,7 @@ class EstrategiaController extends Controller {
 
             await regraServices.criaVariosRegistros(regrasAtualizadas);
 
+            // Monta os bilhetes com base na nova estratégia
             await bilheteServices.montaBilhetes(novaEstrategia);
 
             // Calcula as estatiscica da estrategia
@@ -856,6 +865,27 @@ class EstrategiaController extends Controller {
             const Filtrojogocasa = await filtro.getFiltrosJogos({ casa: true });
             const Filtrojogofora = await filtro.getFiltrosJogos({ fora: true });
 
+            // Unifica todos os dados em um único array
+            const todosFiltros = [
+                ...Filtrojogogeral,
+                ...Filtrojogocasa,
+                ...Filtrojogofora
+            ];
+
+            // Remove duplicados por ID (opcional)
+            const filtroUnicoPorId = Object.values(
+                todosFiltros.reduce((acc, item) => {
+                    acc[item.id] = item;
+                    return acc;
+                }, {})
+            );
+
+            // Formata para { value, label }
+            const filtrojogoFormatado = filtroUnicoPorId.map(item => ({
+                value: item.id.toString(),
+                label: item.nome
+            }));
+
             return res.status(200).json({
                 "status": "success",
                 "message": "Dados retornados com sucesso!",
@@ -869,7 +899,8 @@ class EstrategiaController extends Controller {
                     Filtrojogogeral,
                     Filtrojogocasa,
                     Filtrojogofora,
-                    regras2
+                    regras2,
+                    filtrojogoFormatado
                 }
             });
 

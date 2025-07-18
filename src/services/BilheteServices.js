@@ -3,8 +3,7 @@ const { Estrategia, Bilhete, Odd, Bilhetesodd, Jogo, Time, Tipoaposta, Regravali
 
 
 const JogoServices = require('./JogoServices.js');
-const e = require('express');
-const { es } = require('date-fns/locale');
+const { Op } = require('sequelize');
 const jogoServices = new JogoServices();
 
 
@@ -368,7 +367,7 @@ class BilheteServices extends Services {
     async bilhetesPendenteStatus() {
         try {
             const sql = `
-                SELECT *
+                SELECT b.*
                 FROM bilhetes b
                 INNER JOIN bilhetesodds bo ON bo.bilhete_id = b.id
                 INNER JOIN odds o ON o.id = bo.odd_id AND o."deletedAt" IS NULL
@@ -382,8 +381,10 @@ class BilheteServices extends Services {
             const results = await sequelize.query(sql, {
                 type: sequelize.QueryTypes.SELECT,
             });
+            const ids = results.map(bilhete => bilhete.id);
+            const bilhetes = await this.pegaTodosOsRegistros({where: { id: { [Op.in]: ids } }});
 
-            return results;
+            return bilhetes;
         } catch (error) {
             console.error('Erro ao buscar bilhetes pendentes:', error);
             throw new Error('Erro ao buscar bilhetes pendentes!');

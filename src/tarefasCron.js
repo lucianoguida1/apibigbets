@@ -84,11 +84,12 @@ const tarefas = {
 };
 
 // Agendamento automático com `node-cron`
-const agendarTarefas = () => {
+const agendarTarefas = async () => {
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
+    await Queue.add('validaBilhetes');
 };
 
 module.exports = { agendarTarefas, tarefas };

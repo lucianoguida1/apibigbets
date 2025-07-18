@@ -8,7 +8,6 @@ const { createBullBoard } = require('bull-board');
 const { BullAdapter } = require('bull-board/bullAdapter');
 const Queue = require('./lib/Queue');
 
-
 const routes = require('./routes');
 const tarefaCron = require('./tarefasCron');
 
@@ -44,11 +43,8 @@ const { router: bullBoardRouter } = createBullBoard(
   Queue.queues.map(queue => new BullAdapter(queue.bull))
 );
 
-// Corrigir assets quebrados
-app.use('/adminwl/queues', (req, res, next) => {
-  req.originalUrl = '/api1.0/' + req.url; // caminho fixado
-  return bullBoardRouter(req, res, next);
-});
+app.use('/adminwl/queues', bullBoardRouter);
+
 
 routes(app);
 
@@ -60,10 +56,10 @@ tarefaCron.agendarTarefas();
 
 
 
- 
- (async () => {
-   await Queue.add('validaBilhetes');
- })();
- 
+/*
+(async () => {
+  await Queue.add('validaBilhetes');
+})();
+*/
 
 module.exports = app;
