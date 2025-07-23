@@ -373,7 +373,6 @@ class BilheteServices extends Services {
                 INNER JOIN odds o ON o.id = bo.odd_id AND o."deletedAt" IS NULL
                 INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
                 WHERE b."deletedAt" IS NULL
-                AND b.status_bilhete IS NULL
                 AND o.status IS NOT NULL
                 AND (j.datahora + INTERVAL '2 hours') < NOW();
             `;

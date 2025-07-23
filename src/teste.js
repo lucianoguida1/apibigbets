@@ -29,7 +29,15 @@ function getTimestamp() {
   return now.toISOString().replace('T', ' ').substring(0, 19);
 }
 
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}m ${s}s`;
+}
+
 async function testarCombinacoes() {
+  const startTime = Date.now(); // Marca o início do processamento
+
   const filtroIdsResult = await sequelize.query(
     'SELECT id FROM filtrojogos WHERE "deletedAt" IS NULL',
     { type: Sequelize.QueryTypes.SELECT }
@@ -49,30 +57,9 @@ async function testarCombinacoes() {
         WHERE fd.filtrojogo_id IN (${combo.join(',')})
         GROUP BY fd.data, fd.time_id
         HAVING COUNT(DISTINCT fd.filtrojogo_id) = ${combo.length}
-      ),
-      jogos_relacionados AS (
-        SELECT 
-          j.id AS jogo_id,
-          j.data::date AS data_jogo,
-          j.casa_id,
-          j.fora_id,
-          o.status,
-          CONCAT(tp.nome, ' - ', r.nome) AS nome,
-          o.odd
-        FROM jogos j
-        JOIN odds o ON o.jogo_id = j.id
-        JOIN tipoapostas tp ON tp.id = o.tipoaposta_id
-        INNER JOIN regravalidacoes r ON r.id = o.regra_id AND r.regra IS NOT NULL
-        WHERE o.status IS NOT NULL AND j."deletedAt" IS NULL AND j.gols_casa IS NOT NULL
-      ),
-      jogos_filtrados AS (
-        SELECT o.*
-        FROM filtros_escolhidos f
-        JOIN jogos_relacionados o
-          ON o.data_jogo = f.data AND (o.casa_id = f.time_id OR o.fora_id = f.time_id)
       )
       SELECT 
-        '${combo.join(',')}' AS combinacao,
+        '${combo.join('-')}' AS combinacao,
         nome,
         COUNT(*) AS total_odds,
         COUNT(*) FILTER (WHERE status = TRUE) AS positivos,
@@ -80,7 +67,10 @@ async function testarCombinacoes() {
         ROUND(COUNT(*) FILTER (WHERE status = TRUE)::NUMERIC / COUNT(*) * 100, 2) AS taxa_acerto,
         AVG(odd) FILTER (WHERE status = TRUE) AS media_odd,
         ((AVG(odd) FILTER (WHERE status = TRUE) - 1) * COUNT(*) FILTER (WHERE status = TRUE) - COUNT(*) FILTER (WHERE status = FALSE)) AS lucro
-      FROM jogos_filtrados
+      FROM mv_jogos_odds o
+      JOIN filtros_escolhidos f
+        ON o.data_jogo = f.data AND (o.casa_id = f.time_id OR o.fora_id = f.time_id)
+      WHERE o.nome = 'Resultado Final - Empate'
       GROUP BY nome
       HAVING ((AVG(odd) FILTER (WHERE status = TRUE) - 1) * COUNT(*) FILTER (WHERE status = TRUE) - COUNT(*) FILTER (WHERE status = FALSE)) > 0;
     `;
@@ -92,9 +82,21 @@ async function testarCombinacoes() {
       console.error(`Erro ao executar combinação ${combo.join(',')}:`, error);
     }
 
+    // Calcula progresso e ETA
     const percent = ((i + 1) / total * 100).toFixed(2);
+    const elapsedSec = (Date.now() - startTime) / 1000;
+    const estTotalSec = (elapsedSec / ((i + 1) || 1)) * total;
+    const remainingSec = estTotalSec - elapsedSec;
+
     const timestamp = getTimestamp();
-    console.log(`[${timestamp}] Progresso: ${percent}% (${i + 1}/${total})`);
+    const eta = new Date(Date.now() + remainingSec * 1000)
+      .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    console.log(
+      `[${timestamp}] Progresso: ${percent}% (${i + 1}/${total}) | ` +
+      `Tempo decorrido: ${formatTime(elapsedSec)} | ` +
+      `Restante: ${formatTime(remainingSec)} (ETA ~ ${eta})`
+    );
   }
 
   resultados.sort((a, b) => b.lucro - a.lucro);

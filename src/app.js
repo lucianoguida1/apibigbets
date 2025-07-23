@@ -51,11 +51,6 @@ routes(app);
 // Tarefas agendadas
 tarefaCron.agendarTarefas();
 
-
-
-
-
-
 /*
 (async () => {
   await Queue.add('validaBilhetes');
