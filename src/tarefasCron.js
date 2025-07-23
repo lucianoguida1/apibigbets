@@ -23,6 +23,7 @@ const tarefas = {
             await Queue.add('getDadosAPI');
             await Queue.add('executaEstrategias');
             await Queue.add('validaOdds');
+            await Queue.add('calculaFiltroJogos');
         } catch (error) {
             console.error('Erro na tarefa agendada às 7hrs:', error.message);
         }
@@ -89,7 +90,6 @@ const agendarTarefas = async () => {
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
-    await Queue.add('calculaFiltroJogos');
 };
 
 module.exports = { agendarTarefas, tarefas };
