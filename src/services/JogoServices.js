@@ -42,78 +42,7 @@ class JogoServices extends Services {
             const convertStringToArray = (stringValue) => {
                 return stringValue ? stringValue.split(',').map(Number) : [];
             };
-            if (regra.filtrojogo_ids) {
-                const filtroTimeIds = convertStringToArray(regra.filtrojogo_ids);
-                const filtroTimes = await Filtrojogo.findAll({
-                    where: {
-                        id: {
-                            [Op.in]: filtroTimeIds
-                        }
-                    }
-                });
 
-                for (const filtroTime of filtroTimes) {
-                    if (filtroTime && filtroTime.sql.includes('@data') && jogosPendente) {
-                        const endDate = new Date();
-                        endDate.setDate(endDate.getDate() + 1);
-                        const formattedDate = endDate.toISOString().split('T')[0];
-
-                        // Certifique-se de que filtroTime.sql está sendo usado corretamente
-                        let sqlF = filtroTime.sql.replace(/@data/g, `'${formattedDate}'`);
-                        sqlF = sqlF.replace(/@filtrojogoid/g, `'${filtroTime.id}'`);
-
-                        const results = await sequelize.query(sqlF, {
-                            type: sequelize.QueryTypes.SELECT,
-                        });
-
-                    }
-                }
-            }
-
-            /*
-            let fjcasa = null;
-            if (regra.fjcasa_id) {
-                fjcasa = await Filtrojogo.findOne({
-                    where: { id: regra.fjcasa_id }
-                });
-
-                if (fjcasa && fjcasa.sql.includes('@data') && jogosPendente) {
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + 1);
-                    const formattedDate = endDate.toISOString().split('T')[0];
-
-                    // Certifique-se de que fjcasa.sql está sendo usado corretamente
-                    let sqlF = fjcasa.sql.replace(/@data/g, `'${formattedDate}'`);
-                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${fjcasa.id}'`);
-
-                    const results = await sequelize.query(sqlF, {
-                        type: sequelize.QueryTypes.SELECT,
-                    });
-                }
-            }
-
-            let fjfora = null;
-            if (regra.fjfora_id) {
-                fjfora = await Filtrojogo.findOne({
-                    where: { id: regra.fjfora_id }
-                });
-
-                if (fjfora && fjfora.sql.includes('@data') && jogosPendente) {
-                    const endDate = new Date();
-                    endDate.setDate(endDate.getDate() + 1);
-                    const formattedDate = endDate.toISOString().split('T')[0];
-
-                    // Certifique-se de que fjfora.sql está sendo usado corretamente
-                    let sqlF = fjfora.sql.replace(/@data/g, `'${formattedDate}'`);
-                    sqlF = sqlF.replace(/@filtrojogoid/g, `'${fjfora.id}'`);
-
-                    const results = await sequelize.query(sqlF, {
-                        type: sequelize.QueryTypes.SELECT,
-                    });
-                }
-            }
-            */
-           
             let regraV = regra.regravalidacoe_id;
             let regraV1 = regra.regravalidacoe2_id;
             let regraV2 = regra.regravalidacoe3_id;

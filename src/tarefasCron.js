@@ -89,7 +89,7 @@ const agendarTarefas = async () => {
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
     cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
-    await Queue.add('validaBilhetes');
+    await Queue.add('calculaFiltroJogos');
 };
 
 module.exports = { agendarTarefas, tarefas };

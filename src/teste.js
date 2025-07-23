@@ -70,7 +70,6 @@ async function testarCombinacoes() {
       FROM mv_jogos_odds o
       JOIN filtros_escolhidos f
         ON o.data_jogo = f.data AND (o.casa_id = f.time_id OR o.fora_id = f.time_id)
-      WHERE o.nome = 'Resultado Final - Empate'
       GROUP BY nome
       HAVING ((AVG(odd) FILTER (WHERE status = TRUE) - 1) * COUNT(*) FILTER (WHERE status = TRUE) - COUNT(*) FILTER (WHERE status = FALSE)) > 0;
     `;
