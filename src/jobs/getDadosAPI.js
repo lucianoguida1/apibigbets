@@ -35,7 +35,7 @@ module.exports = {
     },
 
     async handle(job) {
-        let { date } = job;
+        let { date } = job.data;
         if (!date) date = toDay(1);
 
         if (await requestServices.podeRequisitar()) {

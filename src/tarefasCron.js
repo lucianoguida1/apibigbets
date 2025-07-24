@@ -20,7 +20,7 @@ const tarefas = {
 
     async tarefa10hrs() {
         try {
-            await Queue.add('getDadosAPI');
+            await Queue.add('getDadosAPI', { date: new Date().toISOString().split('T')[0] });
             await Queue.add('executaEstrategias');
             await Queue.add('validaOdds');
             await Queue.add('calculaFiltroJogos');
@@ -31,7 +31,7 @@ const tarefas = {
 
     async tarefa2Horas() {
         try {
-            await Queue.add('getJogosAPI'); // Adiciona a tarefa de obter jogos à fila
+            await Queue.add('getJogosAPI');
             await Queue.add('validaOdds');
             await Queue.add('validaBilhetes');
             await Queue.add('atualizaGraficos');
