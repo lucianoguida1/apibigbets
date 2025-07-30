@@ -11,7 +11,6 @@ const tarefas = {
     async tarefa19hrs() {
         try {
             await Queue.add('getDadosAPI');
-            await Queue.add('executaEstrategias');
             await Queue.add('validaOdds');
         } catch (error) {
             console.error('Erro na tarefa agendada às 19hrs:', error.message);
@@ -21,7 +20,6 @@ const tarefas = {
     async tarefa10hrs() {
         try {
             await Queue.add('getDadosAPI', { date: new Date().toISOString().split('T')[0] });
-            await Queue.add('executaEstrategias');
             await Queue.add('validaOdds');
             await Queue.add('calculaFiltroJogos');
         } catch (error) {

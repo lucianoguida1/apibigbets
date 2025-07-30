@@ -374,7 +374,7 @@ class BilheteServices extends Services {
                 INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
                 WHERE b."deletedAt" IS NULL
                 AND o.status IS NOT NULL
-                AND (j.datahora + INTERVAL '2 hours') < NOW();
+                AND ((j.datahora + INTERVAL '2 hours') < NOW() or b.status_bilhete IS NULL);
             `;
 
             const results = await sequelize.query(sql, {

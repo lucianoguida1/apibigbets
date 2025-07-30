@@ -115,12 +115,17 @@ module.exports = {
                 let endTime = Date.now();
                 let duration = endTime - startTime;
                 logTo(`Tempo de execução CARGA DADOS: ${formatMilliseconds(duration)} data: ${date}`);
+
+                // importa dinamicamente para evitar o ciclo
+                const Queue = require('../lib/Queue');
+                await Queue.add('executaEstrategias');
             }
         } else {
             logTo(`Limite de requisições atingido... (${date})`);
             throw new Error(`Limite de requisições atingido... (${date})`);
         }
     },
+
 
     async adicionaJogos(date = toDay(-1)) {
         let paramsJogos = {

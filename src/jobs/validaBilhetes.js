@@ -13,7 +13,6 @@ module.exports = {
         try {
             const bilhetes = await bilheteServices.bilhetesPendenteStatus();
             for (const bilhete of bilhetes) {
-                console.log(bilhete)
                 let status = null;
                 for (const odd of await bilhete.getOdds()) {
                     const progress = Math.round(

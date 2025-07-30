@@ -616,6 +616,16 @@ class EstrategiaController extends Controller {
             const ret = { ...bilhetes.dataValues };
             ret.regras = estrategia.Regras;
 
+            for (const regra of ret.regras) {
+                if (regra.filtrojogo_ids != null && regra.filtrojogo_ids != undefined) {
+                    const ids = regra.filtrojogo_ids.split(',');
+                    regra.filtroGeral = await filtro.pegaTodosOsRegistros({
+                        where: { id: { [Op.in]: ids } }
+                    });
+                }
+            }
+            console.log('ret', ret.filtrojogo_ids)
+
             return res.status(200).json({
                 "status": "success",
                 "message": "Estrategias encontradas",
