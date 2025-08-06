@@ -23,7 +23,7 @@ module.exports = {
     },
 
     async handle(job) {
-        let { date } = job;
+        let { date } = job.data;
         if (!date) date = toDay();
 
         let paramsJogos = {

@@ -10,7 +10,7 @@ class DashboardServices extends Services {
     async atualizaLucrativoOntem() {
         try {
             const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setDate(yesterday.getDate() - 3);
             const formattedDate = yesterday.toISOString().split('T')[0];
 
             const query = `

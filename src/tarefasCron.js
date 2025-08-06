@@ -23,7 +23,18 @@ const tarefas = {
             await Queue.add('validaOdds');
             await Queue.add('calculaFiltroJogos');
         } catch (error) {
-            console.error('Erro na tarefa agendada às 7hrs:', error.message);
+            console.error('Erro na tarefa agendada às 10hrs:', error.message);
+        }
+    },
+
+    async tarefa4hrs() {
+        try {
+            await Queue.add('getJogosAPI', { date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0] });
+            await Queue.add('getJogosAPI', { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] });
+            await Queue.add('validaBilhetes');
+            await Queue.add('atualizaGraficos');
+        } catch (error) {
+            console.error('Erro na tarefa agendada às 4hrs:', error.message);
         }
     },
 
@@ -86,6 +97,7 @@ const tarefas = {
 const agendarTarefas = async () => {
     cron.schedule('0 19 * * *', tarefas.tarefa19hrs);
     cron.schedule('0 10 * * *', tarefas.tarefa10hrs);
+    cron.schedule('0 4 * * *', tarefas.tarefa4hrs);
     cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
 };
