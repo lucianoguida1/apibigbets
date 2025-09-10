@@ -10,31 +10,37 @@ class DashboardServices extends Services {
     async atualizaLucrativoOntem() {
         try {
             const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 3);
+            yesterday.setDate(yesterday.getDate() - 1);
             const formattedDate = yesterday.toISOString().split('T')[0];
 
             const query = `
                 SELECT 
-                t.nome as label,
+                t.nome AS label,
                 b.estrategia_id,
                 ROUND(SUM(
                     CASE 
-                        WHEN b.status_bilhete IS TRUE THEN (b.odd - 1) * b.valor_aposta
-                        WHEN b.status_bilhete IS FALSE THEN -1 * b.valor_aposta
-                        ELSE 0
+                    WHEN b.status_bilhete IS TRUE  THEN (b.odd - 1) * b.valor_aposta
+                    WHEN b.status_bilhete IS FALSE THEN - b.valor_aposta
+                    ELSE 0
                     END
                 )::numeric, 2) AS value,
-                COUNT(*) AS num_bilhetes,
-                b.data::DATE
+                COUNT(DISTINCT b.id) AS num_bilhetes,
+                SUM(b.valor_aposta) AS total_apostado,
+                b.data::DATE AS data
                 FROM bilhetes b
-                INNER JOIN estrategias t ON b.estrategia_id = t.id and t."deletedAt" is null
-                INNER JOIN bilhetesodds bo ON bo.bilhete_id = b.id
-                INNER JOIN odds o ON bo.odd_id = o.id and o."deletedAt" is null
-                INNER JOIN jogos j ON j.id = o.jogo_id and j."deletedAt" is null
-                where j.data::DATE = '${formattedDate}' and b."deletedAt" is null
-                group by t.nome,b.estrategia_id,b.data
-                order by value desc
-                limit 5
+                JOIN estrategias t ON t.id = b.estrategia_id AND t."deletedAt" IS NULL
+                WHERE b."deletedAt" IS NULL
+                AND EXISTS (
+                    SELECT 1
+                    FROM bilhetesodds bo
+                    JOIN odds o  ON o.id = bo.odd_id   AND o."deletedAt" IS NULL
+                    JOIN jogos j ON j.id = o.jogo_id   AND j."deletedAt" IS NULL
+                    WHERE bo.bilhete_id = b.id
+                    AND j.data::DATE = DATE '${formattedDate}' -- use formato ISO
+                )
+                GROUP BY t.nome, b.estrategia_id, b.data::DATE
+                ORDER BY value DESC
+                limit 5;
             `;
             const dados = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
 
