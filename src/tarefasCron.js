@@ -1,13 +1,16 @@
 const cron = require('node-cron');
 const Queue = require('./lib/Queue');
 
-const ServicesBaseController = require('./controllers/ServicesBaseController.js');
-const serviceBase = new ServicesBaseController();
-
 
 // Define cada tarefa como uma função separada
 const tarefas = {
-
+    async tarefa10Dias() {
+        try {
+            await Queue.add('fazCombinacaoFiltros');
+        } catch(error){
+            console.error('Erro na tarefa agendada a cada 10 dias:', error.message);
+        }
+    },
     async tarefa19hrs() {
         try {
             await Queue.add('getDadosAPI');
@@ -100,6 +103,7 @@ const agendarTarefas = async () => {
     cron.schedule('0 4 * * *', tarefas.tarefa4hrs);
     cron.schedule('0 */2 * * *', tarefas.tarefa2Horas);
     cron.schedule('*/2 * * * *', tarefas.tarefa5Minutos);
+    cron.schedule('0 0 */10 * *', tarefas.tarefa10Dias);
 };
 
 module.exports = { agendarTarefas, tarefas };

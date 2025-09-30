@@ -102,7 +102,7 @@ class JogoServices extends Services {
                 ${regra.regravalidacoe2_id ? `and (o2.regra_id = ${regra.regravalidacoe2_id} and o2.odd between ${regra.oddmin2 || 0} and ${regra.oddmax2 || Number.MAX_VALUE})` : ''}
                 ${regra.regravalidacoe3_id ? `and (o3.regra_id = ${regra.regravalidacoe3_id} and o3.odd between ${regra.oddmin3 || 0} and ${regra.oddmax3 || Number.MAX_VALUE})` : ''}
                 ORDER BY j.id ASC
-                LIMIT 3500;`;
+                --LIMIT 3500;`;
 
             console.log(sql);
 
