@@ -30,7 +30,7 @@ module.exports = {
             instances: 1,
             exec_mode: 'fork',
             watch: false,
-            node_args: '--trace-deprecation --max-old-space-size=2048',
+            node_args: '--trace-deprecation --max-old-space-size=6144',
             ignore_watch: [
                 'src/database/storage/',
                 '.env',
