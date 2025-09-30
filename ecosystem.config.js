@@ -40,7 +40,7 @@ module.exports = {
                 '*.log',
                 '.git',
             ],
-            max_memory_restart: '3072M',
+            max_memory_restart: '6144M',
             autorestart: true,
             max_restarts: 5,
             restart_delay: 5000,
