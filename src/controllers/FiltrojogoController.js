@@ -1,10 +1,12 @@
 
 const Controller = require('./Controller.js');
 const Filtrojogos = require('../services/FiltrojogoServices.js');
+const CombinacaoFiltroJogoServices = require('../services/CombinacaoFiltroJogoServices.js');
 const { sequelize } = require('../database/models');
 const { z } = require('zod'); // Certifique-se de que o zod está instalado
 
 const filtrojogos = new Filtrojogos();
+const combinacaoFJ = new CombinacaoFiltroJogoServices();
 
 
 const formSchema = z
@@ -264,6 +266,61 @@ class FiltrojogoController extends Controller {
             return res.status(500).json({
                 status: "error",
                 message: "Erro interno ao deletar filtro de jogo",
+                errorCode: 500,
+                details: error.message
+            });
+        }
+    }
+
+    async getCombinacoes(req, res) {
+        try {
+            const { page = 1, pageSize = 30 } = req.query;
+
+            const combinacoes = await combinacaoFJ.getCombinacoes(page, pageSize);
+            const filtros = await filtrojogos.pegaTodosOsRegistros();
+
+            // Converte para plain (caso venham como instâncias do Sequelize)
+            const rowsPlain = combinacoes.rows.map(r => r?.get ? r.get({ plain: true }) : r);
+            const filtrosPlain = filtros.map(f => f?.get ? f.get({ plain: true }) : f);
+
+            // Mapa de filtros por id => filtro
+            const mapaFiltro = new Map(filtrosPlain.map(f => [Number(f.id), f]));
+
+            // Enriquecer cada combinação com o array `filtros`
+            const enrichedRows = rowsPlain.map(c => {
+                // explode "9-42" -> [9, 42]
+                const ids = String(c.combinacao)
+                    .split('-')
+                    .map(s => Number(s.trim()))
+                    .filter(Number.isFinite);
+
+                const filtrosDaComb = ids
+                    .map(id => mapaFiltro.get(id))
+                    .filter(Boolean);
+
+                return { ...c, filtros: filtrosDaComb };
+            });
+
+            // Se quiser devolver no mesmo objeto:
+            combinacoes.rows = enrichedRows;
+
+            return res.status(200).json({
+                status: "success",
+                message: "Combinacoes retrieved successfully",
+                pagination: {
+                    "Page": parseInt(page, 10),
+                    "totalPages": Math.ceil(combinacoes.count / pageSize),
+                    "totalItems": parseInt(combinacoes.count, 10)
+                },
+                statusCode: 200,
+                data: combinacoes
+            });
+
+        } catch (error) {
+            console.error('Erro ao obter combinações:', error);
+            return res.status(500).json({
+                status: "error",
+                message: "Erro interno ao obter combinações",
                 errorCode: 500,
                 details: error.message
             });

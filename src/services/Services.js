@@ -7,7 +7,7 @@ class Services {
   }
 
   async pegaTodosOsRegistros(opitions = {}) {
-    return dataSource[this.model].findAll({ ...opitions, attributes: { exclude: ["updatedAt", "deletedAt"] }, });
+    return dataSource[this.model].findAll({ ...opitions, attributes: { exclude: ["updatedAt", "deletedAt", 'sql'] }, });
   }
 
   async pegaRegistrosPorEscopo(escopo) {
