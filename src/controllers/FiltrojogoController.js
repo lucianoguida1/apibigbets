@@ -4,6 +4,7 @@ const Filtrojogos = require('../services/FiltrojogoServices.js');
 const CombinacaoFiltroJogoServices = require('../services/CombinacaoFiltroJogoServices.js');
 const { sequelize } = require('../database/models');
 const { z } = require('zod'); // Certifique-se de que o zod está instalado
+const { format } = require('@fast-csv/format');
 
 const filtrojogos = new Filtrojogos();
 const combinacaoFJ = new CombinacaoFiltroJogoServices();
@@ -326,6 +327,75 @@ class FiltrojogoController extends Controller {
             });
         }
     }
+
+    async getCSVCombinacoes(req, res) {
+        const filename = `combinacoes_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+
+        // Cabeçalhos do download (attachment força baixar ao navegar para a rota)
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+        );
+        // expõe Content-Disposition p/ front (CORS + fetch conseguir ler nome do arquivo)
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+        // evita sniffing e cache
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Cache-Control', 'no-store');
+
+        // (opcional, mas ajuda a iniciar o download logo)
+        if (typeof res.flushHeaders === 'function') res.flushHeaders();
+
+        // BOM p/ Excel
+        res.write('\uFEFF');
+
+        const csv = require('@fast-csv/format').format({
+            headers: true,
+            delimiter: ';',
+            quoteColumns: true,
+            writeBOM: false,
+        });
+
+        csv.pipe(res);
+
+        try {
+            // Carrega TODOS (até ~50k) — ok para esse volume
+            const rows = await combinacaoFJ.pegaTodosOsRegistros({ limit: 50000, order: [['lucro', 'DESC']] });
+
+            for (const r of rows) {
+                //const filtros = Array.isArray(r.filtros) ? r.filtros : [];
+                csv.write({
+                    //id: r.id,
+                    combinacao: r.combinacao,
+                    mercado_nome: r.nome,
+                    total_odds: r.total_odds,
+                    positivos: r.positivos,
+                    negativos: r.negativos,
+                    taxa_acerto: r.taxa_acerto,
+                    media_odd: r.media_odd,
+                    lucro: r.lucro,
+                    //createdAt: r.createdAt,
+                    //filtros_ids: filtros.map((f) => f.id).join('-'),
+                    //filtros_nomes: filtros.map((f) => f.nome).join(' | '),
+                    //filtros_where: filtros.map((f) => f.where).filter(Boolean).join(' AND '),
+                });
+            }
+
+            csv.end(); // encerra stream e resposta
+        } catch (error) {
+            console.error('Erro ao obter CSV das combinações:', error);
+            if (!res.headersSent) {
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Erro interno ao obter CSV das combinações',
+                    errorCode: 500,
+                    details: error.message,
+                });
+            }
+            try { csv.end(); } catch { }
+        }
+    }
+
 }
 
 module.exports = FiltrojogoController;

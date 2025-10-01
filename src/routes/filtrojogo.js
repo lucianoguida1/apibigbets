@@ -16,6 +16,7 @@ router.post('/testefiltrojogo', (req, res) => filtrojogoController.testFiltroJog
 router.get('/filtrojogo', (req, res) => filtrojogoController.getFiltrosJogos(req, res));
 router.delete('/filtrojogo/:id', (req, res) => filtrojogoController.deleteFiltroJogo(req, res));
 router.get('/combinacoes', (req, res) => filtrojogoController.getCombinacoes(req, res));
+router.get('/combinacoes/csv', (req, res) => filtrojogoController.getCSVCombinacoes(req, res));
 
 
 module.exports = router;
