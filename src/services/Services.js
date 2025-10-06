@@ -10,6 +10,10 @@ class Services {
     return dataSource[this.model].findAll({ ...opitions, attributes: { exclude: ["updatedAt", "deletedAt", 'sql'] }, });
   }
 
+  async pegaTodosOsRegistrosECampos(opitions = {}) {
+    return dataSource[this.model].findAll({ ...opitions });
+  }
+
   async pegaRegistrosPorEscopo(escopo) {
     return dataSource[this.model].scope(escopo).findAll();
   }
