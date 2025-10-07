@@ -45,7 +45,7 @@ class DashboardServices extends Services {
             const dados = await sequelize.query(query, { type: sequelize.QueryTypes.SELECT });
 
             if (dados.length === 0) {
-                logTo('DashboardServices', 'Nenhum dado encontrado para o lucro de ontem', 'info', 'DashboardServices.js', 'atualizaLucrativoOntem');
+                logTo('DashboardServices: Nenhum dado encontrado para o lucro de ontem', true, true);
                 return;
             }
             const dashL = await super.pegaUmRegistro({ where: { nome: 'lucroOntem' } });
@@ -57,7 +57,7 @@ class DashboardServices extends Services {
             }
         } catch (error) {
             console.error('Erro ao atualizar o lucro de ontem:', error.message);
-            logTo('Erro ao atualizar dahsboard', error.message, 'error', 'DashboardServices.js', 'atualizaLucrativoOntem');
+            logTo('DashboardServices:' + error.message, true, true);
         }
     }
 }
