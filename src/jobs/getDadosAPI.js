@@ -57,6 +57,7 @@ module.exports = {
                     if (reqPendente.pagina == 1) {
                         await module.exports.adicionaJogos(date);
                     }
+                    
                     const todasLigas = await ligaServices.pegaTodosOsRegistros();
                     const todosJogos = await jogoServices.pegaTodosOsRegistros({ where: { 'data': date } });
                     const todasCasasAposta = await betServices.pegaTodosOsRegistros();

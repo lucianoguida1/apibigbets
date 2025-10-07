@@ -6,7 +6,7 @@ const TimeServices = require('../services/TimeServices.js');
 const GolServices = require('../services/GolServices.js');
 const TimestemporadaServices = require('../services/TimestemporadaServices.js');
 const logTo = require('../utils/logTo.js');
-const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Filtrojogo, Bilhete, sequelize } = require('../database/models');
+const { Jogo, Time, Liga, Odd, Gol, Temporada, Regravalidacoe, Bilhete, sequelize } = require('../database/models');
 
 const ligaServices = new LigaServices();
 const timeServices = new TimeServices();
@@ -104,7 +104,7 @@ class JogoServices extends Services {
                 ORDER BY j.id ASC
                 --LIMIT 3500;`;
 
-            console.log(sql);
+            //console.log(sql);
 
             let results = [];
             try {

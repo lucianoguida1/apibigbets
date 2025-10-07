@@ -4,9 +4,11 @@ const Regra = require('./RegravalidacoeServices.js');
 const regraServices = new Regra();
 
 class OddServices extends Services {
+    
     constructor() {
         super('Odd');
     }
+
     async pegaOdd(tipoApostas, jogo, casaDeAposta, odds, regras) {
         const oddsDoJogo = await super.pegaTodosOsRegistros({ where: { 'jogo_id': jogo.id } });
 
@@ -26,9 +28,21 @@ class OddServices extends Services {
                 const valorOdd = parseFloat(value.odd);
 
                 const oddDoJogo = oddsDoJogo.find(e => String(e.nome) == value.value && e.tipoaposta_id == tipoAposta.id && regra.id == e.regra_id);
+
                 if (oddDoJogo) {
                     if (valorOdd != oddDoJogo.odd) {
-                        oddsParaAtualizar.push({ id: oddDoJogo.id, odd: valorOdd }); // Armazena para ser atualizado mais tarde
+                        let novoCampo = 'odd_1';
+                        let i = 1;
+                        while (oddDoJogo.dados && oddDoJogo.dados.hasOwnProperty(novoCampo)) {
+                            i++;
+                            novoCampo = `odd_${i}`;
+                        }
+                        if (!oddDoJogo.dados) {
+                            oddDoJogo.dados = {};
+                        }
+                        oddDoJogo.dados[novoCampo] = valorOdd;
+
+                        oddsParaAtualizar.push({ id: oddDoJogo.id, odd: valorOdd, dados: oddDoJogo.dados });
                     }
                 } else {
                     novasOdds.push({
@@ -37,7 +51,10 @@ class OddServices extends Services {
                         'tipoaposta_id': tipoAposta.id,
                         'jogo_id': jogo.id,
                         'bet_id': casaDeAposta.id,
-                        'regra_id': regra ? regra.id : null
+                        'regra_id': regra ? regra.id : null,
+                        'dados': {
+                            'odd_1': valorOdd
+                        }
                     });
                 }
             }

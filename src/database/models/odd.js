@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     jogo_id: DataTypes.NUMBER,
     bet_id: DataTypes.NUMBER,
     regra_id: DataTypes.NUMBER,
-    status: DataTypes.BOOLEAN
+    status: DataTypes.BOOLEAN,
+    dados: DataTypes.JSON
   }, {
     sequelize,
     modelName: 'Odd',
