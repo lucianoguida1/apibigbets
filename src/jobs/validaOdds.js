@@ -28,7 +28,7 @@ module.exports = {
                         regra_id: regra.id,
                         [Op.or]: [
                             { status: null },
-                            { createdAt: { [Op.between]: [toDay(-1), toDay()] } },
+                            { createdAt: { [Op.between]: [toDay(-3), toDay()] } },
                         ]
                     }
                 });

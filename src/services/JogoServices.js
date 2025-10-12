@@ -66,30 +66,20 @@ class JogoServices extends Services {
                                                     and ((j.casa_id = fj.time_id or j.fora_id = fj.time_id)
                                                     ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
                                                     ` : ``}
-                ${regra.fjcasa_id && fjcasa.casa && !fjcasa.fora ? `inner join filtrojogodata fj2 on fj2.filtrojogo_id = ${regra.fjcasa_id}
-                                                    and (j.data::DATE) = (fj2.data::DATE)
-                                                    and ((j.casa_id = fj2.time_id)
-                                                    ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                                    `: ``}
-                ${regra.fjfora_id && fjfora.fora && !fjfora.casa ? `inner join filtrojogodata fj3 on fj3.filtrojogo_id = ${regra.fjfora_id}
-                                                    and (j.data::DATE) = (fj3.data::DATE)
-                                                    and ((j.fora_id = fj3.time_id)
-                                                    ${regra.time_id ? `or (j.casa_id in (${regra.time_id}) or j.fora_id in (${regra.time_id})))` : `)`}
-                                                    ` : ``}
                 inner join tipoapostas tp on tp.id = o.tipoaposta_id
                 where j."deletedAt" is null
                 ${jogosPendente ? `and j.gols_casa is null AND j.data::DATE >= CURRENT_DATE` : `and j.gols_casa is not null`}
                 ${regraV > 9999990 ? `
                     and (
                         case
-                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 3
-                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 3
-                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 1
-                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 124
-                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.casa_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 126
-                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id}) ${regra.filtrojogo_id || regra.fjcasa_id || regra.fjfora_id ? `or j.fora_id = ${regra.filtrojogo_id ? `fj.time_id` : regra.fjcasa_id ? `fj2.time_id` : regra.fjfora_id ? `fj3.time_id` : ``}` : ``}) then o.regra_id = 124
+                            when ${regraV} = 9999991 and (j.casa_id in (${regra.time_id})) then o.regra_id = 1
+                            when ${regraV} = 9999991 and (j.fora_id in (${regra.time_id})) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.casa_id in (${regra.time_id})) then o.regra_id = 3
+                            when ${regraV} = 9999993 and (j.fora_id in (${regra.time_id})) then o.regra_id = 1
+                            when ${regraV} = 9999994 and (j.casa_id in (${regra.time_id})) then o.regra_id = 124
+                            when ${regraV} = 9999994 and (j.fora_id in (${regra.time_id})) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.casa_id in (${regra.time_id})) then o.regra_id = 126
+                            when ${regraV} = 9999995 and (j.fora_id in (${regra.time_id})) then o.regra_id = 124
                             when ${regraV} = 9999992 then o.regra_id = 2
                             else o.regra_id = ${regraV}
                         end

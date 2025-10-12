@@ -3,3 +3,4 @@ src/database/storage/
 logs/
 package-lock.json
 .env
+.vscode

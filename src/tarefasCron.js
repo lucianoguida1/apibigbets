@@ -55,7 +55,6 @@ const tarefas = {
     async tarefa5Minutos() {
         try {
             await Queue.add('verficaGruposTelegram');
-            await Queue.add('enviaMsgTelegram');
         } catch (error) {
             console.error('Erro na tarefa agendada a cada 5 minutos:', error.message);
         }
@@ -75,15 +74,6 @@ const tarefas = {
             await Queue.add('validaBilhetes');
         } catch (error) {
             console.error('Erro na tarefa de validar bilhete:', error.message);
-        }
-    },
-
-    async enviaMensagens() {
-        try {
-            await Queue.add('verficaGruposTelegram');
-            await Queue.add('enviaMsgTelegram');
-        } catch (error) {
-            console.error('Erro na tarefa de enviar mensagens Telegram:', error.message);
         }
     },
 

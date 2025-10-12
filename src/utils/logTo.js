@@ -43,7 +43,7 @@ module.exports = async (message, telegram = true, cons = true) => {
             message = `\n DEVELOPMENT \n ${message}`
         }
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN; // Token do bot do Telegram
-        const telegramChatId = process.env.TELEGRAM_CHAT_ID; // ID do chat do Telegram
+        const telegramChatId = process.env.TELEGRAM_CHAT_LOG; // ID do chat do Telegram
 
         if (telegramToken && telegramChatId) {
             try {

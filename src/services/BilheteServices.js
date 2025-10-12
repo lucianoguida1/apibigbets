@@ -240,6 +240,40 @@ class BilheteServices extends Services {
                         await Bilhetesodd.create(bilheteOdd);
                     }
                 }
+                // monta e envia as mensagens para o Telegram
+                for (const b of bilhetes) {
+                    const mensagem = `*Novo Bilhete Encontrado* \n\n` +
+                        `*Estratégia:* ${estrategia.nome}\n` +
+                        `*Odd:* ${b.odd.toFixed(2)}\n` +
+                        `*Valor Apostado:* R$ ${b.valor_aposta.toFixed(2)}\n` +
+                        `*Data:* ${new Date(b.data).toLocaleString('pt-BR')}\n` +
+                        `*Link:* https://bigfut.pro/estrategia/${estrategia.id}\n\n` +
+                        `*Boa Sorte!* 🍀`;
+
+                    // adiciona o job na fila
+                    const Queue = require('../lib/Queue');
+                    await Queue.add('enviaMensagemTelegram', {
+                        message: mensagem,
+                        // você pode passar também um chatId específico, se precisar:
+                        chatId: estrategia.chat_id,
+                        options: { parse_mode: 'Markdown' }
+                    });
+
+                    b.alert = true;
+                    await b.save();
+                }
+
+                if (estrategia.chat_id) {
+                    const mensagem = `*Novo(s) Bilhete(s) Encontrado* \n\n` +
+                        `*Estratégia:* ${estrategia.nome}\n` +
+                        `*Link:* https://bigfut.pro/estrategia/${estrategia.id}\n\n` +
+                        `*Confira, Boa Sorte!* 🍀`;
+                    const Queue = require('../lib/Queue');
+                    await Queue.add('enviaMensagemTelegram', {
+                        message: mensagem,
+                        options: { parse_mode: 'Markdown' }
+                    });
+                }
 
                 return bilhetes;
             }
@@ -373,15 +407,15 @@ class BilheteServices extends Services {
                 INNER JOIN odds o ON o.id = bo.odd_id AND o."deletedAt" IS NULL
                 INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
                 WHERE b."deletedAt" IS NULL
-                AND o.status IS NOT NULL
-                AND ((j.datahora + INTERVAL '2 hours') < NOW() or b.status_bilhete IS NULL);
+                AND  b.status_bilhete <> o.status 
+                AND (b."createdAt"::date >= (CURRENT_DATE - INTERVAL '2 days') or b.status_bilhete is null);
             `;
 
             const results = await sequelize.query(sql, {
                 type: sequelize.QueryTypes.SELECT,
             });
             const ids = results.map(bilhete => bilhete.id);
-            const bilhetes = await this.pegaTodosOsRegistros({where: { id: { [Op.in]: ids } }});
+            const bilhetes = await this.pegaTodosOsRegistros({ where: { id: { [Op.in]: ids } } });
 
             return bilhetes;
         } catch (error) {
