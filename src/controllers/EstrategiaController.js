@@ -925,6 +925,27 @@ class EstrategiaController extends Controller {
         }
     }
 
+    async getTopTresEstrategias(req, res) {
+        try {
+            const estrategias = await estrategiaServices.getTopTresEstrategias();
+            return res.status(200).json({
+                "status": "success",
+                "message": "Dados retornados com sucesso!",
+                "statusCode": 200,
+                "pagination": {},
+                data: estrategias
+            });
+        } catch (error) {
+            console.error(error)
+            return res.status(500).json({
+                "status": "error",
+                "message": "Erro interno ao buscar dados",
+                "errorCode": 500,
+                "details": error.message
+            });
+        }
+    }
+
     /*
     async atualizarEstrategia(req, res) {
         try {
