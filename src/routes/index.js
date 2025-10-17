@@ -10,6 +10,7 @@ const filtrojogo = require('./filtrojogo.js');
 const jogo = require('./jogo.js');
 const help = require('./help.js');
 const dashboard = require('./dashboard.js');
+const bilhete = require('./bilhete.js');
 
 const ServicesBaseController = require('../controllers/ServicesBaseController.js');
 const serviceBase = new ServicesBaseController();
@@ -26,7 +27,8 @@ module.exports = app => {
         filtrojogo,
         jogo,
         help,
-        dashboard
+        dashboard,
+        bilhete
     );
 
     /**

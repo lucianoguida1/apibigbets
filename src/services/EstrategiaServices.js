@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const Services = require('./Services.js');
-const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Filtrojogo, Time, Bilhete, Jogo, Odd } = require('../database/models');
+const { Estrategia, Regra, Regravalidacoe, Tipoaposta, Pai, Liga, Time, sequelize } = require('../database/models');
 
 
 class EstrategiaServices extends Services {
@@ -297,6 +297,57 @@ class EstrategiaServices extends Services {
             console.error('EstrategiaServices:', error.message);
         }
 
+    }
+
+    async getTopTresEstrategias() {
+        try {
+            const rawResult = await sequelize.query(
+                `SELECT
+                    e.id,
+                    e.nome,
+                    COUNT(*) AS total_bilhetes,
+                    SUM(CASE WHEN b.status_bilhete THEN 1 ELSE 0 END) AS vitorias,
+                    SUM(CASE WHEN b.status_bilhete THEN 0 ELSE 1 END) AS derrotas,
+                    SUM(b.valor_aposta)::numeric AS valor_investido,
+                    ROUND(AVG(b.odd)::numeric, 2) AS odd_media,
+                    ROUND(
+                        100 * SUM(CASE WHEN b.status_bilhete THEN 1 ELSE 0 END)::numeric
+                        / NULLIF(COUNT(*)::numeric, 0)
+                    , 2) AS taxa_acerto_pct,
+                    ROUND(SUM(
+                        CASE
+                        WHEN b.status_bilhete
+                            THEN b.valor_aposta * (b.odd - 1)
+                        ELSE -b.valor_aposta
+                        END
+                    )::numeric, 2) AS lucro,
+                    ROUND(
+                        100 * SUM(
+                        CASE
+                            WHEN b.status_bilhete
+                            THEN b.valor_aposta * (b.odd - 1)
+                            ELSE -b.valor_aposta
+                        END
+                        )::numeric
+                        / NULLIF(SUM(b.valor_aposta)::numeric, 0)
+                    , 2) AS roi_pct,
+                    min(b.data)::date AS min_data,
+                    max(b.data)::date AS max_data
+                FROM estrategias e
+                JOIN bilhetes b ON e.id = b.estrategia_id
+                WHERE b.data::date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'
+                AND b.data::date  <  date_trunc('month', CURRENT_DATE)
+                AND b."deletedAt" IS NULL AND e."deletedAt" IS NULL
+                GROUP BY e.id, e.nome
+                ORDER BY lucro DESC LIMIT 3;`,
+                { type: sequelize.QueryTypes.SELECT }
+            );
+            
+            return Object.values(rawResult);
+        } catch (error) {
+            console.log(error)
+        }
+        return [];
     }
 }
 

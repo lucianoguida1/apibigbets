@@ -241,6 +241,8 @@ const router = Router();
  */
 router.get('/estrategia', (req, res) => estrategiaController.getEstrategias(req, res));
 
+router.get('/estrategia/top3', (req, res) => estrategiaController.getTopTresEstrategias(req, res));
+
 /**
  * @swagger
  * /estrategia/{id}:
