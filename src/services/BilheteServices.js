@@ -250,22 +250,23 @@ class BilheteServices extends Services {
                         `*Link:* https://bigfut.pro/estrategia/${estrategia.id}\n\n` +
                         `*Boa Sorte!* 🍀`;
 
-                    // adiciona o job na fila
-                    const Queue = require('../lib/Queue');
-                    await Queue.add('enviaMensagemTelegram', {
-                        message: mensagem,
-                        // você pode passar também um chatId específico, se precisar:
-                        chatId: estrategia.chat_id,
-                        options: { parse_mode: 'Markdown' }
-                    });
+                    if (estrategia.chat_id) {
+                        const Queue = require('../lib/Queue');
+                        await Queue.add('enviaMensagemTelegram', {
+                            message: mensagem,
+                            chatId: estrategia.chat_id,
+                            options: { parse_mode: 'Markdown' }
+                        });
+                    }
 
                     b.alert = true;
                     await b.save();
                 }
 
-                if (estrategia.chat_id) {
+                if (bilhetes.length > 0) {
                     const mensagem = `*Novo(s) Bilhete(s) Encontrado* \n\n` +
                         `*Estratégia:* ${estrategia.nome}\n` +
+                        `*Total de Bilhetes:* ${bilhetes.length}\n` +
                         `*Link:* https://bigfut.pro/estrategia/${estrategia.id}\n\n` +
                         `*Confira, Boa Sorte!* 🍀`;
                     const Queue = require('../lib/Queue');
@@ -421,6 +422,32 @@ class BilheteServices extends Services {
         } catch (error) {
             console.error('Erro ao buscar bilhetes pendentes:', error);
             throw new Error('Erro ao buscar bilhetes pendentes!');
+        }
+    }
+
+    async getBilhetesHoje() {
+        try {
+            const rawResult = await sequelize.query(
+                `SELECT e.id estrategia_id,concat(c.nome,' - ',f.nome) times,e.nome as estrategia,b.odd,t.nome as mercado,b.status_bilhete
+                FROM estrategias e
+                INNER JOIN bilhetes b ON e.id = b.estrategia_id
+                INNER JOIN bilhetesodds bo on bo.bilhete_id = b.id
+                INNER JOIN odds o on o.id = bo.odd_id
+                INNER JOIN tipoapostas t on t.id = o.tipoaposta_id
+                INNER JOIN jogos j on j.id = o.jogo_id
+                INNER JOIN times c on j.casa_id = c.id
+                INNER JOIN times f on j.fora_id = f.id
+                WHERE b.data::date = CURRENT_DATE::date
+                AND b."deletedAt" IS NULL AND e."deletedAt" IS NULL
+                AND (b.status_bilhete is null or b.status_bilhete = true)
+                LIMIT 15;`,
+                { type: sequelize.QueryTypes.SELECT }
+            );
+            
+            return Object.values(rawResult);
+        } catch (error) {
+            console.error('Erro ao buscar bilhetes de hoje:', error);
+            throw new Error('Erro ao buscar bilhetes de hoje!');
         }
     }
 }
