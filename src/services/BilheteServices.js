@@ -408,8 +408,13 @@ class BilheteServices extends Services {
                 INNER JOIN odds o ON o.id = bo.odd_id AND o."deletedAt" IS NULL
                 INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
                 WHERE b."deletedAt" IS NULL
-                AND  b.status_bilhete <> o.status 
-                AND (b."createdAt"::date >= (CURRENT_DATE - INTERVAL '2 days') or b.status_bilhete is null);
+                AND (
+                    b.status_bilhete IS NULL
+                    OR (
+                        b."createdAt"::date >= CURRENT_DATE - INTERVAL '4 days'
+                        AND b.status_bilhete IS DISTINCT FROM o.status
+                    )
+                );
             `;
 
             const results = await sequelize.query(sql, {
