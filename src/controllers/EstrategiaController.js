@@ -436,7 +436,6 @@ class EstrategiaController extends Controller {
                 data: estrategiaValida
             });
         } catch (error) {
-            console.log('error', error)
             return res.status(500).json({
                 "status": "error",
                 "message": "Erro ao testar estratégia",
@@ -546,7 +545,6 @@ class EstrategiaController extends Controller {
 
         try {
             const umRegistro = await estrategiaServices.getEstrategia(Number(id), Number(page), Number(pageSize));
-            console.log('umRegistro', umRegistro)
             if (!umRegistro) {
                 return res.status(404).json({
                     "status": "error",
@@ -624,7 +622,6 @@ class EstrategiaController extends Controller {
                     });
                 }
             }
-            console.log('ret', ret.filtrojogo_ids)
 
             return res.status(200).json({
                 "status": "success",

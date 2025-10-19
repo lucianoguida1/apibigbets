@@ -409,10 +409,9 @@ class BilheteServices extends Services {
                 INNER JOIN jogos j ON j.id = o.jogo_id AND j."deletedAt" IS NULL
                 WHERE b."deletedAt" IS NULL
                 AND (
-                    b.status_bilhete IS NULL
+                    b.status_bilhete IS DISTINCT FROM o.status
                     OR (
                         b."createdAt"::date >= CURRENT_DATE - INTERVAL '4 days'
-                        AND b.status_bilhete IS DISTINCT FROM o.status
                     )
                 );
             `;
@@ -433,7 +432,7 @@ class BilheteServices extends Services {
     async getBilhetesHoje() {
         try {
             const rawResult = await sequelize.query(
-                `SELECT e.id estrategia_id,concat(c.nome,' - ',f.nome) times,e.nome as estrategia,b.odd,t.nome as mercado,b.status_bilhete
+                `SELECT e.id estrategia_id,concat(c.nome,' - ',f.nome) times,e.nome as estrategia,b.odd,t.nome as mercado,b.status_bilhete status,b.data::date
                 FROM estrategias e
                 INNER JOIN bilhetes b ON e.id = b.estrategia_id
                 INNER JOIN bilhetesodds bo on bo.bilhete_id = b.id
@@ -442,9 +441,10 @@ class BilheteServices extends Services {
                 INNER JOIN jogos j on j.id = o.jogo_id
                 INNER JOIN times c on j.casa_id = c.id
                 INNER JOIN times f on j.fora_id = f.id
-                WHERE b.data::date = CURRENT_DATE::date
+                WHERE (b.data AT TIME ZONE 'America/Sao_Paulo')::date = (now() AT TIME ZONE 'America/Sao_Paulo')::date
                 AND b."deletedAt" IS NULL AND e."deletedAt" IS NULL
                 AND (b.status_bilhete is null or b.status_bilhete = true)
+                ORDER BY b.status_bilhete ASC
                 LIMIT 15;`,
                 { type: sequelize.QueryTypes.SELECT }
             );

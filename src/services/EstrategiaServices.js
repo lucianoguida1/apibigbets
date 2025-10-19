@@ -335,9 +335,10 @@ class EstrategiaServices extends Services {
                     max(b.data)::date AS max_data
                 FROM estrategias e
                 JOIN bilhetes b ON e.id = b.estrategia_id
-                WHERE b.data::date >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'
-                AND b.data::date  <  date_trunc('month', CURRENT_DATE)
+                WHERE b.data >= (date_trunc('month', now() AT TIME ZONE 'America/Sao_Paulo') AT TIME ZONE 'America/Sao_Paulo')
+                AND b.data <  ((date_trunc('month', now() AT TIME ZONE 'America/Sao_Paulo') + INTERVAL '1 month') AT TIME ZONE 'America/Sao_Paulo')
                 AND b."deletedAt" IS NULL AND e."deletedAt" IS NULL
+                AND b.status_bilhete IS NOT NULL
                 GROUP BY e.id, e.nome
                 ORDER BY lucro DESC LIMIT 3;`,
                 { type: sequelize.QueryTypes.SELECT }
