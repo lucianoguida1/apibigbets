@@ -23,7 +23,6 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Swagger setup
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -45,16 +44,8 @@ const { router: bullBoardRouter } = createBullBoard(
 
 app.use('/adminwl/queues', bullBoardRouter);
 
-
 routes(app);
 
-// Tarefas agendadas
 tarefaCron.agendarTarefas();
-
-/*
-(async () => {
-  await Queue.add('validaBilhetes');
-})();
-*/
 
 module.exports = app;
