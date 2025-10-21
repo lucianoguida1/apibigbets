@@ -7,9 +7,11 @@ const swaggerUi = require('swagger-ui-express');
 const { createBullBoard } = require('bull-board');
 const { BullAdapter } = require('bull-board/bullAdapter');
 const Queue = require('./lib/Queue');
-
 const routes = require('./routes');
 const tarefaCron = require('./tarefasCron');
+const auth = require('./middleware/auth');
+const authorize = require('./middleware/authorize');
+
 
 const corsOptions = {
   origin: '*',
